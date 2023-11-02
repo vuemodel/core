@@ -1,0 +1,43 @@
+{
+  "name": "@vuemodel/core",
+  "version": "0.0.1",
+  "main": "src/index.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vuemodel/core.git"
+  },
+  "author": "Luke Diebold",
+  "license": "MIT",
+  "description": "Core repository for contracts and implementations of VueModel",
+  "bugs": {
+    "url": "https://github.com/vuemodel/core/issues"
+  },
+  "homepage": "https://github.com/vuemodel/core#readme",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc"
+  },
+  "keywords": [
+    "vue",
+    "orm",
+    "model"
+  ],
+  "dependencies": {
+    "deepmerge-ts": "^5.1.0",
+    "pinia": "^2.1.6",
+    "pinia-orm": "^1.7.2",
+    "pinia-orm-helpers": "^0.0.4",
+    "uuid": "^9.0.1",
+    "vue": "^3.2.31",
+    "vue-demi": "^0.12.5"
+  },
+  "devDependencies": {
+    "@types/uuid": "^9.0.6",
+    "@typescript-eslint/eslint-plugin": "^6.7.5",
+    "@typescript-eslint/parser": "^6.7.5",
+    "eslint": "^8.51.0",
+    "sample-data": "workspace:^",
+    "tslib": "^2.6.2",
+    "typescript": "^5.2.2"
+  }
+}

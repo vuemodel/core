@@ -1,0 +1,26 @@
+{
+  "name": "tests",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "vitest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@vuemodel/core": "workspace:^",
+    "@vuemodel/pinia-local-storage": "workspace:^",
+    "localforage": "^1.10.0",
+    "pinia": "^2.1.6",
+    "pinia-orm": "^1.7.2",
+    "pinia-orm-helpers": "^0.0.4",
+    "sample-data": "workspace:^",
+    "vitest": "^0.34.6",
+    "vue": "^3.3.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.3.4"
+  }
+}

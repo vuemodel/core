@@ -1,0 +1,10 @@
+{
+  "name": "sample-data",
+  "main": "index.ts",
+  "author": "luke@ldiebold.com",
+  "license": "ISC",
+  "dependencies": {
+    "pinia-orm": "^1.7.2",
+    "pinia-orm-helpers": "^0.0.4"
+  }
+}
