@@ -1,10 +1,32 @@
 {
-  "name": "sample-data",
-  "main": "index.ts",
+  "version": "0.0.2",
+  "name": "@vuemodel/sample-data",
   "author": "luke@ldiebold.com",
   "license": "ISC",
+  "type": "module",
+  "scripts": {
+    "build": "tsup src/index.ts --clean --format esm,cjs --dts",
+    "release": "pnpm build && bumpp && pnpm publish"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "dependencies": {
     "pinia-orm": "^1.7.2",
-    "pinia-orm-helpers": "^0.0.4"
+    "pinia-orm-helpers": "^0.0.8"
+  },
+  "devDependencies": {
+    "bumpp": "^9.2.0",
+    "tsup": "^7.2.0"
   }
 }
