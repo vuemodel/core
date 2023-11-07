@@ -1,6 +1,6 @@
 {
   "name": "@vuemodel/pinia-local-storage",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "scripts": {
     "build": "unbuild",
     "release": "pnpm build && bumpp --tag '@vuemodel/pinia-local-storage@v%s' && pnpm publish"
