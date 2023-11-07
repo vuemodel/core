@@ -1,11 +1,28 @@
 {
   "name": "@vuemodel/pinia-local-storage",
-  "version": "0.0.1",
-  "main": "src/index.ts",
+  "version": "0.0.2",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "unbuild",
+    "release": "pnpm build && bumpp && pnpm publish"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vuemodel/core.git"
   },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "author": "Luke Diebold",
   "license": "MIT",
   "description": "Core repository for contracts and implementations of VueModel",
@@ -13,10 +30,6 @@
     "url": "https://github.com/vuemodel/core/issues"
   },
   "homepage": "https://github.com/vuemodel/core#readme",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc"
-  },
   "keywords": [
     "vue",
     "orm",
@@ -25,7 +38,7 @@
   "dependencies": {
     "@vuemodel/core": "workspace:^",
     "localforage": "^1.10.0",
-    "pinia-orm-helpers": "^0.0.4"
+    "pinia-orm-helpers": "^0.0.8"
   },
   "peerDependencies": {
     "pinia": "^2.x",
@@ -33,10 +46,12 @@
     "vue": "^3.x"
   },
   "devDependencies": {
+    "bumpp": "^9.2.0",
     "@typescript-eslint/eslint-plugin": "^6.7.5",
     "@typescript-eslint/parser": "^6.7.5",
     "eslint": "^8.51.0",
     "tslib": "^2.6.2",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "unbuild": "^2.0.0"
   }
 }
