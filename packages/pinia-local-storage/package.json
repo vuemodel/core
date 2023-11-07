@@ -1,10 +1,9 @@
 {
   "name": "@vuemodel/pinia-local-storage",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "build": "unbuild",
-    "release": "pnpm build && bumpp && pnpm publish"
+    "release": "pnpm build && bumpp --tag '@vuemodel/pinia-local-storage@v%s' && pnpm publish"
   },
   "repository": {
     "type": "git",
