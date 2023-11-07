@@ -1,12 +1,12 @@
 {
-  "version": "0.0.4",
+  "version": "0.0.1",
   "name": "@vuemodel/sample-data",
   "author": "luke@ldiebold.com",
   "license": "ISC",
   "type": "module",
   "scripts": {
     "build": "tsup src/index.ts --clean --format esm,cjs --dts",
-    "release": "pnpm build && bumpp --tag sample-data:vX.X.X && pnpm publish"
+    "release": "pnpm build && bumpp --tag '@vuemodel/sample-data@v%s' && pnpm publish"
   },
   "exports": {
     ".": {
