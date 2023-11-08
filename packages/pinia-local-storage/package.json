@@ -1,8 +1,9 @@
 {
   "name": "@vuemodel/pinia-local-storage",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "scripts": {
     "build": "unbuild",
+    "build:stub": "unbuild --stub",
     "release": "pnpm build && bumpp --tag '@vuemodel/pinia-local-storage@v%s' && pnpm publish"
   },
   "repository": {
@@ -36,8 +37,8 @@
   ],
   "dependencies": {
     "@vuemodel/core": "workspace:^",
-    "localforage": "^1.10.0",
-    "pinia-orm-helpers": "^0.0.8"
+    "idb-keyval": "^6.2.1",
+    "pinia-orm-helpers": "^0.0.11"
   },
   "peerDependencies": {
     "pinia": "^2.x",
@@ -45,9 +46,9 @@
     "vue": "^3.x"
   },
   "devDependencies": {
-    "bumpp": "^9.2.0",
     "@typescript-eslint/eslint-plugin": "^6.7.5",
     "@typescript-eslint/parser": "^6.7.5",
+    "bumpp": "^9.2.0",
     "eslint": "^8.51.0",
     "tslib": "^2.6.2",
     "typescript": "^5.2.2",
