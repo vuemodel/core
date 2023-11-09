@@ -1,9 +1,10 @@
 {
   "name": "@vuemodel/pinia-local-storage",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "scripts": {
+    "jiti-fix": "find ./dist -type f -exec sed -i 's|file://||g' {} \\;",
     "build": "unbuild",
-    "build:stub": "unbuild --stub",
+    "dev": "unbuild --stub && pnpm jiti-fix",
     "release": "pnpm build && bumpp --tag '@vuemodel/pinia-local-storage@v%s' && pnpm publish"
   },
   "repository": {
