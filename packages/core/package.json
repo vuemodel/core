@@ -1,9 +1,11 @@
 {
   "name": "@vuemodel/core",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "jiti-fix": "find ./dist -type f -exec sed -i 's|file://||g' {} \\;",
     "build": "unbuild",
+    "dev": "unbuild --stub && pnpm jiti-fix",
     "release": "pnpm build && bumpp --tag '@vuemodel/core@v%s' && pnpm publish"
   },
   "type": "module",
@@ -18,9 +20,8 @@
       "require": "./dist/index.cjs"
     }
   },
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
   "files": [
     "dist"
   ],
