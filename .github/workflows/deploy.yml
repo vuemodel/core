@@ -44,6 +44,10 @@ jobs:
         uses: actions/configure-pages@v3
       - name: Install dependencies
         run: pnpm install
+      - name: Build Core
+        run: |
+          pnpm core:build
+          pnpm pinia-orm-local:build
       - name: Build with VitePress
         run: |
           pnpm docs:build
