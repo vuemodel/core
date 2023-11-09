@@ -40,6 +40,7 @@ export default defineConfig({
   },
   srcDir: '../',
   dir: '../',
+  base: '/core',
   head: [['script', { src: 'https://cdn.jsdelivr.net/npm/shiki' }]],
   themeConfig: {
     outline: [2,3],

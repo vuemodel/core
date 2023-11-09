@@ -44,7 +44,7 @@ jobs:
         uses: actions/configure-pages@v3
       - name: Install dependencies
         run: pnpm install
-      - name: Build Core
+      - name: Build Packages
         run: |
           pnpm core:build
           pnpm pinia-local-storage:build
