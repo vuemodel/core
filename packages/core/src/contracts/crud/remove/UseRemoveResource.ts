@@ -1,7 +1,7 @@
 import { Item, Model } from 'pinia-orm'
-import { RemoveResource } from './RemoveResource'
 import { ComputedRef, MaybeRefOrGetter, Ref } from 'vue'
 import { StandardErrors } from '../../errors/StandardErrors'
+import { RemoveResponse } from '../../../types/ResourceResponse'
 
 export interface UseRemoveResourceOptions<T extends typeof Model> {
   /**
@@ -9,22 +9,36 @@ export interface UseRemoveResourceOptions<T extends typeof Model> {
    * (e.g. `remove(1)`) then this id
    * will take precedence.
    */
-  id: MaybeRefOrGetter<string | number>
+  id?: MaybeRefOrGetter<string | number>
 
   /**
    * Callback called after a successful request
    */
-  onSuccess?: (response: RemoveResource<T>) => void
+  onSuccess?: (response: RemoveResponse<T>) => void
+
+  /**
+   * Callback called when a standard error occurs
+   */
+  onStandardError?: (response: RemoveResponse<T>) => void
 
   /**
    * Callback called when an error occurs
    */
-  onStandardError?: (response: RemoveResource<T>) => void
+  onError?: (response: RemoveResponse<T>) => void
 
   /**
    * Should the retrieved data be persisted to the store?
    */
   persist?: MaybeRefOrGetter<boolean>
+
+  /**
+   * When optimistic is `true`, the record is removed from
+   * the store **before** it's removed from the backend.
+   *
+   * If after removing the record the request fails, the record
+   * is added back to the store.
+   */
+  optimistic?: MaybeRefOrGetter<boolean>
 
   /**
    * Show a notification if the request is unsuccessful.
@@ -72,7 +86,7 @@ export interface UseRemoveResourceReturn<T extends typeof Model> {
   /**
    * `true` while removing the data
    */
-  removing: Ref<string | number>
+  removing: Ref<string | number | undefined>
 
   /**
    * Record retrieved from the latest request
@@ -82,7 +96,17 @@ export interface UseRemoveResourceReturn<T extends typeof Model> {
   /**
    * Response of the latest request
    */
-  response: Ref<RemoveResource<T> | undefined>
+  response: Ref<RemoveResponse<T> | undefined>
+
+  /**
+   * All active requests keyed by `primaryKey`.
+   *
+   * Sometimes more than one request is being processed at once.
+   * This ref keeps track of those requests.
+   */
+  activeRequests: Ref<Record<string | number, {
+    request: Promise<RemoveResponse<T>>
+  }>>
 }
 
 export type UseRemoveResource<T extends typeof Model> = (

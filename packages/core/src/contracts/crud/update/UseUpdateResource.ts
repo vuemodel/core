@@ -1,9 +1,9 @@
 import { Item, Model } from 'pinia-orm'
-import { UpdateResource } from './UpdateResource'
 import { FormValidationErrors } from '../../errors/FormValidationErrors'
 import { ComputedRef, MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
 import { PiniaOrmForm } from 'pinia-orm-helpers'
 import { StandardErrors } from '../../errors/StandardErrors'
+import { FindResponse, UpdateResponse } from '../../../types/ResourceResponse'
 
 export interface UseUpdateResourceOptions<T extends typeof Model> {
   /**
@@ -11,20 +11,16 @@ export interface UseUpdateResourceOptions<T extends typeof Model> {
    * (e.g. `update(1)`) then this id
    * will take precedence.
    */
-  id: MaybeRefOrGetter<string | number>
+  id?: MaybeRefOrGetter<string | number>
 
   /**
    * Form used to update the resource. If not provided,
    * one will be updated for us.
    */
-  form: MaybeRef<PiniaOrmForm<InstanceType<T>>>,
+  form?: MaybeRef<PiniaOrmForm<InstanceType<T>>>,
 
   /**
-   * Attempt to fill in `updater.form` immediately after this composable is
-   * setup. This property can take either an id or a boolean. If an id is
-   * provided, it's used to discover the resource, and populate the form.
-   * If a boolean is provided, if uses - in order of precedence -
-   * `updater.id.value` or `updater.form.value.id`
+   * Attempt to fill in `updater.form.value` when `updater.id.value` changes.
    *
    * ## How the form is populated
    * First, it tries to find the record in the store:
@@ -38,40 +34,41 @@ export interface UseUpdateResourceOptions<T extends typeof Model> {
    * const record = repo.find('some-id')
    * ```
    */
-  makeFormWithId?: string | number | true,
+  immediatelyMakeForm?: MaybeRefOrGetter<boolean>,
 
   /**
    * Callback called after a successful request
    */
-  onSuccess?: (response: UpdateResource<T>) => void
+  onSuccess?: (response: UpdateResponse<T>) => void
 
   /**
    * Callback called when an error occurs (including validation error)
    */
-  onError?: (
-    response: UpdateResource<T>,
-    validationErrors?: FormValidationErrors<InstanceType<T>>
-  ) => void
+  onError?: (response: UpdateResponse<T>) => void
 
   /**
    * Callback called when an error occurs (NOT including validation error)
    */
-  onStandardError?: (response: UpdateResource<T>) => void
+  onStandardError?: (response: UpdateResponse<T>) => void
 
   /**
    * Callback called when a validation error occurs. Note, you
    * likely won't need to use this callback as all validation
    * errors exist within the "validationErrors" computed ref
    */
-  onValidationError?: (
-    response: UpdateResource<T>,
-    validationErrors: FormValidationErrors<InstanceType<T>>
-  ) => void
+  onValidationError?: (response: UpdateResponse<T>,) => void
 
   /**
    * Should the retrieved data be persisted to the store?
    */
   persist?: MaybeRefOrGetter<boolean>
+
+  /**
+   * When `true`, the record is updated in the store **before** it's updated
+   * on the backend. If after updating the resource the request
+   * fails, the changes are rolled back in the store.
+   */
+  optimistic?: MaybeRefOrGetter<boolean>
 
   /**
    * Show a notification if the request is unsuccessful.
@@ -80,6 +77,20 @@ export interface UseUpdateResourceOptions<T extends typeof Model> {
    * needs to be set when the plugin is installed.
    */
   notifyOnError?: boolean
+
+  /**
+   * Update the record whenever `updater.form.value` changes
+   *
+   * @example
+   * const updater = useUpdateResource(Todo, { autoUpdate: true })
+   * updater.form.value.title = 'New Title' // triggers updater.update()
+   */
+  autoUpdate?: MaybeRefOrGetter<boolean>
+
+  /**
+   * Debounce `updater.update()` when using auto update
+   */
+  autoUpdateDebounce?: MaybeRefOrGetter<number>
 
   /**
    * The driver used to perform the update request.
@@ -125,7 +136,6 @@ export interface UseUpdateResourceReturn<T extends typeof Model> {
   update(id?: string | number): Promise<void>
   update(id?: string | number, form?: PiniaOrmForm<InstanceType<T>>): Promise<void>
   update(form?: PiniaOrmForm<InstanceType<T>>): Promise<void>
-
   /**
    * A ref of the form used to update the resource. We'll
    * likely want to model fields of this form in the UI.
@@ -153,7 +163,7 @@ export interface UseUpdateResourceReturn<T extends typeof Model> {
    * </div>
    * ```
    */
-  validationErrors: ComputedRef<FormValidationErrors<InstanceType<T>>>
+  validationErrors: ComputedRef<FormValidationErrors<T>>
 
   /**
    * Standard errors recieved from the latest request
@@ -171,17 +181,18 @@ export interface UseUpdateResourceReturn<T extends typeof Model> {
   standardErrors: ComputedRef<StandardErrors>
 
   /**
-   * `true` while requesting the data
+   * id of the resource currently being updated
    *
    * @example
    * ```html
    * <div v-if="updater.updating.value">loading...</div>
    * ```
    */
-  updating: Ref<boolean>
+  updating: Ref<string | number | string[] | number[] | undefined>
 
   /**
-   * `true` while discovering the record that will be used to populate `updater.form.value`.
+   * id of the resource currently being found for update. It's the id of
+   * the record that will be used to populate `updater.form.value`.
    *
    * Before updating a resource, you'll likely need a prepopulated form. You can use the option
    * `makeFormWithId` for that (or call `updater.makeFormWithId('some-id')`). While populating
@@ -190,13 +201,18 @@ export interface UseUpdateResourceReturn<T extends typeof Model> {
    *
    * @example
    * ```html
-   * <form v-if="updater.findingRecordForUpdate.value">
+   * <form v-if="updater.makingForm.value">
    *   <input v-model="updater.form.value.email" />
    * </form>
    * <div v-else>populating form...</div>
    * ```
    */
-  findingRecordForUpdate: Ref<boolean>
+  makingForm: Ref<string | number | string[] | number[] | undefined>
+
+  /**
+   * Attempt to fill `updater.form.value`.
+   */
+  makeForm: (targetId?: string | number | string[] | number[]) => Promise<PiniaOrmForm<InstanceType<T>>>
 
   /**
    * Record retrieved from the latest request
@@ -206,7 +222,28 @@ export interface UseUpdateResourceReturn<T extends typeof Model> {
   /**
    * Response of the latest request
    */
-  response: Ref<UpdateResource<T> | undefined>
+  response: Ref<UpdateResponse<T> | undefined>
+
+  /**
+   * All active requests keyed by `primaryKey`.
+   *
+   * Sometimes more than one request is being processed at once.
+   * This ref keeps track of those requests.
+   */
+  activeRequests: Ref<Record<string | number, {
+    request: Promise<UpdateResponse<T>>
+    form: PiniaOrmForm<InstanceType<T>>
+  }>>
+
+  /**
+   * All active "makeForm" requests keyed by `primaryKey`.
+   *
+   * Sometimes more than one request is being processed at once.
+   * This ref keeps track of those requests.
+   */
+  activeMakeFormRequests: Ref<Record<string | number, {
+    request: Promise<FindResponse<T>>
+  }>>
 }
 
 export type UseUpdateResource<T extends typeof Model> = (

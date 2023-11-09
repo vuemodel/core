@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { removeResource } from '@vuemodel/core'
-import { Post } from 'sample-data'
+import { Post } from '@vuemodel/sample-data'
 import { ref } from 'vue'
 
 const id = ref('')

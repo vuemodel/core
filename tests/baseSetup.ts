@@ -1,29 +1,60 @@
 import { createVueModel } from '@vuemodel/core'
 import { createPinia } from 'pinia'
 import { createApp } from 'vue'
-import {
-  piniaLocalStorageState,
-  createPiniaLocalStorage,
-  piniaLocalVueModelDriver,
-} from '@vuemodel/pinia-local-storage'
-import { clear as clearStorage } from 'localforage'
+import { piniaLocalStorageState, createPiniaLocalStorage, piniaLocalVueModelDriver } from '@vuemodel/pinia-local-storage'
+import { clear as clearStorage } from 'idb-keyval'
+import { Album, Comment, Photo, Post, User } from '@vuemodel/sample-data'
+import { createORM, useRepo } from 'pinia-orm'
+import 'fake-indexeddb/auto'
 
 export async function baseSetup () {
-  const clearStoragePromise = clearStorage()
+  await clearStorage()
   piniaLocalStorageState.mockStandardErrors = undefined
   piniaLocalStorageState.mockValidationErrors = undefined
-  const app = createApp({})
+  piniaLocalStorageState.mockLatencyMs = 0
 
-  const pinia = createPinia()
-  const piniaLocalStorage = createPiniaLocalStorage({ frontStore: pinia })
+  const piniaOrm = createORM()
+  const piniaFront = createPinia()
+  const piniaBack = createPinia()
+
+  piniaFront.use(piniaOrm)
+  const piniaLocalStorage = createPiniaLocalStorage({
+    frontStore: piniaFront,
+    backStore: piniaBack,
+  })
   const vueModel = createVueModel({
     default: 'local',
-    drivers: { local: piniaLocalVueModelDriver },
+    drivers: { local: { ...piniaLocalVueModelDriver, config: { pinia: piniaFront } } },
   })
 
-  app.use(pinia)
+  const app = createApp({})
+
+  app.use(piniaFront)
   app.use(vueModel)
   app.use(piniaLocalStorage)
+  app.use(piniaOrm)
 
-  await clearStoragePromise
+  const frontRepoUser = useRepo(User, piniaFront)
+  const frontRepoComment = useRepo(Comment, piniaFront)
+  const frontRepoPhoto = useRepo(Photo, piniaFront)
+  const frontRepoPost = useRepo(Post, piniaFront)
+  const frontRepoAlbum = useRepo(Album, piniaFront)
+
+  const backRepoUser = useRepo(User, piniaBack)
+  const backRepoComment = useRepo(Comment, piniaBack)
+  const backRepoPhoto = useRepo(Photo, piniaBack)
+  const backRepoPost = useRepo(Post, piniaBack)
+  const backRepoAlbum = useRepo(Album, piniaBack)
+
+  frontRepoUser.flush()
+  frontRepoComment.flush()
+  frontRepoPhoto.flush()
+  frontRepoPost.flush()
+  frontRepoAlbum.flush()
+
+  backRepoUser.flush()
+  backRepoComment.flush()
+  backRepoPhoto.flush()
+  backRepoPost.flush()
+  backRepoAlbum.flush()
 }

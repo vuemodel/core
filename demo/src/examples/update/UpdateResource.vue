@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { updateResource } from '@vuemodel/core'
-import { Post } from 'sample-data'
+import { Post } from '@vuemodel/sample-data'
 import { ref } from 'vue'
 import { type PiniaOrmForm } from 'pinia-orm-helpers'
 

@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { indexResources, type IndexResourcesFilters } from '@vuemodel/core'
 import type { DeclassifyPiniaOrmModel } from 'pinia-orm-helpers'
-import { Post } from 'sample-data'
+import { Post } from '@vuemodel/sample-data'
 import { ref } from 'vue'
 
 const result = ref<DeclassifyPiniaOrmModel<Post>[]>([])

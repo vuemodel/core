@@ -23,7 +23,7 @@
   ],
   "dependencies": {
     "pinia-orm": "^1.7.2",
-    "pinia-orm-helpers": "^0.0.8"
+    "pinia-orm-helpers": "^0.0.10"
   },
   "devDependencies": {
     "bumpp": "^9.2.0",

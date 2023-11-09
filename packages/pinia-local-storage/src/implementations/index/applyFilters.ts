@@ -7,7 +7,7 @@ function executeFilterBlock (record: Model, filterGroups: Partial<Record<keyof M
   filterGroups.forEach(filterGroup => {
     Object.entries(filterGroup).forEach(filterGroupEntry => {
       const field = filterGroupEntry[0]
-      const filters = filterGroupEntry[1]
+      const filters = filterGroupEntry[1] as FilterTypeToValueBase
 
       Object.entries(filters).forEach(filterEntry => {
         const whereFunction = whereFunctions[filterEntry[0]]
@@ -20,7 +20,7 @@ function executeFilterBlock (record: Model, filterGroups: Partial<Record<keyof M
   return result
 }
 
-export function applyFilters (query: Query, filters: IndexResourcesFilters<Model>) {
+export function applyFilters (query: Query, filters: IndexResourcesFilters<typeof Model>) {
   Object.entries(filters).forEach(entry => {
     const field = entry[0]
     const actions = entry[1]

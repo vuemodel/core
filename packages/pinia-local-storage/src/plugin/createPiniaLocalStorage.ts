@@ -8,7 +8,7 @@ export const createPiniaLocalStorage = (options: CreatePiniaLocalStorageOptions)
   return {
     install () {
       piniaLocalStorageState.frontStore = options?.frontStore
-      piniaLocalStorageState.store = createPinia()
+      piniaLocalStorageState.store = options?.backStore ?? createPinia()
       piniaLocalStorageState.database = new Database()
       piniaLocalStorageState.mockLatencyMs = options?.mockLatencyMs ?? 0
     },

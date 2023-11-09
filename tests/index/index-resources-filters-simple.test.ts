@@ -1,6 +1,6 @@
 import { describe, beforeEach, it, expect } from 'vitest'
 import { indexResources } from '@vuemodel/core'
-import { Post, User } from 'sample-data'
+import { Post, User } from '@vuemodel/sample-data'
 import { populateRecords } from '../helpers/populateRecords'
 import { baseSetup } from '../baseSetup'
 
@@ -155,7 +155,7 @@ describe('indexResources', () => {
     expect(response.records[2].title).not.toContain('est')
   })
 
-  it('can filter resources via "between" usings strings', async () => {
+  it('can filter resources via "between" using strings', async () => {
     await populateRecords('users', 10)
 
     const response = await indexResources(User, {
@@ -167,7 +167,7 @@ describe('indexResources', () => {
     expect(response.records.length).toEqual(5)
   })
 
-  it('can filter resources via "between" usings numbers', async () => {
+  it('can filter resources via "between" using numbers', async () => {
     await populateRecords('users', 10)
 
     const response = await indexResources(User, {
@@ -179,7 +179,7 @@ describe('indexResources', () => {
     expect(response.records.length).toEqual(3)
   })
 
-  it('can filter resources via "between" usings dates', async () => {
+  it('can filter resources via "between" using dates', async () => {
     await populateRecords('posts', 50)
 
     const response = await indexResources(Post, {

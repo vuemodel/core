@@ -1,0 +1,18 @@
+export const defaultImports = {
+  vue: 'https://play.vuejs.org/vue.runtime.esm-browser.js',
+  'vue/server-renderer': 'https://play.vuejs.org/server-renderer.esm-browser.js',
+  quasar: 'https://cdn.jsdelivr.net/npm/quasar@2.13.0/dist/quasar.esm.prod.js',
+  '@vuemodel/core': 'https://cdn.jsdelivr.net/npm/@vuemodel/core@0.0.4/dist/index.mjs',
+  '@vuemodel/pinia-local-storage': 'https://cdn.jsdelivr.net/npm/@vuemodel/pinia-local-storage@0.0.8/dist/index.mjs',
+  '@vuemodel/sample-data': 'https://cdn.jsdelivr.net/npm/@vuemodel/sample-data@0.0.2/dist/index.js',
+  pinia: 'https://cdn.jsdelivr.net/npm/pinia@2.1.7/dist/pinia.esm-browser.js',
+  'pinia-orm': 'https://cdn.jsdelivr.net/npm/pinia-orm@1.7.2/dist/index.mjs',
+  'pinia-orm/dist/decorators': 'https://cdn.jsdelivr.net/npm/pinia-orm@1.7.2/dist/decorators.mjs',
+  'pinia-orm-helpers': 'https://cdn.jsdelivr.net/npm/pinia-orm-helpers@0.0.8/dist/index.mjs',
+  'deepmerge-ts': 'https://cdn.jsdelivr.net/npm/deepmerge-ts@5.1.0/dist/node/index.mjs',
+  uuid: 'https://jspm.dev/uuid',
+  '@pinia-orm/normalizr': 'https://cdn.jsdelivr.net/npm/@pinia-orm/normalizr@1.7.0/dist/index.mjs',
+  'vue-demi': 'https://cdn.jsdelivr.net/npm/vue-demi@0.14.6/lib/index.mjs',
+  '@vue/devtools-api': 'https://cdn.jsdelivr.net/npm/@vue/devtools-api@6.5.1/lib/esm/index.js',
+  'idb-keyval': 'https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/index.js',
+}

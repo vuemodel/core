@@ -3,6 +3,7 @@ import { VueModelDriver } from '../contracts/VueModelDriver'
 import { FormValidationErrors } from '../contracts/errors/FormValidationErrors'
 import { Model } from 'pinia-orm'
 import { NotifyOnErrorOptions } from '../types/NotifyOnErrorOptions'
+import { Pinia } from 'pinia'
 
 export type ErrorNotifyErrors = {
   standardErrors: StandardErrors
@@ -15,7 +16,9 @@ export type ErrorNotifier = (options: { model: typeof Model, errors: ErrorNotify
 export type ErrorNotifierWithValidation = (options: { model: typeof Model, errors: NotifyErrorsWithValidation }) => void
 
 export type VueModelConfig = {
+  pinia?: Pinia
   notifyOnError?: NotifyOnErrorOptions | undefined
+  autoUpdateDebounce?: number
   errorNotifiers?: {
     create?: ErrorNotifierWithValidation
     update?: ErrorNotifierWithValidation

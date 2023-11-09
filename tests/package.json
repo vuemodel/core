@@ -12,15 +12,17 @@
   "dependencies": {
     "@vuemodel/core": "workspace:^",
     "@vuemodel/pinia-local-storage": "workspace:^",
-    "localforage": "^1.10.0",
+    "@vuemodel/sample-data": "workspace:^",
+    "fake-indexeddb": "^5.0.1",
+    "idb-keyval": "^6.2.1",
     "pinia": "^2.1.6",
     "pinia-orm": "^1.7.2",
-    "pinia-orm-helpers": "^0.0.4",
-    "sample-data": "workspace:^",
-    "vitest": "^0.34.6",
+    "pinia-orm-helpers": "^0.0.10",
+    "vitest": "^1.0.0-beta.3",
     "vue": "^3.3.4"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^4.3.4"
+    "@vitejs/plugin-vue": "^4.3.4",
+    "happy-dom": "^12.10.3"
   }
 }

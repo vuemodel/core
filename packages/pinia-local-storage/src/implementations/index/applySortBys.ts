@@ -8,6 +8,6 @@ const sortByDirectionMap: Record<string, OrderDirection> = {
 
 export function applySortBys<T extends typeof Model> (query: Query, sortBys: Sort<T>[]) {
   sortBys.forEach(sortBy => {
-    query.orderBy(sortBy.field, sortByDirectionMap[sortBy.direction])
+    query.orderBy(String(sortBy.field), sortByDirectionMap[sortBy.direction])
   })
 }

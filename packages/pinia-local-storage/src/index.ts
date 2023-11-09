@@ -1,21 +1,17 @@
 import {
   VueModelDriver,
   useCreateResourceImplementation,
+  useUpdateResourceImplementation,
   useIndexResourcesImplementation,
   useFindResourceImplementation,
+  useRemoveResourceImplementation,
 } from '@vuemodel/core'
 
 import { indexResources } from './implementations/index/indexResources'
-
 import { createResource } from './implementations/create/createResource'
-
 import { findResource } from './implementations/find/findResource'
-
 import { removeResource } from './implementations/remove/removeResource'
-import { useRemoveResource } from './implementations/remove/useRemoveResource'
-
 import { updateResource } from './implementations/update/updateResource'
-import { useUpdateResource } from './implementations/update/useUpdateResource'
 
 export const piniaLocalVueModelDriver: VueModelDriver = {
   indexResources,
@@ -25,13 +21,13 @@ export const piniaLocalVueModelDriver: VueModelDriver = {
   useCreateResource: useCreateResourceImplementation,
 
   updateResource,
-  useUpdateResource,
+  useUpdateResource: useUpdateResourceImplementation,
 
   findResource,
   useFindResource: useFindResourceImplementation,
 
   removeResource,
-  useRemoveResource,
+  useRemoveResource: useRemoveResourceImplementation,
 }
 
 export { createPiniaLocalStorage } from './plugin/createPiniaLocalStorage'

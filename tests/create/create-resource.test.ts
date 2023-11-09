@@ -1,8 +1,9 @@
 import { describe, beforeEach, it, expect, vi } from 'vitest'
 import { createResource, findResource, vueModelState } from '@vuemodel/core'
-import { Post, User } from 'sample-data'
-import { piniaLocalStorageState } from '@vuemodel/pinia-local-storage/src/plugin/state'
+import { Post, User } from '@vuemodel/sample-data'
+import { piniaLocalStorageState } from '@vuemodel/pinia-local-storage'
 import { baseSetup } from '../baseSetup'
+import "fake-indexeddb/auto"
 
 describe('createResource', () => {
   beforeEach(async () => {

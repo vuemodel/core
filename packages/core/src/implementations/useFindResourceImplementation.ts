@@ -8,6 +8,7 @@ import { StandardErrors } from '../contracts/errors/StandardErrors'
 import { pick } from '../utils/pick'
 import { Constructor } from '../types/Constructor'
 import { QueryValidationErrors } from '../contracts/errors/QueryValidationErrors'
+import { getMergedDriverConfig } from '../utils/getMergedDriverConfig'
 import { applyIncludes } from '../utils/applyIncludes'
 
 const defaultOptions = {
@@ -21,7 +22,11 @@ export function useFindResourceImplementation<T extends typeof Model> (
   options = Object.assign({}, defaultOptions, options)
   const findResource = getImplementation<T, 'findResource'>('findResource', options.driver)
 
-  const repo = useRepo<InstanceType<T>>(EntityClass as unknown as Constructor<InstanceType<T>>)
+  const driverConfig = getMergedDriverConfig(options.driver)
+  const repo = useRepo<InstanceType<T>>(
+    EntityClass as unknown as Constructor<InstanceType<T>>,
+    driverConfig.pinia,
+  )
 
   const activeRequests = ref<UseFindResourceReturn<T>['activeRequests']>({} as UseFindResourceReturn<T>['activeRequests'])
 
@@ -51,7 +56,7 @@ export function useFindResourceImplementation<T extends typeof Model> (
     const includesObject = toValue(options?.includes)
     const query = repo.query()
     if (includesObject) {
-      applyIncludes(query, includesObject)
+      applyIncludes(EntityClass, query, includesObject)
     }
     const idResolved = idParam ??
       (response.value?.record ? getRecordId(response.value?.record) : undefined) ??
@@ -99,15 +104,16 @@ export function useFindResourceImplementation<T extends typeof Model> (
 
     activeRequests.value[resolvedId] = { request }
 
-    response.value = await request
+    const thisResponse = await request
+    response.value = thisResponse
 
     // Persisting to the store
-    if (persist && response.value?.record) {
-      repo.save(response.value?.record)
+    if (persist && thisResponse?.record) {
+      repo.save(thisResponse?.record)
     }
 
     // On Success
-    if (response.value?.success) {
+    if (thisResponse?.success) {
       const responseResolved = toValue(response)
       if (responseResolved) {
         options?.onSuccess?.(responseResolved)
@@ -115,18 +121,18 @@ export function useFindResourceImplementation<T extends typeof Model> (
     }
 
     // On validation error
-    if (response.value.validationErrors) {
-      options?.onValidationError?.(response.value)
+    if (thisResponse.validationErrors) {
+      options?.onValidationError?.(thisResponse)
     }
 
     // On standard error
-    if (response.value.standardErrors) {
-      options?.onStandardError?.(response.value)
+    if (thisResponse.standardErrors) {
+      options?.onStandardError?.(thisResponse)
     }
 
     // On any error
-    if (response.value.validationErrors || response.value.standardErrors) {
-      options?.onError?.(response.value)
+    if (thisResponse.validationErrors || thisResponse.standardErrors) {
+      options?.onError?.(thisResponse)
     }
 
     finding.value = undefined

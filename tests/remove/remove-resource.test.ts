@@ -1,9 +1,10 @@
 import { describe, beforeEach, it, expect, vi } from 'vitest'
 import { indexResources, removeResource, vueModelState } from '@vuemodel/core'
-import { Post } from 'sample-data'
+import { Post } from '@vuemodel/sample-data'
 import { populateRecords } from '../helpers/populateRecords'
-import { piniaLocalStorageState } from '@vuemodel/pinia-local-storage/src/plugin/state'
+import { piniaLocalStorageState } from '@vuemodel/pinia-local-storage'
 import { baseSetup } from '../baseSetup'
+import "fake-indexeddb/auto"
 
 describe('removeResource', () => {
   beforeEach(async () => {
@@ -106,5 +107,14 @@ describe('removeResource', () => {
     await removeResource(Post, '1') // as param takes precedence
 
     expect(notifyOnErrorSpy).toHaveBeenCalled()
+  })
+
+  it('returns a standard error if the id does not exist', async () => {
+    await populateRecords('posts', 2)
+
+    const respone = await removeResource(Post, '3')
+
+    // to avoid being too specific about the message, we only ensure a message exists
+    expect(respone.standardErrors[0].message).toBeTypeOf('string')
   })
 })

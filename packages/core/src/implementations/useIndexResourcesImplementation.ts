@@ -11,6 +11,7 @@ import { Constructor } from '../types/Constructor'
 import { applyIncludes } from '../utils/applyIncludes'
 import { applyFilters } from '../utils/applyFilters'
 import { applySortBys } from '../utils/applySortBys'
+import { getMergedDriverConfig } from '../utils/getMergedDriverConfig'
 
 const defaultOptions = {
   persist: true,
@@ -23,7 +24,11 @@ export function useIndexResourcesImplementation<T extends typeof Model> (
   options = Object.assign({}, defaultOptions, options)
   const indexResources = getImplementation<T, 'indexResources'>('indexResources', options.driver)
 
-  const repo = useRepo<InstanceType<T>>(EntityClass as unknown as Constructor<InstanceType<T>>)
+  const driverConfig = getMergedDriverConfig(options.driver)
+  const repo = useRepo<InstanceType<T>>(
+    EntityClass as unknown as Constructor<InstanceType<T>>,
+    driverConfig.pinia,
+  )
 
   const response = ref<IndexResponse<T>>()
 
@@ -41,7 +46,7 @@ export function useIndexResourcesImplementation<T extends typeof Model> (
     const filtersObject = toValue(options?.filters)
     const sortByArray = toValue(options?.sortBy)
     const query = repo.query()
-    if (includesObject) applyIncludes(query, includesObject)
+    if (includesObject) applyIncludes(EntityClass, query, includesObject)
     if (filtersObject) applyFilters(query, filtersObject)
     if (sortByArray) applySortBys(query, sortByArray)
 

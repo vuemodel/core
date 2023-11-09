@@ -9,7 +9,6 @@ import { applyPagination } from './applyPagination'
 import { wait } from '../../utils/wait'
 import { makeMockErrorResponse } from '../../utils/makeMockErrorResponse'
 import { ensureModelRecordsInStore } from '../../utils/ensureModelRecordsInStore'
-import { setActivePinia } from 'pinia'
 
 export async function indexResources<T extends typeof Model> (
   EntityClass: T,
@@ -27,26 +26,20 @@ export async function indexResources<T extends typeof Model> (
   })
   if (mockErrorResponse !== false) return mockErrorResponse
 
-  // const recordsKey = `${EntityClass.entity}.records`
-
   await wait(piniaLocalStorageState.mockLatencyMs ?? 0)
 
-  // const records = (await getItem<DeclassifyPiniaOrmModel<InstanceType<T>>[]>(recordsKey)) ?? {} as DeclassifyPiniaOrmModel<InstanceType<T>>[]
-
   const repo = useRepo(EntityClass, piniaLocalStorageState.store)
-  // repo.insert(Object.values(records))
 
-  await ensureModelRecordsInStore(repo.database)
+  await ensureModelRecordsInStore(EntityClass, options?.includes ?? {})
+
   const query = repo.query()
 
   if (options?.filters) applyFilters(query, options.filters)
-  if (options?.includes) applyIncludes<T>(query, options.includes)
+  if (options?.includes) applyIncludes(EntityClass, query, options.includes)
   if (options?.sortBy) applySortBys<T>(query, options.sortBy)
   if (options?.pagination) applyPagination(query, options.pagination)
 
   const data = query.get() as unknown as DeclassifyPiniaOrmModel<InstanceType<T>>[]
-
-  setActivePinia(piniaLocalStorageState.frontStore)
 
   const result: IndexResponse<T> = {
     records: data,
@@ -55,6 +48,8 @@ export async function indexResources<T extends typeof Model> (
     validationErrors: undefined,
     action: 'index',
   }
+
+  repo.flush()
 
   return result
 }

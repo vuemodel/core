@@ -2,9 +2,10 @@
   "compilerOptions": {
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
-    "target": "es6",
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "esModuleInterop": true,
     "strict": true,
     "noImplicitAny": true /* Raise error on expressions and declarations with an implied 'any' type. */,
     "strictNullChecks": true /* Enable strict null checks. */,
@@ -22,6 +23,6 @@
     ]
   },
   "include": [
-    "./src/**/*.ts"
+    "./src/**/*.ts",
   ]
 }

@@ -1,0 +1,36 @@
+{
+	"type": "module",
+	"scripts": {
+		"dev": "vitepress dev",
+		"build": "vitepress build",
+		"preview": "vitepress preview"
+	},
+	"devDependencies": {
+		"@quasar/vite-plugin": "^1.6.0",
+		"@typescript-eslint/eslint-plugin": "^6.7.0",
+		"@typescript-eslint/parser": "^6.7.0",
+		"@vitejs/plugin-vue": "^4.3.4",
+		"@vuemodel/core": "workspace:^",
+		"@vuemodel/pinia-local-storage": "workspace:^",
+		"@vuemodel/sample-data": "workspace:^",
+		"eslint": "^8.51.0",
+		"eslint-config-standard": "^17.1.0",
+		"eslint-plugin-cypress": "^2.15.1",
+		"eslint-plugin-import": "^2.28.1",
+		"eslint-plugin-n": "^16.1.0",
+		"eslint-plugin-promise": "^6.1.1",
+		"eslint-plugin-vue": "^9.17.0",
+		"fast-glob": "^3.3.1",
+		"vitepress": "1.0.0-rc.25"
+	},
+	"dependencies": {
+		"@quasar/extras": "^1.16.7",
+		"@vue/repl": "^2.6.3",
+		"@vueuse/core": "^10.5.0",
+		"fake-indexeddb": "^5.0.1",
+		"pinia": "^2.1.6",
+		"pinia-orm": "^1.7.2",
+		"quasar": "^2.13.0",
+		"vue": "^3.3.8"
+	}
+}

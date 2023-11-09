@@ -1,5 +1,5 @@
 import { createResource } from '@vuemodel/core'
-import { exampleDataMap } from 'sample-data'
+import { exampleDataMap } from '@vuemodel/sample-data'
 
 export async function populateRecords (
   entity: keyof typeof exampleDataMap,

@@ -1,7 +1,7 @@
 import { describe, beforeEach, it, expect, vi } from 'vitest'
 import { useIndexResources } from '@vuemodel/core'
 import { piniaLocalStorageState } from '@vuemodel/pinia-local-storage'
-import { Post, User } from 'sample-data'
+import { Post, User } from '@vuemodel/sample-data'
 import { populateRecords } from '../helpers/populateRecords'
 import { useRepo } from 'pinia-orm'
 import { baseSetup } from '../baseSetup'
@@ -243,5 +243,25 @@ describe('useIndexResources', () => {
         '3',
         '1',
       ])
+  })
+
+  it('hits the "onSuccess" callback on success', async () => {
+    //
+  })
+
+  it('hits the "onError" callback when there is a standard error', async () => {
+    //
+  })
+
+  it('hits the "onError" callback when there is a validation error', async () => {
+    //
+  })
+
+  it('hits the "onStandardError" callback when there are one or more standard errors', async () => {
+    //
+  })
+
+  it('hits the "onValidationError" callback when there are one or more validation errors', async () => {
+    //
   })
 })

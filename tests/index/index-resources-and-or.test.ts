@@ -1,6 +1,6 @@
 import { describe, beforeEach, it, expect } from 'vitest'
 import { indexResources } from '@vuemodel/core'
-import { Post } from 'sample-data'
+import { Post } from '@vuemodel/sample-data'
 import { populateRecords } from '../helpers/populateRecords'
 import { baseSetup } from '../baseSetup'
 

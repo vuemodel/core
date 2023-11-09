@@ -1,5 +1,9 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "Node",
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true

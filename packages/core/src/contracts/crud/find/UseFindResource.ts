@@ -32,7 +32,7 @@ export interface UseFindResourceOptions<T extends typeof Model> {
   /**
    * Callback called when an error occurs (including validation error)
    */
-  onError?: (response: FindResponse<T>, validationErrors?: QueryValidationErrors) => void
+  onError?: (response: FindResponse<T>) => void
 
   /**
    * Callback called when an error occurs (NOT including validation error)
@@ -110,7 +110,7 @@ export interface UseFindResourceReturn<T extends typeof Model> {
   standardErrors: ComputedRef<StandardErrors>
 
   /**
-   * `true` while finding the data
+   * id of the resource currently being found
    */
   finding: Ref<string | number | undefined>
 

@@ -9,6 +9,11 @@ export interface CreatePiniaLocalStorageOptions {
   frontStore: Pinia
 
   /**
+   * The pinia-orm backend store
+   */
+  backStore?: Pinia
+
+  /**
    * An artificial latency for requests. This is used for
    * testing, and can be a good way to "mimic" latency
    * while developing. Especailly useful working with
@@ -26,5 +31,5 @@ export interface CreatePiniaLocalStorageOptions {
    * Only used for testing. When this value is set, all
    * requests will fail with these validation errors.
    */
-  mockValidationErrors?: FormValidationErrors<Model>
+  mockValidationErrors?: FormValidationErrors<typeof Model>
 }

@@ -1,7 +1,7 @@
 import { Model } from 'pinia-orm'
 import { Attr, BelongsTo, HasMany, Uid } from 'pinia-orm/dist/decorators'
-import { User } from './users'
-import { Photo } from './photos'
+import { User } from '../src/users'
+import { Photo } from '../src/photos'
 import { PiniaOrmForm } from 'pinia-orm-helpers'
 
 export class Album extends Model {

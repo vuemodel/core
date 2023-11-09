@@ -1,5 +1,5 @@
 import { IndexResourcesOptions } from './IndexResources'
-import { Post } from 'sample-data'
+import { Post } from '@vuemodel/sample-data'
 import { IndexResourcesFilters } from './IndexResourcesFilters'
 
 const options: IndexResourcesOptions<typeof Post> = {

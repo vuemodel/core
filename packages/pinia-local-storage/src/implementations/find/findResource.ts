@@ -4,13 +4,13 @@ import {
   getMergedDriverConfig,
 } from '@vuemodel/core'
 import { Model, useRepo } from 'pinia-orm'
-import { getItem } from 'localforage'
+import { get as getItem } from 'idb-keyval'
 import { DeclassifyPiniaOrmModel } from 'pinia-orm-helpers'
 import { piniaLocalStorageState } from '../../plugin/state'
 import { wait } from '../../utils/wait'
 import { applyIncludes } from '../index/applyIncludes'
 import { makeMockErrorResponse } from '../../utils/makeMockErrorResponse'
-import { setActivePinia } from 'pinia'
+import { ensureModelRecordsInStore } from '../../utils/ensureModelRecordsInStore'
 
 export async function findResource<T extends typeof Model> (
   EntityClass: T,
@@ -28,9 +28,10 @@ export async function findResource<T extends typeof Model> (
     errorNotifierFunctionKey: 'find',
   })
   if (mockErrorResponse !== false) {
-    setActivePinia(piniaLocalStorageState.frontStore)
     return mockErrorResponse
   }
+
+  const repo = useRepo(EntityClass, piniaLocalStorageState.store)
 
   const recordsKey = `${EntityClass.entity}.records`
 
@@ -40,7 +41,6 @@ export async function findResource<T extends typeof Model> (
   const record = records?.[id] as DeclassifyPiniaOrmModel<InstanceType<T>> | undefined
 
   if (!record) {
-    setActivePinia(piniaLocalStorageState.frontStore)
     return {
       record: undefined,
       standardErrors: [{ message: `record with id ${id} not found`, name: 'Not Found' }],
@@ -50,15 +50,15 @@ export async function findResource<T extends typeof Model> (
     }
   }
 
-  const repo = useRepo(EntityClass, piniaLocalStorageState.store)
   repo.insert(record)
-
   const query = repo.query()
-  if (options?.includes) applyIncludes<T>(query, options.includes)
+  if (options?.includes) {
+    await ensureModelRecordsInStore(EntityClass, options.includes)
+    applyIncludes(EntityClass, query, options.includes)
+  }
+
 
   const recordFromStore = query.find(id) as unknown as DeclassifyPiniaOrmModel<InstanceType<T>>
-
-  setActivePinia(piniaLocalStorageState.frontStore)
 
   const result: FindResponse<T> = {
     record: recordFromStore,
@@ -67,6 +67,8 @@ export async function findResource<T extends typeof Model> (
     validationErrors: undefined,
     action: 'find',
   }
+
+  repo.flush()
 
   return result
 }

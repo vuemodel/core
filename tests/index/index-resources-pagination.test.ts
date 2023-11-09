@@ -1,6 +1,6 @@
 import { describe, beforeEach, it, expect } from 'vitest'
 import { indexResources } from '@vuemodel/core'
-import { Post } from 'sample-data'
+import { Post } from '@vuemodel/sample-data'
 import { populateRecords } from '../helpers/populateRecords'
 import { baseSetup } from '../baseSetup'
 
@@ -37,5 +37,9 @@ describe('indexResources', () => {
     expect(response.records[2].id).toEqual('8')
     expect(response.records[3].id).toEqual('9')
     expect(response.records[4].id).toEqual('10')
+  })
+
+  it('sets a standard error if the page is a negative number', async () => {
+    //
   })
 })

@@ -1,7 +1,7 @@
 import { describe, beforeEach, it, expect } from 'vitest'
 import { Form, useCreateResource } from '@vuemodel/core'
 import { piniaLocalStorageState } from '@vuemodel/pinia-local-storage'
-import { Post } from 'sample-data'
+import { Post } from '@vuemodel/sample-data'
 import { ref } from 'vue'
 import { useRepo } from 'pinia-orm'
 import { wait } from '../helpers/wait'
@@ -108,12 +108,12 @@ describe('useCreateResource', () => {
 
   it('has a "creating" value of true while creating', async () => {
     const postCreator = useCreateResource(Post)
-    piniaLocalStorageState.mockLatencyMs = 250
+    piniaLocalStorageState.mockLatencyMs = 50
     postCreator.form.value.title = 'LSD Standard'
 
     postCreator.create() // intentionally not awaited
     expect(postCreator.creating.value).toBe(true)
-    await wait(251)
+    await wait(80)
     expect(postCreator.creating.value).toBe(false)
   })
 
@@ -201,7 +201,7 @@ describe('useCreateResource', () => {
 
   it('can optimistically create', async () => {
     const postCreator = useCreateResource(Post, { optimistic: true })
-    piniaLocalStorageState.mockLatencyMs = 250
+    piniaLocalStorageState.mockLatencyMs = 50
 
     postCreator.create({ title: 'solid title!' }) // intentionally not awaited
 
@@ -212,7 +212,7 @@ describe('useCreateResource', () => {
   it('rolls back if the create fails when using optimistic', async () => {
     const postsRepo = useRepo(Post)
     const postCreator = useCreateResource(Post, { optimistic: true })
-    piniaLocalStorageState.mockLatencyMs = 250
+    piniaLocalStorageState.mockLatencyMs = 50
     piniaLocalStorageState.mockStandardErrors = [
       { name: 'thingy-messup', message: 'The thingy messed up' },
     ]
@@ -234,13 +234,13 @@ describe('useCreateResource', () => {
   it('can rollback correctly when creating two records at the same time', async () => {
     const postsRepo = useRepo(Post)
     const postCreator = useCreateResource(Post, { optimistic: true })
-    piniaLocalStorageState.mockLatencyMs = 300
+    piniaLocalStorageState.mockLatencyMs = 150
     piniaLocalStorageState.mockStandardErrors = [
       { name: 'thingy-messup', message: 'The thingy messed up' },
     ]
 
     const createPromise1 = postCreator.create({ title: 'promise 1' }) // intentionally not awaited
-    await wait(150)
+    await wait(50)
     const createPromise2 = postCreator.create({ title: 'promise 2' }) // intentionally not awaited
 
     // Assumes success for both
@@ -257,10 +257,10 @@ describe('useCreateResource', () => {
 
   it('deletes an active request on success', async () => {
     const postCreator = useCreateResource(Post)
-    piniaLocalStorageState.mockLatencyMs = 300
+    piniaLocalStorageState.mockLatencyMs = 150
 
     const createPromise1 = postCreator.create({ title: 'promise 1' }) // intentionally not awaited
-    await wait(150)
+    await wait(50)
     const createPromise2 = postCreator.create({ title: 'promise 2' }) // intentionally not awaited
 
     expect(Object.entries(postCreator.activeRequests.value).length).toEqual(2)
@@ -274,13 +274,13 @@ describe('useCreateResource', () => {
 
   it('deletes an active request on error', async () => {
     const postCreator = useCreateResource(Post)
-    piniaLocalStorageState.mockLatencyMs = 300
+    piniaLocalStorageState.mockLatencyMs = 150
     piniaLocalStorageState.mockStandardErrors = [
       { name: 'thingy-messup', message: 'The thingy messed up' },
     ]
 
     const createPromise1 = postCreator.create({ title: 'promise 1' }) // intentionally not awaited
-    await wait(150)
+    await wait(50)
     const createPromise2 = postCreator.create({ title: 'promise 2' }) // intentionally not awaited
 
     // Assumes success for both
@@ -310,5 +310,25 @@ describe('useCreateResource', () => {
 
     expect(postCreator.response.value.action)
       .toEqual('create')
+  })
+
+  it('hits the "onSuccess" callback on success', async () => {
+    //
+  })
+
+  it('hits the "onError" callback when there is a standard error', async () => {
+    //
+  })
+
+  it('hits the "onError" callback when there is a validation error', async () => {
+    //
+  })
+
+  it('hits the "onStandardError" callback when there are one or more standard errors', async () => {
+    //
+  })
+
+  it('hits the "onValidationError" callback when there are one or more validation errors', async () => {
+    //
   })
 })

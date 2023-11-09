@@ -1,7 +1,0 @@
-export function useRemoveResource() {
-   
-
-  return {
-    // 
-  }
-}

@@ -9,6 +9,7 @@ import { StandardErrors } from '../contracts/errors/StandardErrors'
 import { pick } from '../utils/pick'
 import { v4 as uuidV4 } from 'uuid'
 import { Constructor } from '../types/Constructor'
+import { getMergedDriverConfig } from '../utils/getMergedDriverConfig'
 
 const defaultOptions = {
   persist: true,
@@ -21,7 +22,11 @@ export function useCreateResourceImplementation<T extends typeof Model> (
   options = Object.assign({}, defaultOptions, options)
   const createResource = getImplementation<T, 'createResource'>('createResource', options.driver)
 
-  const repo = useRepo<InstanceType<T>>(EntityClass as unknown as Constructor<InstanceType<T>>)
+  const driverConfig = getMergedDriverConfig(options.driver)
+  const repo = useRepo<InstanceType<T>>(
+    EntityClass as unknown as Constructor<InstanceType<T>>,
+    driverConfig.pinia,
+  )
 
   const form = ref(options.form ?? {}) as Ref<PiniaOrmForm<InstanceType<T>>>
 
@@ -88,8 +93,12 @@ export function useCreateResourceImplementation<T extends typeof Model> (
       mergedForm.id = requestId
     }
 
+    let thisOptimisticRecord: InstanceType<T> | undefined
     if (optimistic && persist) {
-      optimisticRecord.value = repo.insert(mergedForm)
+      thisOptimisticRecord = repo.insert(mergedForm)
+      optimisticRecord.value = thisOptimisticRecord
+    } else {
+      thisOptimisticRecord = undefined
     }
 
     creating.value = true
@@ -115,12 +124,10 @@ export function useCreateResourceImplementation<T extends typeof Model> (
     }
 
     // On Error
-    const optimisticRecordResolved = toValue(optimisticRecord)
     if (
       !thisResponse?.success
     ) {
-      if (optimistic &&
-        optimisticRecordResolved) {
+      if (optimistic && thisOptimisticRecord) {
         repo.destroy(requestId)
       }
     }

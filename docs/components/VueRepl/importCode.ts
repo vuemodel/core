@@ -1,0 +1,6 @@
+import { createVueModel, createResource, findResource } from '@vuemodel/core'
+import { Quasar } from 'quasar'
+import { createPinia } from 'pinia'
+import { piniaLocalStorageState, createPiniaLocalStorage, piniaLocalVueModelDriver } from '@vuemodel/pinia-local-storage'
+import { createORM, useRepo } from 'pinia-orm'
+import { exampleDataMap } from '@vuemodel/sample-data'

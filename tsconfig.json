@@ -29,11 +29,14 @@
   },
   "include": [
     "*.ts",
+    "docs",
     "packages",
     "packages/.vitepress/components/*.vue",
     "packages/.vitepress/*.ts",
     "meta",
-    "vitest.config.ts"
+    "vitest.config.ts",
+    "public/vue-dev-proxy.ts",
+    "docs/components/ExamplePanel.vue.ts"
   ],
   "exclude": [
     "unocss.config.ts",

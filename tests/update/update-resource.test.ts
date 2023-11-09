@@ -1,12 +1,13 @@
 import { describe, beforeEach, it, expect, vi } from 'vitest'
 import { createVueModel, updateResource, vueModelState } from '@vuemodel/core'
 import { createPiniaLocalStorage, piniaLocalVueModelDriver } from '@vuemodel/pinia-local-storage'
-import { Post, User } from 'sample-data'
-import { clear as clearStorage } from 'localforage'
+import { Post, User } from '@vuemodel/sample-data'
+import { clear as clearStorage } from 'idb-keyval'
 import { populateRecords } from '../helpers/populateRecords'
-import { piniaLocalStorageState } from '@vuemodel/pinia-local-storage/src/plugin/state'
+import { piniaLocalStorageState } from '@vuemodel/pinia-local-storage'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import "fake-indexeddb/auto"
 
 describe('updateResource', () => {
   beforeEach(() => {
