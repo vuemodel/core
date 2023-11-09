@@ -6,7 +6,7 @@ import { ComputedRef, MaybeRefOrGetter, Ref } from 'vue'
 import { DeclassifyPiniaOrmModel } from 'pinia-orm-helpers'
 import { StandardErrors } from '../../errors/StandardErrors'
 import { IndexResourcesIncludes } from './IndexResourcesIncludes'
-import { IndexResponse } from 'src/types/ResourceResponse'
+import { IndexResponse } from '../../../types/ResourceResponse'
 
 export interface UseIndexResourcesOptions<T extends typeof Model> {
   /**
