@@ -198,13 +198,13 @@ importers:
         specifier: ^4.3.4
         version: 4.4.1(vite@4.5.0)(vue@3.3.8)
       '@vuemodel/core':
-        specifier: workspace:^
+        specifier: ^0.0.4
         version: link:../packages/core
       '@vuemodel/pinia-local-storage':
-        specifier: workspace:^
+        specifier: ^0.0.8
         version: link:../packages/pinia-local-storage
       '@vuemodel/sample-data':
-        specifier: workspace:^
+        specifier: ^0.0.2
         version: link:../sample-data
       eslint:
         specifier: ^8.51.0
