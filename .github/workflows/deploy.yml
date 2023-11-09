@@ -48,6 +48,7 @@ jobs:
         run: |
           pnpm core:build
           pnpm pinia-local-storage:build
+          pnpm sample-data:build
       - name: Build with VitePress
         run: |
           pnpm docs:build

@@ -5,7 +5,8 @@
 		"docs:build": "vitepress build docs",
 		"docs:preview": "vitepress preview docs",
 		"core:build": "cd packages/core && pnpm build",
-		"pinia-local-storage:build": "cd packages/pinia-local-storage && pnpm build"
+		"pinia-local-storage:build": "cd packages/pinia-local-storage && pnpm build",
+		"sample-data:build": "cd sample-data && pnpm build"
 	},
 	"devDependencies": {
 		"@quasar/extras": "^1.16.7",
