@@ -27,6 +27,7 @@
 		"@quasar/extras": "^1.16.7",
 		"@vue/repl": "^2.6.3",
 		"@vueuse/core": "^10.5.0",
+		"change-case": "^5.1.2",
 		"fake-indexeddb": "^5.0.1",
 		"pinia": "^2.1.6",
 		"pinia-orm": "^1.7.2",
