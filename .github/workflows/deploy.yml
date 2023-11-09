@@ -47,7 +47,7 @@ jobs:
       - name: Build Core
         run: |
           pnpm core:build
-          pnpm pinia-orm-local:build
+          pnpm pinia-local-storage:build
       - name: Build with VitePress
         run: |
           pnpm docs:build
