@@ -1,8 +1,7 @@
 import { describe, beforeEach, it, expect } from 'vitest'
 import { baseSetup } from '../baseSetup'
-import { populateRecords } from '../helpers/populateRecords'
 import { useIndexResources } from '@vuemodel/core'
-import { User } from '@vuemodel/sample-data'
+import { User, populateRecords } from '@vuemodel/sample-data'
 import { useRepo } from 'pinia-orm'
 
 describe('useUpdateResource', () => {

@@ -41,9 +41,5 @@ export default {
     ctx.app.component('ExamplePanel', ExamplePanel)
 
     ctx.app.use(Quasar, {}, { req: { headers: {} } });
-
-    // populateRecords('users')
-    // populateRecords('comments')
-    // populateRecords('posts')
   }
 }

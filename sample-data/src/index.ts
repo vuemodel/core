@@ -1,12 +1,10 @@
-import { ModelEntity } from './ModelEntity'
-
 // Sample data from https://jsonplaceholder.typicode.com/
 import { users, User } from './users'
 import { albums, Album } from './albums'
 import { comments, Comment } from './comments'
 import { photos, Photo } from './photos'
 import { posts, Post } from './posts'
-import { PiniaOrmForm } from 'pinia-orm-helpers'
+import { populateRecords } from '../helpers/populateRecords'
 
 export {
   users,
@@ -19,27 +17,29 @@ export {
   Photo,
   posts,
   Post,
+  // helpers
+  populateRecords,
 }
 
 export const exampleDataMap = {
   albums: {
     modelClass: Album,
-    records: albums
+    records: albums,
   },
   comments: {
     modelClass: Comment,
-    records: comments
+    records: comments,
   },
   photos: {
     modelClass: Photo,
-    records: photos
+    records: photos,
   },
   posts: {
     modelClass: Post,
-    records: posts
+    records: posts,
   },
   users: {
     modelClass: User,
-    records: users
+    records: users,
   },
 }

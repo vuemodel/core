@@ -1,10 +1,9 @@
 import { describe, beforeEach, it, expect, vi } from 'vitest'
 import { indexResources, removeResource, vueModelState } from '@vuemodel/core'
-import { Post } from '@vuemodel/sample-data'
-import { populateRecords } from '../helpers/populateRecords'
+import { Post, populateRecords } from '@vuemodel/sample-data'
 import { piniaLocalStorageState } from '@vuemodel/pinia-local-storage'
 import { baseSetup } from '../baseSetup'
-import "fake-indexeddb/auto"
+import 'fake-indexeddb/auto'
 
 describe('removeResource', () => {
   beforeEach(async () => {

@@ -1,8 +1,7 @@
 import { describe, beforeEach, it, expect, vi } from 'vitest'
 import { useIndexResources } from '@vuemodel/core'
 import { piniaLocalStorageState } from '@vuemodel/pinia-local-storage'
-import { Post, User } from '@vuemodel/sample-data'
-import { populateRecords } from '../helpers/populateRecords'
+import { Post, User, populateRecords } from '@vuemodel/sample-data'
 import { useRepo } from 'pinia-orm'
 import { baseSetup } from '../baseSetup'
 
