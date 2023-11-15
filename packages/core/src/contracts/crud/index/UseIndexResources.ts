@@ -2,11 +2,13 @@ import { Model, Query } from 'pinia-orm'
 import { IndexResourcesFilters } from './IndexResourcesFilters'
 import { SortBy } from './IndexResourcesSorts'
 import { QueryValidationErrors } from '../../errors/QueryValidationErrors'
-import { ComputedRef, MaybeRefOrGetter, Ref } from 'vue'
+import { ComputedRef, MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
 import { DeclassifyPiniaOrmModel } from 'pinia-orm-helpers'
 import { StandardErrors } from '../../errors/StandardErrors'
 import { IndexResourcesIncludes } from './IndexResourcesIncludes'
 import { IndexResponse } from '../../../types/ResourceResponse'
+import { PaginationDetails } from './PaginationDetails'
+import { IndexScopes } from './IndexScopes'
 
 export interface UseIndexResourcesOptions<T extends typeof Model> {
   /**
@@ -18,11 +20,6 @@ export interface UseIndexResourcesOptions<T extends typeof Model> {
    * Sort resources by 'ascending' or 'descending' order
    */
   sortBy?: MaybeRefOrGetter<SortBy<T>>
-
-  /**
-   * Request a specific limit of resources to return
-   */
-  limit?: MaybeRefOrGetter<number>
 
   /**
    * Related data to be included in this request
@@ -101,13 +98,36 @@ export interface UseIndexResourcesOptions<T extends typeof Model> {
    * })
    */
   driver?: string
+
+  /**
+   * For working with more than one page of data
+   *
+   * @example
+   *
+   * {
+   *   currentPage: 1,
+   *   recordsPerPage: 3
+   * }
+   */
+  pagination?: MaybeRef<Pick<PaginationDetails, 'currentPage' | 'recordsPerPage'>>
+
+  /**
+   * Immediately paginate (make another request) when either `pagination.value.currentPage`
+   * or `pagination.value.recordsPerPage` is changed.
+   */
+  immediatelyPaginate?: MaybeRefOrGetter<boolean>
+
+  scopes?: MaybeRefOrGetter<IndexScopes>
+
+  withoutGlobalScopes?: MaybeRefOrGetter<string[]>
+  withoutEntityGlobalScopes?: MaybeRefOrGetter<string[]>
 }
 
 export interface UseIndexResourcesReturn<T extends typeof Model> {
   /**
    * Perform the `index` request
    */
-  index: () => Promise<void>
+  index: (options?: { page?: number, recordsPerPage?: number }) => Promise<void>
 
   /**
    * Validation errors recieved from the latest request
@@ -166,6 +186,19 @@ export interface UseIndexResourcesReturn<T extends typeof Model> {
    *  .first()
    */
   makeQuery(): Query<InstanceType<T>>
+
+  /**
+   * For working with more than one page of data
+   */
+  pagination: Ref<PaginationDetails>
+
+  next: () => void
+  previous: () => void
+  toPage: (pageNumber: number) => void
+  toFirstPage: () => void
+  toLastPage: () => void
+  isFirstPage: ComputedRef<boolean | undefined>
+  isLastPage: ComputedRef<boolean | undefined>
 }
 
 export type UseIndexResources<T extends typeof Model> = (

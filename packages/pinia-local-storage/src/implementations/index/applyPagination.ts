@@ -5,6 +5,8 @@ export function applyPagination (
   query: Query,
   pagination: IndexResourcesPagination,
 ) {
+  if (!pagination.recordsPerPage) return
+
   query.limit(pagination.recordsPerPage)
 
   if (pagination.page) {

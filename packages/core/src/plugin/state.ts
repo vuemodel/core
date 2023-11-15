@@ -4,6 +4,7 @@ import { FormValidationErrors } from '../contracts/errors/FormValidationErrors'
 import { Model } from 'pinia-orm'
 import { NotifyOnErrorOptions } from '../types/NotifyOnErrorOptions'
 import { Pinia } from 'pinia'
+import { ObjectQueryScope } from '../types/ObjectQueryScope'
 
 export type ErrorNotifyErrors = {
   standardErrors: StandardErrors
@@ -15,10 +16,20 @@ export type NotifyErrorsWithValidation = {
 export type ErrorNotifier = (options: { model: typeof Model, errors: ErrorNotifyErrors }) => void
 export type ErrorNotifierWithValidation = (options: { model: typeof Model, errors: NotifyErrorsWithValidation }) => void
 
+export type PluginScope = string | { name: string, paramaters: Record<string, any> | (() => Record<string, any>) }
+export type PluginScopeConfig = ObjectQueryScope |
+((
+  context?: { entity: string, driver: string },
+  payload?: any
+) => ObjectQueryScope)
+
 export type VueModelConfig = {
   pinia?: Pinia
   notifyOnError?: NotifyOnErrorOptions | undefined
   autoUpdateDebounce?: number
+  pagination?: {
+    recordsPerPage?: number
+  }
   errorNotifiers?: {
     create?: ErrorNotifierWithValidation
     update?: ErrorNotifierWithValidation
@@ -26,6 +37,10 @@ export type VueModelConfig = {
     remove?: ErrorNotifier
     find?: ErrorNotifierWithValidation
   }
+  scopes?: Record<string, PluginScopeConfig>
+  entityScopes?: Record<string, Record<string, PluginScopeConfig>>
+  globallyAppliedScopes?: PluginScope[]
+  globallyAppliedEntityScopes?: Record<string, PluginScope[]>
 }
 
 export interface VueModelState {

@@ -39,9 +39,9 @@ export const whereFunctions: Record<string, WhereFunction> = {
     return between(fieldsValue, passedValue)
   },
   startsWith: (fieldsValue: string, passedValue: string | number) => {
-    return fieldsValue.startsWith(String(passedValue))
+    return fieldsValue?.startsWith(String(passedValue))
   },
   endsWith: (fieldsValue: string, passedValue: string | number) => {
-    return fieldsValue.endsWith(String(passedValue))
+    return fieldsValue?.endsWith(String(passedValue))
   },
 }

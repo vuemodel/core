@@ -27,10 +27,10 @@ export async function indexResources<T extends typeof Model> (
   if (mockErrorResponse !== false) return mockErrorResponse
 
   await wait(piniaLocalStorageState.mockLatencyMs ?? 0)
-
   const repo = useRepo(EntityClass, piniaLocalStorageState.store)
 
   await ensureModelRecordsInStore(EntityClass, options?.includes ?? {})
+  const recordsCount = repo.all().length
 
   const query = repo.query()
 
@@ -41,12 +41,44 @@ export async function indexResources<T extends typeof Model> (
 
   const data = query.get() as unknown as DeclassifyPiniaOrmModel<InstanceType<T>>[]
 
+  const recordsPerPage = options.pagination?.recordsPerPage
+  const currentPage = options.pagination?.page
+  const pagesCount = recordsPerPage ? Math.ceil(recordsCount / recordsPerPage) : undefined
+
+  if (currentPage && pagesCount && (currentPage > pagesCount)) {
+    return {
+      action: 'index',
+      success: false,
+      standardErrors: [{ name: 'beyond last page', message: `cannot navigate beyond the last page: "${currentPage}/${pagesCount}"` }],
+      validationErrors: {},
+      records: undefined,
+      pagination: undefined,
+    }
+  }
+
+  if (typeof currentPage === 'number' && currentPage < 1) {
+    return {
+      action: 'index',
+      success: false,
+      standardErrors: [{ name: 'before first page', message: `cannot navigate before the first page: "${currentPage}/${pagesCount}"` }],
+      validationErrors: {},
+      records: undefined,
+      pagination: undefined,
+    }
+  }
+
   const result: IndexResponse<T> = {
     records: data,
     success: true,
     standardErrors: undefined,
     validationErrors: undefined,
     action: 'index',
+    pagination: {
+      recordsPerPage,
+      currentPage,
+      recordsCount,
+      pagesCount,
+    },
   }
 
   repo.flush()

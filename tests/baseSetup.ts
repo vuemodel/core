@@ -1,4 +1,4 @@
-import { createVueModel } from '@vuemodel/core'
+import { createVueModel, vueModelState } from '@vuemodel/core'
 import { createPinia } from 'pinia'
 import { createApp } from 'vue'
 import { piniaLocalStorageState, createPiniaLocalStorage, piniaLocalVueModelDriver } from '@vuemodel/pinia-local-storage'
@@ -57,4 +57,14 @@ export async function baseSetup () {
   backRepoPhoto.flush()
   backRepoPost.flush()
   backRepoAlbum.flush()
+
+  vueModelState.config.pagination = {}
+  vueModelState.drivers.local.config.pagination = {}
+  vueModelState.drivers.local.config.scopes = {}
+  vueModelState.config.globallyAppliedScopes = undefined
+  vueModelState.config.globallyAppliedEntityScopes = undefined
+  vueModelState.drivers.local.config.globallyAppliedScopes = undefined
+  vueModelState.drivers.local.config.globallyAppliedEntityScopes = undefined
+  vueModelState.config.scopes = undefined
+  vueModelState.config.entityScopes = undefined
 }

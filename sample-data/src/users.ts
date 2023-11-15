@@ -10,6 +10,7 @@ export class User extends Model {
   @Uid() declare id: string
 
   @Attr() declare name: string
+  @Attr() declare tenant_id: string
   @Attr() declare username: string
   @Attr() declare email: string
   @Attr() declare phone: string
@@ -24,6 +25,7 @@ export class User extends Model {
 export const users: PiniaOrmForm<User>[] = [
   {
     id: '1',
+    tenant_id: '1',
     name: 'Leanne Graham',
     username: 'Bret',
     email: 'Sincere@april.biz',
@@ -33,6 +35,7 @@ export const users: PiniaOrmForm<User>[] = [
   },
   {
     id: '2',
+    tenant_id: '1',
     name: 'Ervin Howell',
     username: 'Antonette',
     email: 'Shanna@melissa.tv',
@@ -42,6 +45,7 @@ export const users: PiniaOrmForm<User>[] = [
   },
   {
     id: '3',
+    tenant_id: '2',
     name: 'Clementine Bauch',
     username: 'Samantha',
     email: 'Nathan@yesenia.net',
@@ -51,6 +55,7 @@ export const users: PiniaOrmForm<User>[] = [
   },
   {
     id: '4',
+    tenant_id: '2',
     name: 'Patricia Lebsack',
     username: 'Karianne',
     email: 'Julianne.OConner@kory.org',
@@ -60,6 +65,7 @@ export const users: PiniaOrmForm<User>[] = [
   },
   {
     id: '5',
+    tenant_id: '2',
     name: 'Chelsey Dietrich',
     username: 'Kamren',
     email: 'Lucio_Hettinger@annie.ca',
@@ -69,6 +75,7 @@ export const users: PiniaOrmForm<User>[] = [
   },
   {
     id: '6',
+    tenant_id: '2',
     name: 'Mrs. Dennis Schulist',
     username: 'Leopoldo_Corkery',
     email: 'Karley_Dach@jasper.info',
@@ -78,6 +85,7 @@ export const users: PiniaOrmForm<User>[] = [
   },
   {
     id: '7',
+    tenant_id: '3',
     name: 'Kurtis Weissnat',
     username: 'Elwyn.Skiles',
     email: 'Telly.Hoeger@billy.biz',
@@ -87,6 +95,7 @@ export const users: PiniaOrmForm<User>[] = [
   },
   {
     id: '8',
+    tenant_id: '3',
     name: 'Nicholas Runolfsdottir V',
     username: 'Maxime_Nienow',
     email: 'Sherwood@rosamond.me',
@@ -96,6 +105,7 @@ export const users: PiniaOrmForm<User>[] = [
   },
   {
     id: '9',
+    tenant_id: '3',
     name: 'Glenna Reichert',
     username: 'Delphine',
     email: 'Chaim_McDermott@dana.io',
@@ -105,6 +115,7 @@ export const users: PiniaOrmForm<User>[] = [
   },
   {
     id: '10',
+    tenant_id: '3',
     name: 'Clementina DuBuque',
     username: 'Moriah.Stanton',
     email: 'Rey.Padberg@karina.biz',
