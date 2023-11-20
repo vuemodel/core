@@ -1,5 +1,5 @@
 export interface PaginationDetails {
-  currentPage?: number
+  page?: number
   recordsPerPage?: number
   recordsCount?: number
   pagesCount?: number

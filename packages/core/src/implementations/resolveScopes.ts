@@ -1,7 +1,7 @@
 import { Model } from 'pinia-orm'
-import { UseIndexResourcesOptions } from '../contracts/crud/index/UseIndexResources'
-import { PluginScope, PluginScopeConfig, vueModelState } from '../plugin/state'
-import deepmerge from 'deepmerge'
+import { UseIndexerOptions } from '../contracts/crud/index/UseIndexer'
+import { PluginScope, vueModelState } from '../plugin/state'
+import { deepmerge } from 'deepmerge-ts'
 import { ObjectQueryScope } from '../types/ObjectQueryScope'
 import { toValue } from 'vue'
 import { difference } from '../utils/difference'
@@ -27,15 +27,16 @@ export function resolveScope (
 }
 
 export function resolveScopes (
-  driver: string,
+  driver: string | (() => string),
   entity: string,
-  scopesToUse: UseIndexResourcesOptions<typeof Model>['scopes'],
+  scopesToUse: UseIndexerOptions<typeof Model>['scopes'],
   options?: {
-    withoutGlobalScopes: UseIndexResourcesOptions<typeof Model>['withoutGlobalScopes'],
-    withoutEntityGlobalScopes: UseIndexResourcesOptions<typeof Model>['withoutEntityGlobalScopes']
+    withoutGlobalScopes: UseIndexerOptions<typeof Model>['withoutGlobalScopes'],
+    withoutEntityGlobalScopes: UseIndexerOptions<typeof Model>['withoutEntityGlobalScopes']
   },
 ): ObjectQueryScope {
   const scopesToUseResolved = toValue(scopesToUse)
+  const driverResolved = toValue(driver)
 
   const resolvedScopesToUse: PluginScope[] = []
   if (Array.isArray(scopesToUseResolved)) {
@@ -50,15 +51,15 @@ export function resolveScopes (
 
   const globalScopes = vueModelState.config?.scopes ?? {}
   const entityScopes = vueModelState.config?.entityScopes?.[entity] ?? {}
-  const driverGlobalScopes = vueModelState.drivers[driver].config?.scopes ?? {}
-  const driverEntityScopes = vueModelState.drivers[driver].config?.entityScopes?.[entity] ?? {}
+  const driverGlobalScopes = vueModelState.drivers[driverResolved].config?.scopes ?? {}
+  const driverEntityScopes = vueModelState.drivers[driverResolved].config?.entityScopes?.[entity] ?? {}
 
-  const configuredScopes = deepmerge.all<Record<string, PluginScopeConfig>>([globalScopes, entityScopes, driverGlobalScopes, driverEntityScopes])
+  const configuredScopes = deepmerge(globalScopes, entityScopes, driverGlobalScopes, driverEntityScopes)
 
   let appliedGlobalScopes = vueModelState.config?.globallyAppliedScopes ?? []
   let appliedEntityScopes = vueModelState.config?.globallyAppliedEntityScopes?.[entity] ?? []
-  let appliedDriversGlobalScopes = vueModelState.drivers[driver].config?.globallyAppliedScopes ?? []
-  let appliedDriversEntityScopes = vueModelState.drivers[driver].config?.globallyAppliedEntityScopes?.[entity] ?? []
+  let appliedDriversGlobalScopes = vueModelState.drivers[driverResolved].config?.globallyAppliedScopes ?? []
+  let appliedDriversEntityScopes = vueModelState.drivers[driverResolved].config?.globallyAppliedEntityScopes?.[entity] ?? []
 
   if (options?.withoutGlobalScopes) {
     appliedGlobalScopes = difference(appliedGlobalScopes, toValue(options.withoutGlobalScopes))
@@ -82,7 +83,7 @@ export function resolveScopes (
     if (typeof scope === 'string') {
       const configuredScope = configuredScopes[scope]
       if (typeof configuredScope === 'function') {
-        return configuredScope({ entity, driver })
+        return configuredScope({ entity, driver: driverResolved })
       } else {
         return configuredScope
       }
@@ -90,7 +91,7 @@ export function resolveScopes (
       const configuredScope = configuredScopes[scope.name]
       if (typeof configuredScope === 'function') {
         const paramatersResolved = typeof scope.paramaters === 'function' ? scope.paramaters() : scope.paramaters
-        return configuredScope({ entity, driver }, paramatersResolved ?? undefined)
+        return configuredScope({ entity, driver: driverResolved }, paramatersResolved ?? undefined)
       } else {
         return configuredScope
       }
@@ -99,11 +100,11 @@ export function resolveScopes (
     throw new Error('could not resolve scope')
   })
 
-  const result = deepmerge.all<ObjectQueryScope>(resolvedScopes)
+  const result = (deepmerge(...resolvedScopes) ?? {}) as unknown as ObjectQueryScope
 
   return {
     filters: result.filters ?? {},
-    sortBy: result.sortBy ?? [],
-    includes: result.includes ?? {},
+    orderBy: result.orderBy ?? [],
+    with: result.with ?? {},
   }
 }

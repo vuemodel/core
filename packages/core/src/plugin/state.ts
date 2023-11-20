@@ -5,6 +5,7 @@ import { Model } from 'pinia-orm'
 import { NotifyOnErrorOptions } from '../types/NotifyOnErrorOptions'
 import { Pinia } from 'pinia'
 import { ObjectQueryScope } from '../types/ObjectQueryScope'
+import { Response } from '../types/Response'
 
 export type ErrorNotifyErrors = {
   standardErrors: StandardErrors
@@ -26,7 +27,7 @@ export type PluginScopeConfig = ObjectQueryScope |
 export type VueModelConfig = {
   pinia?: Pinia
   notifyOnError?: NotifyOnErrorOptions | undefined
-  autoUpdateDebounce?: number
+  autoUpdateDebounce?: number | (() => number)
   pagination?: {
     recordsPerPage?: number
   }
@@ -34,20 +35,21 @@ export type VueModelConfig = {
     create?: ErrorNotifierWithValidation
     update?: ErrorNotifierWithValidation
     index?: ErrorNotifierWithValidation
-    remove?: ErrorNotifier
+    destroy?: ErrorNotifier
     find?: ErrorNotifierWithValidation
   }
   scopes?: Record<string, PluginScopeConfig>
   entityScopes?: Record<string, Record<string, PluginScopeConfig>>
   globallyAppliedScopes?: PluginScope[]
   globallyAppliedEntityScopes?: Record<string, PluginScope[]>
+  throw?: boolean | ((response: Response<typeof Model> | undefined, driver: string) => boolean)
 }
 
 export interface VueModelState {
   /**
    * The default implementation to be used
    */
-  default?: string
+  default?: string | (() => string)
 
   /**
    * Drivers that implement the `VueModelDriver` contract

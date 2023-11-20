@@ -4,6 +4,8 @@ import { albums, Album } from './albums'
 import { comments, Comment } from './comments'
 import { photos, Photo } from './photos'
 import { posts, Post } from './posts'
+import { PhotoTag, photoTags } from './photoTags'
+import { DataverseUser, dataverseUsers } from './dataverseUsers'
 import { populateRecords } from '../helpers/populateRecords'
 
 export {
@@ -17,6 +19,10 @@ export {
   Photo,
   posts,
   Post,
+  PhotoTag,
+  photoTags,
+  DataverseUser,
+  dataverseUsers,
   // helpers
   populateRecords,
 }
@@ -41,5 +47,13 @@ export const exampleDataMap = {
   users: {
     modelClass: User,
     records: users,
+  },
+  photo_tags: {
+    modelClass: PhotoTag,
+    records: photoTags,
+  },
+  dataverse_users: {
+    modelClass: DataverseUser,
+    records: dataverseUsers,
   },
 }

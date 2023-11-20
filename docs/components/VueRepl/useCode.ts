@@ -9,7 +9,12 @@ const piniaLocalStorage = createPiniaLocalStorage({
 })
 const vueModel = createVueModel({
   default: 'local',
-  drivers: { local: { ...piniaLocalVueModelDriver, config: { pinia: piniaFront } } },
+  drivers: {
+    local: {
+      implementation: piniaLocalVueModelDriver,
+      config: { pinia: piniaFront },
+    },
+  },
 })
 
 app.use(piniaFront)

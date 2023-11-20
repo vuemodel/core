@@ -8,15 +8,8 @@
     "build": "tsup src/index.ts --clean --format esm,cjs --dts",
     "release": "pnpm build && bumpp --tag '@vuemodel/sample-data@v%s' && pnpm publish"
   },
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    }
-  },
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
   "types": "./dist/index.d.ts",
   "files": [
     "dist"

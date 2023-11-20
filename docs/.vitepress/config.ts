@@ -44,6 +44,9 @@ export default defineConfig({
   head: [['script', { src: 'https://cdn.jsdelivr.net/npm/shiki' }]],
   themeConfig: {
     outline: [2,3],
+    search: {
+      provider: 'local'
+    },
     sidebar: [
       {
         text: 'Actions',

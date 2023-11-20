@@ -100,6 +100,8 @@ module.exports = {
 
     'no-eval': 'warn',
 
+    'no-async-promise-executor': 'off',
+
     // to prevent false positives in diffs
     'comma-dangle': ['error', 'always-multiline'],
     // enforcing code style in the vue docs

@@ -1,7 +1,7 @@
 export interface NotifyOnErrorOptions {
   create?: boolean
   update?: boolean
-  remove?: boolean
+  destroy?: boolean
   find?: boolean
   index?: boolean
 }

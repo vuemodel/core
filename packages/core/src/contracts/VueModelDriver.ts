@@ -1,31 +1,31 @@
 import { Model } from 'pinia-orm'
-import { IndexResources } from './crud/index/IndexResources'
-import { UseIndexResources } from './crud/index/UseIndexResources'
-import { CreateResource } from './crud/create/CreateResource'
-import { UseCreateResource } from './crud/create/UseCreateResource'
-import { UpdateResource } from './crud/update/UpdateResource'
-import { FindResource } from './crud/find/FindResource'
-import { RemoveResource } from './crud/remove/RemoveResource'
-import { UseUpdateResource } from './crud/update/UseUpdateResource'
-import { UseFindResource } from './crud/find/UseFindResource'
-import { UseRemoveResource } from './crud/remove/UseRemoveResource'
+import { Index } from './crud/index/Index'
+import { UseIndexer } from './crud/index/UseIndexer'
+import { Create } from './crud/create/Create'
+import { UseCreator } from './crud/create/UseCreator'
+import { Update } from './crud/update/Update'
+import { Find } from './crud/find/Find'
+import { Destroy } from './crud/destroy/Destroy'
+import { UseUpdater } from './crud/update/UseUpdater'
+import { UseFinder } from './crud/find/UseFinder'
+import { UseDestroyer } from './crud/destroy/UseDestroyer'
 import { VueModelConfig } from '../plugin/state'
 
 export interface VueModelDriverImplementation<T extends typeof Model> {
-  createResource: CreateResource<T>
-  useCreateResource: UseCreateResource<T>
+  create: Create<T>
+  useCreator: UseCreator<T>
 
-  indexResources: IndexResources<T>
-  useIndexResources: UseIndexResources<T>
+  index: Index<T>
+  useIndexer: UseIndexer<T>
 
-  updateResource: UpdateResource<T>
-  useUpdateResource: UseUpdateResource<T>
+  update: Update<T>
+  useUpdater: UseUpdater<T>
 
-  findResource: FindResource<T>
-  useFindResource: UseFindResource<T>
+  find: Find<T>
+  useFinder: UseFinder<T>
 
-  removeResource: RemoveResource<T>
-  useRemoveResource: UseRemoveResource<T>
+  destroy: Destroy<T>
+  useDestroyer: UseDestroyer<T>
 }
 
 /**
@@ -33,4 +33,5 @@ export interface VueModelDriverImplementation<T extends typeof Model> {
  */
 export type VueModelDriver<T extends typeof Model = typeof Model> = {
   config?: VueModelConfig
-} & VueModelDriverImplementation<T>
+  implementation: VueModelDriverImplementation<T>
+}

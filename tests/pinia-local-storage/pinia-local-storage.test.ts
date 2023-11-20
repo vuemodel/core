@@ -1,17 +1,17 @@
 import { describe, beforeEach, it, expect } from 'vitest'
 import { baseSetup } from '../baseSetup'
-import { useIndexResources } from '@vuemodel/core'
+import { useIndexer } from '@vuemodel/core'
 import { User, populateRecords } from '@vuemodel/sample-data'
 import { useRepo } from 'pinia-orm'
 
-describe('useUpdateResource', () => {
+describe('useUpdater', () => {
   beforeEach(async () => {
     await baseSetup()
   })
 
-  it.only('isolates the backend store from the frontend store', async () => {
+  it('isolates the backend store from the frontend store', async () => {
     await populateRecords('users', 2)
-    await useIndexResources(User, { persist: false }).index()
+    await useIndexer(User, { persist: false }).index()
 
     expect(useRepo(User).all().length).toEqual(0)
   })

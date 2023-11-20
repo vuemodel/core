@@ -1,7 +1,7 @@
-export function difference<T> (target: any[], toRemove: any[]) {
-  const toRemoveSet = new Set(toRemove)
+export function difference<T> (target: any[], toDestroy: any[]) {
+  const toDestroySet = new Set(toDestroy)
 
-  const result = target.filter(x => !toRemoveSet.has(x))
+  const result = target.filter(x => !toDestroySet.has(x))
 
   return result as T[]
 }

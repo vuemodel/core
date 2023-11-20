@@ -80,7 +80,7 @@ importers:
         version: 2.0.0(typescript@5.2.2)
       vitepress:
         specifier: 1.0.0-rc.25
-        version: 1.0.0-rc.25(@algolia/client-search@4.20.0)(change-case@5.1.2)(search-insights@2.10.0)(typescript@5.2.2)
+        version: 1.0.0-rc.25(@algolia/client-search@4.20.0)(change-case@5.1.2)(idb-keyval@6.2.1)(search-insights@2.10.0)(typescript@5.2.2)
 
   demo:
     dependencies:
@@ -172,6 +172,9 @@ importers:
       fake-indexeddb:
         specifier: ^5.0.1
         version: 5.0.1
+      idb-keyval:
+        specifier: ^6.2.1
+        version: 6.2.1
       pinia:
         specifier: ^2.1.6
         version: 2.1.7(typescript@5.2.2)(vue@3.3.8)
@@ -232,7 +235,7 @@ importers:
         version: 3.3.2
       vitepress:
         specifier: 1.0.0-rc.25
-        version: 1.0.0-rc.25(@algolia/client-search@4.20.0)(change-case@5.1.2)(search-insights@2.10.0)(typescript@5.2.2)
+        version: 1.0.0-rc.25(@algolia/client-search@4.20.0)(change-case@5.1.2)(idb-keyval@6.2.1)(search-insights@2.10.0)(typescript@5.2.2)
 
   packages/core:
     dependencies:
@@ -1853,7 +1856,7 @@ packages:
       - vue
     dev: false
 
-  /@vueuse/integrations@10.5.0(change-case@5.1.2)(focus-trap@7.5.4)(vue@3.3.8):
+  /@vueuse/integrations@10.5.0(change-case@5.1.2)(focus-trap@7.5.4)(idb-keyval@6.2.1)(vue@3.3.8):
     resolution: {integrity: sha512-fm5sXLCK0Ww3rRnzqnCQRmfjDURaI4xMsx+T+cec0ngQqHx/JgUtm8G0vRjwtonIeTBsH1Q8L3SucE+7K7upJQ==}
     peerDependencies:
       async-validator: '*'
@@ -1898,6 +1901,7 @@ packages:
       '@vueuse/shared': 10.5.0(vue@3.3.8)
       change-case: 5.1.2
       focus-trap: 7.5.4
+      idb-keyval: 6.2.1
       vue-demi: 0.14.6(vue@3.3.8)
     transitivePeerDependencies:
       - '@vue/composition-api'
@@ -3403,7 +3407,6 @@ packages:
 
   /idb-keyval@6.2.1:
     resolution: {integrity: sha512-8Sb3veuYCyrZL+VBt9LJfZjLUPWVvqn8tG28VqYNFCo43KHcKuq+b4EiXGeuaLAQWL2YmyDgMp2aSpH9JHsEQg==}
-    dev: false
 
   /ignore@5.2.4:
     resolution: {integrity: sha512-MAb38BcSbH0eHNBxn7ql2NH/kX33OkB3lZ1BNdh7ENeRChHTYsTvWrMubiIAMNS2llXEEgZ1MUOBtXChP3kaFQ==}
@@ -5131,7 +5134,7 @@ packages:
     optionalDependencies:
       fsevents: 2.3.3
 
-  /vitepress@1.0.0-rc.25(@algolia/client-search@4.20.0)(change-case@5.1.2)(search-insights@2.10.0)(typescript@5.2.2):
+  /vitepress@1.0.0-rc.25(@algolia/client-search@4.20.0)(change-case@5.1.2)(idb-keyval@6.2.1)(search-insights@2.10.0)(typescript@5.2.2):
     resolution: {integrity: sha512-1dqWiHNThNrVZ08ixmfEDBEH+764KOgnev9oXga/x6cN++Vb9pnuu8p3K6DQP+KZrYcG+WiX7jxal0iSNpAWuQ==}
     hasBin: true
     peerDependencies:
@@ -5149,7 +5152,7 @@ packages:
       '@vitejs/plugin-vue': 4.3.1(vite@4.5.0)(vue@3.3.8)
       '@vue/devtools-api': 6.5.1
       '@vueuse/core': 10.5.0(vue@3.3.8)
-      '@vueuse/integrations': 10.5.0(change-case@5.1.2)(focus-trap@7.5.4)(vue@3.3.8)
+      '@vueuse/integrations': 10.5.0(change-case@5.1.2)(focus-trap@7.5.4)(idb-keyval@6.2.1)(vue@3.3.8)
       focus-trap: 7.5.4
       mark.js: 8.11.1
       minisearch: 6.2.0

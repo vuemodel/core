@@ -2,7 +2,7 @@ type RangeValue = string | number | Date;
 
 function isNumeric (str: string) {
   if (typeof str !== 'string') return false // we only process strings!
-  return !isNaN(str) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
+  return !isNaN(str as unknown as number) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
          !isNaN(parseFloat(str)) // ...and ensure strings of whitespace fail
 }
 
@@ -29,7 +29,7 @@ function toComparable (value: RangeValue, targetType?: 'string' | 'number' | 'da
     const date = new Date(value)
     if (!isNaN(date.getTime())) {
       if (targetType === 'number') return date.getTime()
-      if (targetType === 'date') return date
+      if (targetType === 'date') return date.toDateString()
       return value
     }
 
@@ -42,7 +42,7 @@ function toComparable (value: RangeValue, targetType?: 'string' | 'number' | 'da
 export function between (value: RangeValue, range: [RangeValue, RangeValue]): boolean {
   const originalType = typeof value
   const comparableValue = toComparable(value)
-  const valueType = (originalType === 'string' && typeof comparableValue === 'number') ? 'number' : typeof comparableValue
+  const valueType = ((originalType === 'string' && typeof comparableValue === 'number') ? 'number' : typeof comparableValue) as 'string' | 'number' | 'date'
   const comparableStart = toComparable(range[0], valueType)
   const comparableEnd = toComparable(range[1], valueType)
 

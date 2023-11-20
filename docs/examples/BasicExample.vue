@@ -1,22 +1,22 @@
 <script lang="ts" setup>
-import { Form, useCreateResource, useIndexResources } from '@vuemodel/core'
+import { Form, useCreator, useIndexer } from '@vuemodel/core'
 import { User, Post } from '@vuemodel/sample-data'
 import { ref } from 'vue'
 
-const userCreator = useCreateResource(User)
-const usersIndexer = useIndexResources(User, {
+const userCreator = useCreator(User)
+const usersIndexer = useIndexer(User, {
   immediate: true,
-  includes: { posts: {} }
+  with: { posts: {} },
 })
 
-const postCreator = useCreateResource(Post)
+const postCreator = useCreator(Post)
 </script>
 
 <template>
   <div class="q-pa-md">
     <div class="q-gutter-y-md">
       <h3>Create User</h3>
-      
+
       <q-input
         v-model="userCreator.form.value.name"
         label="Name"
@@ -48,7 +48,7 @@ const postCreator = useCreateResource(Post)
 
     <div class="q-gutter-y-md">
       <h3>Create Post</h3>
-      
+
       <q-input
         v-model="postCreator.form.value.title"
         label="Title"

@@ -1,17 +1,17 @@
-import { IndexResourcesOptions } from './IndexResources'
+import { IndexOptions } from './Index'
 import { Post } from '@vuemodel/sample-data'
-import { IndexResourcesFilters } from './IndexResourcesFilters'
+import { IndexFilters } from './IndexFilters'
 
-const options: IndexResourcesOptions<typeof Post> = {
-  includes: {
+const options: IndexOptions<typeof Post> = {
+  with: {
     comments: {
-      _sortBy: [
+      _orderBy: [
         { field: 'name', direction: 'descending' },
       ],
       _limit: 15,
     },
   },
-  sortBy: [
+  orderBy: [
     { field: 'sdfg', direction: 'ascending' },
   ],
   filters: {
@@ -44,10 +44,10 @@ const options: IndexResourcesOptions<typeof Post> = {
 
 console.log(options)
 
-const options2: IndexResourcesOptions<typeof Post> = {
-  includes: {
+const options2: IndexOptions<typeof Post> = {
+  with: {
     comments: {
-      _sortBy: [
+      _orderBy: [
         { field: 'name', direction: 'descending' },
       ],
       _limit: 15,
@@ -57,7 +57,7 @@ const options2: IndexResourcesOptions<typeof Post> = {
 
 console.log(options2)
 
-const filters: IndexResourcesFilters<typeof Post> = {
+const filters: IndexFilters<Post> = {
   body: {
     contains: 'blah',
   },

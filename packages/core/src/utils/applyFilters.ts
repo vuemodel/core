@@ -1,5 +1,5 @@
 import { Model, Query } from 'pinia-orm'
-import { IndexResourcesFilters, FilterTypeToValueBase } from '@vuemodel/core'
+import { IndexFilters, FilterTypeToValueBase } from '@vuemodel/core'
 import { whereFunctions } from './whereFunctions'
 
 function executeFilterBlock (record: Model, filterGroups: Partial<Record<keyof Model, FilterTypeToValueBase>>[]) {
@@ -9,7 +9,7 @@ function executeFilterBlock (record: Model, filterGroups: Partial<Record<keyof M
       const field = filterGroupEntry[0]
       const filters = filterGroupEntry[1]
 
-      Object.entries(filters).forEach(filterEntry => {
+      Object.entries(filters ?? {}).forEach(filterEntry => {
         const whereFunction = whereFunctions[filterEntry[0]]
         const compareValue = filterEntry[1]
         result.push(whereFunction(record[field], compareValue))
@@ -20,7 +20,7 @@ function executeFilterBlock (record: Model, filterGroups: Partial<Record<keyof M
   return result
 }
 
-export function applyFilters (query: Query, filters: IndexResourcesFilters<Model>) {
+export function applyFilters (query: Query, filters: IndexFilters<Model>) {
   Object.entries(filters).forEach(entry => {
     const field = entry[0]
     const actions = entry[1]

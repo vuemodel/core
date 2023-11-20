@@ -1,4 +1,5 @@
 import DefaultTheme from 'vitepress/theme'
+import { h } from 'vue'
 import { inBrowser } from 'vitepress'
 import { Quasar } from 'quasar'
 import '@quasar/extras/material-icons/material-icons.css'
@@ -10,9 +11,15 @@ import { createPiniaLocalStorage, piniaLocalVueModelDriver } from '@vuemodel/pin
 import { createORM } from 'pinia-orm'
 import ExamplePanel from '../../components/ExamplePanel/ExamplePanel.vue'
 import { setCDN } from 'shiki'
+import ResetDataButton from './ResetDataButton.vue'
 
 export default {
   extends: DefaultTheme,
+  Layout() {
+    return h(DefaultTheme.Layout, null, {
+      'nav-bar-title-after': () => h(ResetDataButton)
+    })
+  },
   enhanceApp: async (ctx) => {
     if(!inBrowser) {
       await import('fake-indexeddb/auto')
@@ -31,7 +38,12 @@ export default {
     })
     const vueModel = createVueModel({
       default: 'local',
-      drivers: { local: { ...piniaLocalVueModelDriver, config: { pinia: piniaFront } } },
+      drivers: {
+        local: {
+          implementation: piniaLocalVueModelDriver,
+          config: { pinia: piniaFront }
+        }
+      },
     })
   
     ctx.app.use(piniaFront)
