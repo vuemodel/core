@@ -1,33 +1,41 @@
 import {
   VueModelDriver,
-  useCreateResourceImplementation,
-  useUpdateResourceImplementation,
-  useIndexResourcesImplementation,
-  useFindResourceImplementation,
-  useRemoveResourceImplementation,
+  useCreatorImplementation,
+  useUpdaterImplementation,
+  useIndexerImplementation,
+  useFinderImplementation,
+  useDestroyerImplementation,
 } from '@vuemodel/core'
 
-import { indexResources } from './implementations/index/indexResources'
-import { createResource } from './implementations/create/createResource'
-import { findResource } from './implementations/find/findResource'
-import { removeResource } from './implementations/remove/removeResource'
-import { updateResource } from './implementations/update/updateResource'
+import { index } from './implementations/index/index'
+import { create } from './implementations/create/create'
+import { find } from './implementations/find/find'
+import { destroy } from './implementations/destroy/destroy'
+import { update } from './implementations/update/update'
 
-export const piniaLocalVueModelDriver: VueModelDriver = {
-  indexResources,
-  useIndexResources: useIndexResourcesImplementation,
+export const piniaLocalVueModelDriver: VueModelDriver['implementation'] = {
+  index,
+  useIndexer: useIndexerImplementation,
 
-  createResource,
-  useCreateResource: useCreateResourceImplementation,
+  create,
+  useCreator: useCreatorImplementation,
 
-  updateResource,
-  useUpdateResource: useUpdateResourceImplementation,
+  update,
+  useUpdater: useUpdaterImplementation,
 
-  findResource,
-  useFindResource: useFindResourceImplementation,
+  find,
+  useFinder: useFinderImplementation,
 
-  removeResource,
-  useRemoveResource: useRemoveResourceImplementation,
+  destroy,
+  useDestroyer: useDestroyerImplementation,
+}
+
+export {
+  index,
+  create,
+  update,
+  find,
+  destroy,
 }
 
 export { createPiniaLocalStorage } from './plugin/createPiniaLocalStorage'

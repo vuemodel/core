@@ -1,14 +1,14 @@
-import { ResourceResponse, VueModelConfig } from '@vuemodel/core'
+import { Response, VueModelConfig } from '@vuemodel/core'
 import { piniaLocalStorageState } from '../plugin/state'
 import { Model } from 'pinia-orm'
 
-export function makeMockErrorResponse<T extends typeof Model, R extends ResourceResponse<T>> (
+export function makeMockErrorResponse<T extends typeof Model, R extends Response<T>> (
   options: {
     notifyOnError: boolean | undefined
     config: VueModelConfig
-    EntityClass: T,
-    includeValidationErrors: boolean,
-    errorNotifierFunctionKey: 'create' | 'update' | 'index' | 'remove' | 'find'
+    ModelClass: T,
+    withValidationErrors: boolean,
+    errorNotifierFunctionKey: 'create' | 'update' | 'index' | 'destroy' | 'find'
   },
 ): R | false {
   if (
@@ -17,7 +17,7 @@ export function makeMockErrorResponse<T extends typeof Model, R extends Resource
   ) {
     if (options.notifyOnError) {
       options.config?.errorNotifiers?.[options.errorNotifierFunctionKey]?.({
-        model: options.EntityClass,
+        model: options.ModelClass,
         errors: {
           standardErrors: piniaLocalStorageState.mockStandardErrors ?? [],
           validationErrors: piniaLocalStorageState.mockValidationErrors ?? {},
@@ -32,7 +32,7 @@ export function makeMockErrorResponse<T extends typeof Model, R extends Resource
       action: options.errorNotifierFunctionKey,
     }
 
-    if (options.includeValidationErrors) {
+    if (options.withValidationErrors) {
       return {
         ...result,
         validationErrors: (piniaLocalStorageState.mockValidationErrors ?? {}),

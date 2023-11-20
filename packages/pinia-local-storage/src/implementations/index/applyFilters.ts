@@ -1,51 +1,54 @@
 import { Model, Query } from 'pinia-orm'
-import { IndexResourcesFilters, FilterTypeToValueBase } from '@vuemodel/core'
+import { IndexFilters, FilterTypeToValueBase } from '@vuemodel/core'
 import { whereFunctions } from './whereFunctions'
 
-function executeFilterBlock (record: Model, filterGroups: Partial<Record<keyof Model, FilterTypeToValueBase>>[]) {
+type FilterGroup = Partial<Record<keyof Model, FilterTypeToValueBase | FilterTypeToValueBase[]>>[]
+
+function executeFilterBlock (record: Model, filterGroups: FilterGroup): boolean[] {
   const result: boolean[] = []
   filterGroups.forEach(filterGroup => {
-    Object.entries(filterGroup).forEach(filterGroupEntry => {
-      const field = filterGroupEntry[0]
-      const filters = filterGroupEntry[1] as FilterTypeToValueBase
-
-      Object.entries(filters).forEach(filterEntry => {
-        const whereFunction = whereFunctions[filterEntry[0]]
-        const compareValue = filterEntry[1]
-        result.push(whereFunction(record[field], compareValue))
-      })
+    Object.entries(filterGroup).forEach(([field, filters]) => {
+      if (field === 'and' || field === 'or') {
+        // Handle nested and/or
+        const nestedResult = executeFilterBlock(record, filters as FilterGroup)
+        const value = field === 'and' ? nestedResult.every(Boolean) : nestedResult.some(Boolean)
+        result.push(value)
+      } else {
+        // Handle field filters
+        Object.entries(filters as FilterTypeToValueBase).forEach(([action, compareValue]) => {
+          const whereFunction = whereFunctions[action]
+          if (typeof whereFunction === 'function') {
+            result.push(whereFunction(record[field], compareValue))
+          }
+        })
+      }
     })
   })
-
   return result
 }
 
-export function applyFilters (query: Query, filters: IndexResourcesFilters<typeof Model>) {
-  Object.entries(filters).forEach(entry => {
-    const field = entry[0]
-    const actions = entry[1]
-
+export function applyFilters (query: Query, filters: IndexFilters<InstanceType<typeof Model>>) {
+  Object.entries(filters).forEach(([field, actions]) => {
     // Handle or
     if (field === 'or') {
       query.where((record: Model) => {
-        return executeFilterBlock(record, actions).some(val => !!val)
+        return executeFilterBlock(record, actions as FilterGroup).some(Boolean)
       })
+      return
     }
 
     // Handle and
     if (field === 'and') {
       query.where((record: Model) => {
-        return executeFilterBlock(record, actions).every(val => !!val)
+        return executeFilterBlock(record, actions as FilterGroup).every(Boolean)
       })
+      return
     }
 
     // Handle Field
-    Object.entries(actions).forEach(entry => {
-      const action = entry[0]
-      const compareValue = entry[1]
+    Object.entries(actions as FilterTypeToValueBase).forEach(([action, compareValue]) => {
       const whereFunction = whereFunctions[action]
-
-      if (whereFunction) {
+      if (typeof whereFunction === 'function') {
         query.where(field, (val: any) => whereFunction(val, compareValue))
       }
     })

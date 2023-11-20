@@ -1,9 +1,9 @@
 import { Query } from 'pinia-orm'
-import { IndexResourcesPagination } from '@vuemodel/core'
+import { IndexPagination } from '@vuemodel/core'
 
 export function applyPagination (
   query: Query,
-  pagination: IndexResourcesPagination,
+  pagination: IndexPagination,
 ) {
   if (!pagination.recordsPerPage) return
 

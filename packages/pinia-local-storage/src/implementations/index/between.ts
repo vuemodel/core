@@ -42,7 +42,7 @@ function toComparable (value: RangeValue, targetType?: 'string' | 'number' | 'da
 export function between (value: RangeValue, range: [RangeValue, RangeValue]): boolean {
   const originalType = typeof value
   const comparableValue = toComparable(value)
-  const valueType = ((originalType === 'string' && typeof comparableValue === 'number') ? 'number' : typeof comparableValue) as "string" | "number" | "date" | undefined
+  const valueType = ((originalType === 'string' && typeof comparableValue === 'number') ? 'number' : typeof comparableValue) as 'string' | 'number' | 'date' | undefined
   const comparableStart = toComparable(range[0], valueType)
   const comparableEnd = toComparable(range[1], valueType)
 
