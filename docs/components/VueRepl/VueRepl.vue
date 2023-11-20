@@ -2,10 +2,10 @@
 import importCode from './importCode.ts?raw'
 import useCode from './useCode.ts?raw'
 import headHTML from './headHTML.html?raw'
+import defaultTsConfig from './defaultTsConfig.json?raw'
 import { ReplStore, SFCOptions, Repl } from '@vue/repl'
 import { defaultImports } from './defaultImports'
 import { defaultReplContent } from './defaultReplContent'
-import defaultTsConfig from './defaultTsConfig.json?raw'
 import { EditorComponentType } from '@vue/repl/monaco-editor'
 import { onMounted, ref } from 'vue'
 
@@ -63,10 +63,10 @@ onMounted(() => {
 
 <template>
   <q-spinner
+    v-if="!Monaco"
     color="primary"
     class="q-pa-md"
     size="md"
-    v-if="!Monaco"
   />
 
   <Repl

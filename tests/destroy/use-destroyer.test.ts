@@ -18,8 +18,8 @@ describe('useDestroyer', () => {
     await postsIndexer.index()
     const postRepo = useRepo(Post)
 
-    const postDestroyr = useDestroyer(Post)
-    await postDestroyr.destroy('2')
+    const postDestroyer = useDestroyer(Post)
+    await postDestroyer.destroy('2')
 
     expect(postRepo.all().length).toEqual(1)
   })
@@ -30,8 +30,8 @@ describe('useDestroyer', () => {
     const postsIndexer = useIndexer(Post)
     await postsIndexer.index()
 
-    const postDestroyr = useDestroyer(Post, { persist: false })
-    await postDestroyr.destroy('2')
+    const postDestroyer = useDestroyer(Post, { persist: false })
+    await postDestroyer.destroy('2')
 
     expect(postRepo.all().length).toEqual(2)
   })
@@ -43,8 +43,8 @@ describe('useDestroyer', () => {
     const postRepo = useRepo(Post)
 
     const id = ref('2')
-    const postDestroyr = useDestroyer(Post, { id })
-    await postDestroyr.destroy()
+    const postDestroyer = useDestroyer(Post, { id })
+    await postDestroyer.destroy()
 
     expect(postRepo.all().length).toEqual(1)
   })
@@ -56,8 +56,8 @@ describe('useDestroyer', () => {
     const postRepo = useRepo(Post)
 
     const id = ref('2')
-    const postDestroyr = useDestroyer(Post, { id })
-    await postDestroyr.destroy('1')
+    const postDestroyer = useDestroyer(Post, { id })
+    await postDestroyer.destroy('1')
 
     expect(postRepo.all().length).toEqual(1)
     expect(postRepo.query().first()).toHaveProperty('title', 'qui est esse')
@@ -67,20 +67,20 @@ describe('useDestroyer', () => {
     await populateRecords('posts', 2)
     piniaLocalStorageState.mockLatencyMs = 150
 
-    const postDestroyr = useDestroyer(Post)
-    const destroyPromise = postDestroyr.destroy('2')
+    const postDestroyer = useDestroyer(Post)
+    const destroyPromise = postDestroyer.destroy('2')
 
-    expect(postDestroyr.destroying.value).toEqual('2')
+    expect(postDestroyer.destroying.value).toEqual('2')
     await destroyPromise
-    expect(postDestroyr.destroying.value).toEqual(false)
+    expect(postDestroyer.destroying.value).toEqual(false)
   })
 
   it('can access the record after destroying it', async () => {
     await populateRecords('posts', 2)
-    const postDestroyr = useDestroyer(Post)
-    await postDestroyr.destroy('2')
+    const postDestroyer = useDestroyer(Post)
+    await postDestroyer.destroy('2')
 
-    expect(postDestroyr.record.value).toHaveProperty('title', 'qui est esse')
+    expect(postDestroyer.record.value).toHaveProperty('title', 'qui est esse')
   })
 
   it('hits the "onSuccess" callback on success', async () => {
@@ -92,8 +92,8 @@ describe('useDestroyer', () => {
     }
     const onSuccessSpy = vi.spyOn(options, 'onSuccess')
 
-    const postDestroyr = useDestroyer(Post, options)
-    await postDestroyr.destroy('2')
+    const postDestroyer = useDestroyer(Post, options)
+    await postDestroyer.destroy('2')
 
     expect(onSuccessSpy).toHaveBeenCalled()
   })
@@ -103,10 +103,10 @@ describe('useDestroyer', () => {
     const postsIndexer = useIndexer(Post)
     await postsIndexer.index()
     const postRepo = useRepo(Post)
-    const postDestroyr = useDestroyer(Post, { optimistic: true })
+    const postDestroyer = useDestroyer(Post, { optimistic: true })
     piniaLocalStorageState.mockLatencyMs = 200
 
-    postDestroyr.destroy('1') // intentionally not awaited
+    postDestroyer.destroy('1') // intentionally not awaited
 
     expect(postRepo.all().length).toEqual(1)
   })
@@ -117,11 +117,11 @@ describe('useDestroyer', () => {
     await postsIndexer.index()
     const postRepo = useRepo(Post)
 
-    const postDestroyr = useDestroyer(Post, { optimistic: true })
+    const postDestroyer = useDestroyer(Post, { optimistic: true })
 
     piniaLocalStorageState.mockStandardErrors = [{ message: 'something went wrong', name: 'oops' }]
     piniaLocalStorageState.mockLatencyMs = 200
-    const destroyPromise = postDestroyr.destroy('1') // intentionally not awaited
+    const destroyPromise = postDestroyer.destroy('1') // intentionally not awaited
 
     expect(postRepo.all().length).toEqual(1)
     await destroyPromise
@@ -130,14 +130,14 @@ describe('useDestroyer', () => {
   })
 
   it('sets standard errors when the response has standard errors', async () => {
-    const postDestroyr = useDestroyer(Post)
+    const postDestroyer = useDestroyer(Post)
     piniaLocalStorageState.mockStandardErrors = [
       { name: 'thingy-messup', message: 'The thingy messed up' },
     ]
 
-    await postDestroyr.destroy('1')
+    await postDestroyer.destroy('1')
 
-    expect(postDestroyr.standardErrors.value[0])
+    expect(postDestroyer.standardErrors.value[0])
       .toEqual({ name: 'thingy-messup', message: 'The thingy messed up' })
   })
 
@@ -146,20 +146,20 @@ describe('useDestroyer', () => {
     const postsIndexer = useIndexer(Post)
     await postsIndexer.index()
 
-    const postDestroyr = useDestroyer(Post)
+    const postDestroyer = useDestroyer(Post)
     piniaLocalStorageState.mockStandardErrors = [
       { name: 'thingy-messup', message: 'The thingy messed up' },
     ]
 
-    await postDestroyr.destroy('1')
+    await postDestroyer.destroy('1')
 
-    expect(postDestroyr.standardErrors.value[0])
+    expect(postDestroyer.standardErrors.value[0])
       .toEqual({ name: 'thingy-messup', message: 'The thingy messed up' })
 
     piniaLocalStorageState.mockStandardErrors = undefined
-    await postDestroyr.destroy('2')
+    await postDestroyer.destroy('2')
 
-    expect(postDestroyr.standardErrors.value.length)
+    expect(postDestroyer.standardErrors.value.length)
       .toEqual(0)
   })
 

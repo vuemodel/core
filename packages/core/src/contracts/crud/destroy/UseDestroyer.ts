@@ -54,7 +54,7 @@ export interface UseDestroyerOptions<T extends typeof Model> {
    * For example "laravel", "strapi" or "local-storage".
    *
    * @example
-   * const strapiPostsDestroyr = useDestroyers(Post, {
+   * const strapiPostsDestroyer = useDestroyers(Post, {
    *   driver: 'strapi'
    * })
    */

@@ -39,7 +39,7 @@ export * from './actions/find'
 export * from './composables/useFinder'
 export * from './implementations/useFinderImplementation'
 
-// Destroyr
+// Destroyer
 export * from './contracts/crud/destroy/Destroy'
 export * from './contracts/crud/destroy/UseDestroyer'
 export * from './actions/destroy'
