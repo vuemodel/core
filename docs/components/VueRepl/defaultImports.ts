@@ -1,5 +1,8 @@
 export const defaultImports = {
   vue: 'https://play.vuejs.org/vue.runtime.esm-browser.js',
+  debounce: 'https://cdn.jsdelivr.net/npm/debounce/+esm',
+  '@vueuse/core': 'https://unpkg.com/@vueuse/core@10.1.0/index.mjs',
+  '@vueuse/shared': 'https://unpkg.com/@vueuse/shared@10.1.0/index.mjs',
   'vue/server-renderer': 'https://play.vuejs.org/server-renderer.esm-browser.js',
   quasar: 'https://cdn.jsdelivr.net/npm/quasar@2.13.0/dist/quasar.esm.prod.js',
   '@vuemodel/core': 'https://cdn.jsdelivr.net/npm/@vuemodel/core@0.0.5/dist/index.mjs',
