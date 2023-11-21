@@ -11,6 +11,7 @@ const contentHighlighted = ref('')
 async function highlightExample () {
   getHighlighter({
     theme: 'material-theme-palenight',
+    langs: ['typescript', 'vue-html'],
   }).then(highlighter => {
     contentHighlighted.value = highlighter.codeToHtml(props.content, { lang: 'vue' })
   })

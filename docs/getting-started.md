@@ -1,6 +1,7 @@
 <script setup>
 import BasicExampleRaw from './examples/BasicExample.vue?raw'
 import BasicExample from './examples/BasicExample.vue'
+import { mdiAlphaRBox, mdiCodeTags } from '@quasar/extras/mdi-v7'
 </script>
 
 # Getting Started
@@ -55,7 +56,7 @@ const vueModel = createVueModel({
   default: 'local',
   drivers: {
     local: {
-      ...piniaLocalVueModelDriver,
+      implementation: piniaLocalVueModelDriver,
       config: { pinia }
     }
   },
@@ -102,6 +103,7 @@ export default boot(({ app, store }) => {
 
 Want to be able to test loading? If you're using "pinia-local-storage", consider adding a "mock latency". This is kinda like mimicking a slower internet connection.
 
+(add this to `main.ts`)
 ```ts
 import { piniaLocalStorageState } from '@vuemodel/pinia-local-storage'
 
@@ -219,6 +221,9 @@ export default class Post extends Model {
 
 ### Usage
 To give you a taste of what's to come, here's how we can create a resource! All examples in this doc use [Quasar](https://quasar.dev/) for the UI.
+
+- Click <q-btn size="sm" :icon="mdiAlphaRBox" flat round /> button to open an editor and play with the example.
+- Click <q-btn size="sm" :icon="mdiCodeTags" flat round /> to see the source code.
 
 <ExamplePanel
   title="Basic Example"
