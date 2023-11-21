@@ -1,26 +1,26 @@
 <script setup>
-import IndexResourcesBasicRaw from './examples/IndexResourcesBasic.vue?raw'
-import IndexResourcesBasic from './examples/IndexResourcesBasic.vue'
+import IndexBasicRaw from './examples/IndexBasic.vue?raw'
+import IndexBasic from './examples/IndexBasic.vue'
 
-import IndexResourcesIncludesRaw from './examples/IndexResourcesIncludes.vue?raw'
-import IndexResourcesIncludes from './examples/IndexResourcesIncludes.vue'
+import IndexWithsRaw from './examples/IndexWiths.vue?raw'
+import IndexWiths from './examples/IndexWiths.vue'
 
-import IndexResourcesNestedIncludesRaw from './examples/IndexResourcesNestedIncludes.vue?raw'
-import IndexResourcesNestedIncludes from './examples/IndexResourcesNestedIncludes.vue'
+import IndexNestedRaw from './examples/IndexNested.vue?raw'
+import IndexNested from './examples/IndexNested.vue'
 
-import IndexResourcesFilterIncludedRaw from './examples/IndexResourcesFilterIncluded.vue?raw'
-import IndexResourcesFilterIncluded from './examples/IndexResourcesFilterIncluded.vue'
+import IndexFilterWithsRaw from './examples/IndexFilterWiths.vue?raw'
+import IndexFilterWiths from './examples/IndexFilterWiths.vue'
 
-import IndexResourcesAndOrIncludeRaw from './examples/IndexResourcesAndOrInclude.vue?raw'
-import IndexResourcesAndOrInclude from './examples/IndexResourcesAndOrInclude.vue'
+import IndexAndOrWithRaw from './examples/IndexAndOrWith.vue?raw'
+import IndexAndOrWith from './examples/IndexAndOrWith.vue'
 
-import IndexResourcesPaginationRaw from './examples/IndexResourcesPagination.vue?raw'
-import IndexResourcesPagination from './examples/IndexResourcesPagination.vue'
+import IndexPaginationRaw from './examples/IndexPagination.vue?raw'
+import IndexPagination from './examples/IndexPagination.vue'
 </script>
 
 # Index Resources
 
-When indexing a resource, you'll likely want [`useIndexResources()`](../composables/02-use-index-resources.md). However at times we can't use the composition api. For that, we have `indexResources()`.
+When indexing a resource, you'll likely want [`useIndex()`](../composables/02-use-indexer.md). However at times we can't use the composition api. For that, we have `index()`.
 
 ::: warning
 Some backends do not support all the features on this page
@@ -28,31 +28,31 @@ Some backends do not support all the features on this page
 
 <ExamplePanel
   title="Basic Usage"
-  :content="IndexResourcesBasicRaw"
-  :exampleComponent="IndexResourcesBasic"
+  :content="IndexBasicRaw"
+  :exampleComponent="IndexBasic"
 />
 
-## Includes
-Also known as `expand`, `with` and `populate`. We can fetch related data and apply filters.
+## With (Including data)
+Also known as `expand`, `include` and `populate`. We can fetch related data and apply filters.
 
-### Basic Include
+### Basic With
 
 <ExamplePanel
   title="Including Related Data"
-  :content="IndexResourcesIncludesRaw"
-  :exampleComponent="IndexResourcesIncludes"
+  :content="IndexWithsRaw"
+  :exampleComponent="IndexWiths"
 />
 
 <ExamplePanel
-  title="Deeply Nested Include"
-  :content="IndexResourcesNestedIncludesRaw"
-  :exampleComponent="IndexResourcesNestedIncludes"
+  title="Deeply Nested With"
+  :content="IndexNestedRaw"
+  :exampleComponent="IndexNested"
 />
 
 ### Filtering Included Data
 
 ```js
-indexResources(User, {
+index(User, {
   includes: {
     posts: {
       title: {
@@ -65,14 +65,14 @@ indexResources(User, {
 
 <ExamplePanel
   title="Filtering Included Data"
-  :content="IndexResourcesFilterIncludedRaw"
-  :exampleComponent="IndexResourcesFilterIncluded"
+  :content="IndexFilterWithsRaw"
+  :exampleComponent="IndexFilterWiths"
 />
 
 With an `or` block. `and` blocks are also supported.
 
 ```js
-indexResources(User, {
+index(User, {
     includes: {
       posts: {
         body: {
@@ -100,16 +100,16 @@ In the above example:
 - the post must also be created after `'2023-08-02'` **OR** have a `user_id` of `'1'`
 
 <ExamplePanel
-  title="Filtering Included Data With Or Block"
-  :content="IndexResourcesAndOrIncludeRaw"
-  :exampleComponent="IndexResourcesAndOrInclude"
+  title="Filtering With Data (Or Block)"
+  :content="IndexAndOrWithRaw"
+  :exampleComponent="IndexAndOrWith"
 />
 
 ## Pagination
 Of course, we can also paginate the results.
 
 <ExamplePanel
-  title="Filtering Included Data With Or Block"
-  :content="IndexResourcesPaginationRaw"
-  :exampleComponent="IndexResourcesPagination"
+  title="Filtering With Data (Pagination)"
+  :content="IndexPaginationRaw"
+  :exampleComponent="IndexPagination"
 />

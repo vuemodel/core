@@ -32,7 +32,7 @@ const sidebarActions = makeSidebar(fastGlob.sync('packages/core/src/actions/*.md
 const sidebarComposables = makeSidebar(fastGlob.sync('packages/core/src/composables/*.md'))
 
 export default defineConfig({
-  title: 'Augment Quasar',
+  title: 'VueModel',
   rewrites: {
     'packages/core/src/:parentPath/:actionKebab': ':parentPath/:actionKebab',
     'docs/:parentPath/:actionKebab': ':parentPath/:actionKebab',
