@@ -1,14 +1,14 @@
 <script setup>
 import CreateBasicRaw from './examples/CreateBasic.vue?raw'
 import CreateBasic from './examples/CreateBasic.vue'
-
-import CreateResponseRaw from './examples/CreateResponse.vue?raw'
-import CreateResponse from './examples/CreateResponse.vue'
 </script>
 
 # Create Resource
+```ts
+const response = await create(Post, { title: 'VueModel' })
+```
 
-When creating a resource, you'll likely want [`useCreate()`](../composables/01-use-creator.md). However at times we can't use the composition api. For that, we have `create()`.
+When creating a resource, you'll likely want to use the composable [`useCreate()`](../composables/02-use-creator.md). However, at times we can't use the composition api. For that, we have the action `create()`.
 
 <ExamplePanel
   title="Basic Usage"
@@ -16,16 +16,14 @@ When creating a resource, you'll likely want [`useCreate()`](../composables/01-u
   :exampleComponent="CreateBasic"
 />
 
-## Responses
+## The Response
 `create`'s response is easy to understand. You can access the response using promises, or async/await.
 
-### async/await
 ```ts
+// async/await
 const response = await create(Post, { title: 'VueModel' })
-```
 
-### .then
-```ts
+// promise
 create(Post, { title: 'VueModel' })
   .then(response => {
     console.log(resposne)
@@ -33,7 +31,7 @@ create(Post, { title: 'VueModel' })
 ```
 
 ### Success Response
-Let's take a look at a successful response:
+A successful response looks like this:
 
 ```js
 {
@@ -48,8 +46,4 @@ Let's take a look at a successful response:
 }
 ```
 
-<ExamplePanel
-  title="Successful Response"
-  :content="CreateResponseRaw"
-  :exampleComponent="CreateResponse"
-/>
+Handling errors works similar for all CRUD actions. Take a look at [Handling Errors](./07-handling-errors.md) to find out more.

@@ -1,19 +1,30 @@
 <script lang="ts" setup>
-import { Form, create, CreateResponse } from '@vuemodel/core'
+import { Form, update, UpdateResponse } from '@vuemodel/core'
 import { Post } from '@vuemodel/sample-data'
 import { ref } from 'vue'
 
 const form = ref<Form<Post>>({ title: '' })
-const response = ref<CreateResponse<typeof Post>>()
+const id = ref('1')
+const response = ref<UpdateResponse<typeof Post>>()
 
-async function createPost () {
-  response.value = await create(Post, form.value)
+async function updatePost () {
+  response.value = await update(
+    Post,
+    id.value,
+    form.value,
+  )
 }
 </script>
 
 <template>
   <div class="q-pa-md">
     <div class="q-gutter-y-md">
+      <q-input
+        v-model="id"
+        label="ID"
+        filled
+      />
+
       <q-input
         v-model="form.title"
         label="Title"
@@ -28,10 +39,10 @@ async function createPost () {
       />
 
       <q-btn
-        label="Create"
+        label="Update"
         color="primary"
         unelevated
-        @click="createPost()"
+        @click="updatePost()"
       />
     </div>
 

@@ -6,7 +6,11 @@ import { ref } from 'vue'
 const response = ref<IndexResponse<typeof Post>>()
 async function indexPosts () {
   response.value = await index(Post, {
-    orderBy: [{ field: 'title', direction: 'ascending' }],
+    with: {
+      comments: {
+        _orderBy: [{ field: 'commented_on', direction: 'ascending' }],
+      },
+    },
   })
 }
 </script>

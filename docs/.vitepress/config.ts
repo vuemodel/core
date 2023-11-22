@@ -51,15 +51,15 @@ export default defineConfig({
         link: 'getting-started'
       },
       {
+        text: 'Composables',
+        collapsed: true,
+        items: sortByFileName(sidebarComposables)
+      },
+      {
         text: 'Actions',
         collapsed: true,
         items: sortByFileName(sidebarActions)
       },
-      {
-        text: 'Composables',
-        collapsed: true,
-        items: sortByFileName(sidebarComposables)
-      }
     ],
   },
 })

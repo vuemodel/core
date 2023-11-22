@@ -5,12 +5,13 @@ import { mdiAlphaRBox, mdiCodeTags } from '@quasar/extras/mdi-v7'
 </script>
 
 # Getting Started
+Like to learn by digging into the code? [Jump to "Usage"](#usage) and try our REPL!
 
 ## You will need:
 - [pinia](https://pinia.vuejs.org/getting-started.html) (the "store")
 - [pinia-orm](https://pinia-orm.codedredd.de/) (a gorgeous layer atop pinia)
 - VueModel Core
-- A driver (we recommend "pinia-local-storage" because it means you don't need a server!)
+- A driver (while learning, use "pinia-local-storage". It doesn't require a server!)
 
 ::: code-group
 

@@ -1,5 +1,4 @@
 import DefaultTheme from 'vitepress/theme'
-import { h } from 'vue'
 import { inBrowser } from 'vitepress'
 import { Quasar } from 'quasar'
 import '@quasar/extras/material-icons/material-icons.css'
@@ -11,15 +10,10 @@ import { createPiniaLocalStorage, piniaLocalVueModelDriver } from '@vuemodel/pin
 import { createORM } from 'pinia-orm'
 import ExamplePanel from '../../components/ExamplePanel/ExamplePanel.vue'
 import { setCDN } from 'shiki'
-import ResetDataButton from './ResetDataButton.vue'
+import { Notify } from 'quasar'
 
 export default {
   extends: DefaultTheme,
-  Layout() {
-    return h(DefaultTheme.Layout, null, {
-      'nav-bar-title-after': () => h(ResetDataButton)
-    })
-  },
   enhanceApp: async (ctx) => {
     if(!inBrowser) {
       await import('fake-indexeddb/auto')
@@ -53,6 +47,9 @@ export default {
     ctx.app.component('ExamplePanel', ExamplePanel)
 
     ctx.app.use(Quasar, {
+      plugins: {
+        Notify
+      },
       config: {
         brand: {
           primary: '#007ea7',

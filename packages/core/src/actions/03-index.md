@@ -16,6 +16,12 @@ import IndexAndOrWith from './examples/IndexAndOrWith.vue'
 
 import IndexPaginationRaw from './examples/IndexPagination.vue?raw'
 import IndexPagination from './examples/IndexPagination.vue'
+
+import IndexOrderByRaw from './examples/IndexOrderBy.vue?raw'
+import IndexOrderBy from './examples/IndexOrderBy.vue'
+
+import IndexOrderByNestedRaw from './examples/IndexOrderByNested.vue?raw'
+import IndexOrderByNested from './examples/IndexOrderByNested.vue'
 </script>
 
 # Index Resources
@@ -33,27 +39,28 @@ Some backends do not support all the features on this page
 />
 
 ## With (Including data)
-Also known as `expand`, `include` and `populate`. We can fetch related data and apply filters.
-
-### Basic With
+Also known as **expand**, **include** and **populate** (comes in many names depending on your backend). We can fetch related data and apply filters using `with`.
 
 <ExamplePanel
-  title="Including Related Data"
+  title="Related Data (With)"
   :content="IndexWithsRaw"
   :exampleComponent="IndexWiths"
 />
 
 <ExamplePanel
-  title="Deeply Nested With"
+  title="Deeply Nested Data (With)"
   :content="IndexNestedRaw"
   :exampleComponent="IndexNested"
 />
 
 ### Filtering Included Data
+Advanced filters are possible via VueModel's query object. The query object is inspired by [Strapi](https://docs.strapi.io/dev-docs/api/rest/filters-locale-publication#filtering), and [Orion (Laravel)](https://tailflow.github.io/laravel-orion-docs/v2.x/guide/search.html#search)
 
-```js
-index(User, {
-  includes: {
+Querying nested data has been meticulously typed. Consider using `ctrl + space` as you write the query to see what filters, fields and relationships you have available:
+
+```ts
+const response = await index(User, {
+  with: {
     posts: {
       title: {
         contains: 'est',
@@ -69,7 +76,15 @@ index(User, {
   :exampleComponent="IndexFilterWiths"
 />
 
-With an `or` block. `and` blocks are also supported.
+## Filtering (And/Or Blocks)
+We can even filter using an `or` block! `and` blocks are also supported.
+
+<ExamplePanel
+  title="Filtering (And/Or Blocks)"
+  :content="IndexAndOrWithRaw"
+  :exampleComponent="IndexAndOrWith"
+/>
+
 
 ```js
 index(User, {
@@ -96,13 +111,25 @@ index(User, {
 ```
 
 In the above example:
-- every post must have a `body` of `'est'`
+- every post must have a `body` that contains `'est'`
 - the post must also be created after `'2023-08-02'` **OR** have a `user_id` of `'1'`
 
+## Order By
+Of course, we can order our results.
+
 <ExamplePanel
-  title="Filtering With Data (Or Block)"
-  :content="IndexAndOrWithRaw"
-  :exampleComponent="IndexAndOrWith"
+  title="Order By"
+  :content="IndexOrderByRaw"
+  :exampleComponent="IndexOrderBy"
+/>
+
+## Nested Order By
+And order nested records at any level!
+
+<ExamplePanel
+  title="Nested Order By"
+  :content="IndexOrderByNestedRaw"
+  :exampleComponent="IndexOrderByNested"
 />
 
 ## Pagination

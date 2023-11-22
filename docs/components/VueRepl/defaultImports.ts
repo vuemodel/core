@@ -6,7 +6,7 @@ export const defaultImports = {
   'vue/server-renderer': 'https://play.vuejs.org/server-renderer.esm-browser.js',
   quasar: 'https://cdn.jsdelivr.net/npm/quasar@2.13.0/dist/quasar.esm.prod.js',
   '@vuemodel/core': 'https://cdn.jsdelivr.net/npm/@vuemodel/core@0.0.5/dist/index.mjs',
-  '@vuemodel/pinia-local-storage': 'https://cdn.jsdelivr.net/npm/@vuemodel/pinia-local-storage@0.0.9/dist/index.mjs',
+  '@vuemodel/pinia-local-storage': 'https://cdn.jsdelivr.net/npm/@vuemodel/pinia-local-storage@0.0.10/dist/index.mjs',
   '@vuemodel/sample-data': 'https://cdn.jsdelivr.net/npm/@vuemodel/sample-data@0.0.3/dist/index.js',
   pinia: 'https://cdn.jsdelivr.net/npm/pinia@2.1.7/dist/pinia.esm-browser.js',
   'pinia-orm': 'https://cdn.jsdelivr.net/npm/pinia-orm@1.7.2/dist/index.mjs',

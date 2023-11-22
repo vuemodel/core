@@ -1,13 +1,13 @@
 <script lang="ts" setup>
-import { Form, create, CreateResponse } from '@vuemodel/core'
+import { find, FindResponse } from '@vuemodel/core'
 import { Post } from '@vuemodel/sample-data'
 import { ref } from 'vue'
 
-const form = ref<Form<Post>>({ title: '' })
-const response = ref<CreateResponse<typeof Post>>()
+const id = ref('5')
+const response = ref<FindResponse<typeof Post>>()
 
-async function createPost () {
-  response.value = await create(Post, form.value)
+async function findPost () {
+  response.value = await find(Post, id.value)
 }
 </script>
 
@@ -15,16 +15,16 @@ async function createPost () {
   <div class="q-pa-md">
     <div class="q-gutter-y-md">
       <q-input
-        v-model="form.title"
-        label="Title"
+        v-model="id"
+        label="ID"
         filled
       />
 
       <q-btn
-        label="Create"
+        label="Find"
         color="primary"
         unelevated
-        @click="createPost()"
+        @click="findPost()"
       />
     </div>
 

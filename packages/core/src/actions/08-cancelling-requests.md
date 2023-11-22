@@ -4,12 +4,12 @@ import CancelAction from './examples/CancelAction.vue'
 </script>
 
 # Cancelling Requests
-Got some long running requests that may need to be cancelled? Or maybe you want to cancel a request when the use navigates to another page?
+Got some long running requests that may need to be cancelled? Or maybe you want to cancel a request when the user navigates to another page?
 
 For that, we can use an `AbortController` to cancel requests.
 
 ::: info
-cancelling a request is far easier when using composables
+Cancelling a request is far easier when using composables. The controller/signal is handled for you behind the scenes :blush:
 :::
 
 <ExamplePanel

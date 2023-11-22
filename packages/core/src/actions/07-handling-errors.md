@@ -24,14 +24,18 @@ We have two kinds of errors. **Standard errors**, and **validation errors**. Usu
 />
 
 ## Throwing Errors
-Be default, **actions do not throw errors**. You can change that behaviour with the following configuration:
+Be default, **actions do not throw errors**. You can change that behaviour **globally** with the following configuration:
 ```ts
 import { index, vueModelState } from '@vuemodel/core'
 
 vueModelState.config.throw = true
 ```
 
-Or, while calling the action:
+Or **locally**, by setting `throw: true` while calling the action:
 ```ts
-create
+const response = await create(
+  Post,
+  { title: 'Vue backend unleashed!' },
+  { throw: true }
+)
 ```

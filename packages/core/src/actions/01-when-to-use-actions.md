@@ -1,9 +1,14 @@
 # Actions Getting Started
 Actions are the "bare bones" way of creating/updating/finding/indexing/destroying resources. **We usually only need them when we can't use composables**.
 
+::: warning
+Actions are "bare bones" meaning nothing is inserted into the store.
+:::
+
 Here's some examples of where you might use one of the "actions".
 
 1. Vue hasn't been created yet
+
 `main.ts`
 ```ts
 import { User } from '@vuemodel/sample-data'
@@ -18,6 +23,7 @@ app.mount('#app')
 ```
 
 2. Used with a package that might not have access to the composition api
+
 `my-backend-config.ts`
 ```ts
 import { createBackend } from 'some-backend-package'
@@ -89,7 +95,7 @@ bun createPost.ts --title "Running with bun!" --body "Using VueModel in a cli to
 :::
  use VueModel in your command line tools like node and bun!)
 
-The example below was tested with bun. It's much easier to get running with typescript using esm (ECMAScript Modules).
+The example below was tested with bun. It's much easier to get a modern typescript project running with bun.
 
 ::: code-group
 ```ts [createPost.ts]
@@ -134,8 +140,11 @@ export function setupVueModel () {
 }
 ```
 
-```sh [Usage]
+:::
+
+Usage
+```sh
 bun createPost.ts --title "Running with bun!" --body "Using VueModel in a cli tool run with bun works great!"
 ```
 
-:::
+Of course, this example is naive and for demonstration purposes only. You'll likely need to handle environment variables and auth tokens when building a CLI tool like the one above.
