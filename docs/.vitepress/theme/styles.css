@@ -1,3 +1,9 @@
 p {
   margin-bottom: 0px;
 }
+
+:root {
+  --vp-c-brand-1: #007ea7;
+  --vp-c-brand-2: #003459;
+  --vp-c-brand-3: #00171f;
+}

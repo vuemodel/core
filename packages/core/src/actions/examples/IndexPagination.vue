@@ -24,16 +24,19 @@ async function indexComments (pageParam?: number) {
         <q-btn
           label="Index"
           color="primary"
+          unelevated
           @click="indexComments()"
         />
         <q-btn
           label="Clear"
+          unelevated
           @click="response = undefined"
         />
       </div>
 
       <div class="q-gutter-md">
         <q-btn
+          unelevated
           :icon="mdiArrowLeft"
           @click="() => {
             page--
@@ -41,6 +44,7 @@ async function indexComments (pageParam?: number) {
           }"
         />
         <q-btn
+          unelevated
           :icon="mdiArrowRight"
           @click="() => {
             page++

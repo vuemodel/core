@@ -32,7 +32,7 @@ export async function find<T extends typeof Model> (
       return errorReturnFunction({
         standardErrors: [{
           name: 'aborted',
-          message: options.signal.reason?.message ?? 'The operation was aborted.',
+          message: options.signal.reason?.message ?? options.signal.reason ?? 'The operation was aborted.',
         }],
         action: 'find',
         success: false,
@@ -45,7 +45,7 @@ export async function find<T extends typeof Model> (
       return errorReturnFunction({
         standardErrors: [{
           name: 'aborted',
-          message: options.signal?.reason?.message ?? 'The operation was aborted.',
+          message: options.signal?.reason?.message ?? options.signal?.reason ?? 'The operation was aborted.',
         }],
         action: 'find',
         success: false,

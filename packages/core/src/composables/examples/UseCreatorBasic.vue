@@ -21,6 +21,7 @@ const postCreator = useCreator(Post)
       <q-btn
         label="Create"
         color="primary"
+        unelevated
         @click="postCreator.create()"
       />
     </div>

@@ -4,20 +4,18 @@ import { piniaLocalStorageState } from '@vuemodel/pinia-local-storage'
 import { Post } from '@vuemodel/sample-data'
 import { ref } from 'vue'
 
-const mockValidationErrors = {
-  body: [
-    '"body" field is required',
-    '"body" must be more than 20 characters',
-  ],
-}
+const mockStandardError = [
+  { message: 'oops, something went wrong 🙊', name: 'oops' },
+  { message: 'the whatsamathingy died ☠️', name: 'eep' },
+]
 
 const form = ref<Form<Post>>({ title: '' })
 const response = ref<CreateResponse<typeof Post>>()
 
 async function createPost () {
-  piniaLocalStorageState.mockValidationErrors = mockValidationErrors
+  piniaLocalStorageState.mockStandardErrors = mockStandardError
   response.value = await create(Post, form.value)
-  piniaLocalStorageState.mockValidationErrors = undefined
+  piniaLocalStorageState.mockStandardErrors = undefined
 }
 </script>
 
@@ -28,15 +26,26 @@ async function createPost () {
         v-model="form.title"
         label="Title"
         filled
-        :error="!!response?.validationErrors?.body"
-        :error-message="response?.validationErrors?.body?.join(', ')"
       />
 
       <q-btn
+        unelevated
         label="Create"
         color="primary"
         @click="createPost()"
       />
+    </div>
+
+    <div class="q-gutter-y-sm q-mt-md">
+      <q-banner
+        v-for="error in response?.standardErrors"
+        :key="error.message"
+        rounded
+        dense
+        class="text-white bg-negative"
+      >
+        {{ error.message }}
+      </q-banner>
     </div>
   </div>
 </template>

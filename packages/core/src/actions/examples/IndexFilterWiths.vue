@@ -23,11 +23,13 @@ async function indexUsers () {
       <q-btn
         label="Index"
         color="primary"
+        unelevated
         @click="indexUsers()"
       />
 
       <q-btn
         label="Clear"
+        unelevated
         @click="response = undefined"
       />
     </div>

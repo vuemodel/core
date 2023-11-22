@@ -21,4 +21,12 @@ app.use(piniaFront)
 app.use(vueModel)
 app.use(piniaLocalStorage)
 app.use(piniaOrm)
-app.use(Quasar)
+app.use(Quasar, {
+  config: {
+    brand: {
+      primary: '#007ea7',
+      secondary: '#003459',
+      accent: '#00171f',
+    },
+  },
+})

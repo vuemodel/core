@@ -27,7 +27,7 @@ export async function destroy<T extends typeof Model> (
       return errorReturnFunction({
         standardErrors: [{
           name: 'aborted',
-          message: options.signal.reason?.message ?? 'The operation was aborted.',
+          message: options.signal.reason?.message ?? options.signal.reason ?? 'The operation was aborted.',
         }],
         action: 'destroy',
         success: false,
@@ -39,7 +39,7 @@ export async function destroy<T extends typeof Model> (
       return errorReturnFunction({
         standardErrors: [{
           name: 'aborted',
-          message: options.signal?.reason?.message ?? 'The operation was aborted.',
+          message: options.signal?.reason?.message ?? options.signal?.reason ?? 'The operation was aborted.',
         }],
         action: 'destroy',
         success: false,

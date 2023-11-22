@@ -37,6 +37,7 @@ const postCreator = useCreator(Post)
       />
 
       <q-btn
+        unelevated
         label="Create User"
         color="primary"
         :loading="userCreator.creating.value"
@@ -74,6 +75,7 @@ const postCreator = useCreator(Post)
       />
 
       <q-btn
+        unelevated
         label="Create Post"
         color="primary"
         :loading="postCreator.creating.value"

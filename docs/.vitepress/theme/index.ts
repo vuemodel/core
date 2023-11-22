@@ -52,6 +52,14 @@ export default {
     ctx.app.use(piniaOrm)
     ctx.app.component('ExamplePanel', ExamplePanel)
 
-    ctx.app.use(Quasar, {}, { req: { headers: {} } });
+    ctx.app.use(Quasar, {
+      config: {
+        brand: {
+          primary: '#007ea7',
+          secondary: '#003459',
+          accent: '#00171f'
+        },
+      }
+    }, { req: { headers: {} } });
   }
 }

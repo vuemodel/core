@@ -4,12 +4,6 @@ import CreateBasic from './examples/CreateBasic.vue'
 
 import CreateResponseRaw from './examples/CreateResponse.vue?raw'
 import CreateResponse from './examples/CreateResponse.vue'
-
-import CreateStandardErrorRaw from './examples/CreateStandardError.vue?raw'
-import CreateStandardError from './examples/CreateStandardError.vue'
-
-import CreateValidationErrorRaw from './examples/CreateValidationError.vue?raw'
-import CreateValidationError from './examples/CreateValidationError.vue'
 </script>
 
 # Create Resource
@@ -58,20 +52,4 @@ Let's take a look at a successful response:
   title="Successful Response"
   :content="CreateResponseRaw"
   :exampleComponent="CreateResponse"
-/>
-
-We have two kinds of errors. **Standard errors**, and **validation errors**. Usually, these two kinds of errors are handled differently so we split them up.
-
-## Standard Errors
-<ExamplePanel
-  title="Standard Errors"
-  :content="CreateStandardErrorRaw"
-  :exampleComponent="CreateStandardError"
-/>
-
-## Validation Errors
-<ExamplePanel
-  title="Validation Errors"
-  :content="CreateValidationErrorRaw"
-  :exampleComponent="CreateValidationError"
 />

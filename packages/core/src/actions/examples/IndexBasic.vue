@@ -16,11 +16,13 @@ async function indexPosts () {
       <q-btn
         label="Index"
         color="primary"
+        unelevated
         @click="indexPosts()"
       />
 
       <q-btn
         label="Clear"
+        unelevated
         @click="response = undefined"
       />
     </div>

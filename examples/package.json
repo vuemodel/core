@@ -1,0 +1,24 @@
+{
+  "name": "examples",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/args": "^5.0.3",
+    "commander": "^11.1.0"
+  },
+  "dependencies": {
+    "@vuemodel/core": "workspace:^",
+    "@vuemodel/pinia-local-storage": "workspace:^",
+    "@vuemodel/sample-data": "workspace:^",
+    "fake-indexeddb": "^5.0.1",
+    "pinia": "^2.1.7"
+  }
+}

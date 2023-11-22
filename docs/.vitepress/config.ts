@@ -19,8 +19,6 @@ function makeSidebar(files: string[]) {
       linkSplit[linkSplit.length - 1].replace('.md', '').slice(3)
     )
 
-    console.log(link)
-  
     return {
       link,
       text
@@ -48,6 +46,10 @@ export default defineConfig({
       provider: 'local'
     },
     sidebar: [
+      {
+        text: 'Getting Started',
+        link: 'getting-started'
+      },
       {
         text: 'Actions',
         collapsed: true,

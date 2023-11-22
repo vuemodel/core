@@ -23,6 +23,7 @@ async function createPost () {
       <q-btn
         label="Create"
         color="primary"
+        unelevated
         @click="createPost()"
       />
     </div>
