@@ -38,9 +38,8 @@ export default defineConfig({
     }
   },
   title: 'VueModel',
-  srcDir: '.',
-  dir: '.',
   head: [['script', { src: 'https://cdn.jsdelivr.net/npm/shiki' }]],
+  base: '/core',
   themeConfig: {
     outline: [2,3],
     search: {
