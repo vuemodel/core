@@ -26,7 +26,7 @@ import IndexOrderByNested from './examples/IndexOrderByNested.vue'
 
 # Index Resources
 
-When indexing a resource, you'll likely want [`useIndex()`](../composables/02-use-indexer.md). However at times we can't use the composition api. For that, we have `index()`.
+When indexing a resource, you'll likely want [`useIndex()`](../composables/03-use-indexer.md). However at times we can't use the composition api. For that, we have `index()`.
 
 ::: warning
 Some backends do not support all the features on this page

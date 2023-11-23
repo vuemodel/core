@@ -8,7 +8,7 @@ import FindBasic from './examples/FindBasic.vue'
 const response = await find(Post, '5')
 ```
 
-When finding a resource, you'll likely want to use the composable [`useFind()`](../composables/06-use-finder.md). However, at times we can't use the composition api. For that, we have the action `find()`.
+When finding a resource, you'll likely want to use the composable [`useFind()`](../composables/04-use-finder.md). However, at times we can't use the composition api. For that, we have the action `find()`.
 
 <ExamplePanel
   title="Basic Usage"

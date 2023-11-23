@@ -42,7 +42,7 @@ export function useDestroyerImplementation<T extends typeof Model> (
 
   const record = computed(() => {
     if (recordBeingRemoved.value) {
-      return recordBeingRemoved
+      return recordBeingRemoved as Item<InstanceType<T>>
     }
 
     const responseRecord = response.value?.record
