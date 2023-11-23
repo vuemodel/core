@@ -26,8 +26,10 @@ function makeSidebar(files: string[]) {
   })
 }
 
-const sidebarActions = makeSidebar(fastGlob.sync('packages/core/src/actions/*.md'))
-const sidebarComposables = makeSidebar(fastGlob.sync('packages/core/src/composables/*.md'))
+const sidebarActions = makeSidebar(fastGlob.sync('actions/*.md'))
+const sidebarComposables = makeSidebar(fastGlob.sync('composables/*.md'))
+
+console.log(sidebarActions)
 
 export default defineConfig({
   vue: {
@@ -36,14 +38,8 @@ export default defineConfig({
     }
   },
   title: 'VueModel',
-  rewrites: {
-    'packages/core/src/:parentPath/:actionKebab': ':parentPath/:actionKebab',
-    'docs/:parentPath/:actionKebab': ':parentPath/:actionKebab',
-    'docs/:parentPath': ':parentPath',
-  },
-  srcDir: '../',
-  dir: '../',
-  base: '/core',
+  srcDir: '.',
+  dir: '.',
   head: [['script', { src: 'https://cdn.jsdelivr.net/npm/shiki' }]],
   themeConfig: {
     outline: [2,3],
@@ -53,7 +49,7 @@ export default defineConfig({
     sidebar: [
       {
         text: 'Getting Started',
-        link: 'getting-started'
+        link: '/getting-started'
       },
       {
         text: 'Composables',
