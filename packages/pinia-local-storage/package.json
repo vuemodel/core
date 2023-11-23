@@ -1,6 +1,6 @@
 {
   "name": "@vuemodel/pinia-local-storage",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "scripts": {
     "jiti-fix": "find ./dist -type f -exec sed -i 's|file://||g' {} \\;",
     "build": "unbuild",
@@ -18,8 +18,8 @@
       "require": "./dist/index.cjs"
     }
   },
-  "main": "./dist/index.ts",
-  "module": "./dist/index.ts",
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "files": [
     "dist"
