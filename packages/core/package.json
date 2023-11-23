@@ -1,6 +1,6 @@
 {
   "name": "@vuemodel/core",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "jiti-fix": "find ./dist -type f -exec sed -i 's|file://||g' {} \\;",
@@ -20,8 +20,8 @@
       "require": "./dist/index.cjs"
     }
   },
-  "main": "./dist/index.ts",
-  "module": "./dist/index.ts",
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "files": [
     "dist"
