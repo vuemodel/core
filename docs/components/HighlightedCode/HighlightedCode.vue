@@ -43,5 +43,6 @@ highlightExample()
 .highlighted-code pre {
   padding: 18px;
   margin: 0px;
+  overflow: auto;
 }
 </style>

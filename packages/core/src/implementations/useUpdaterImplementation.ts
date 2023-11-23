@@ -24,7 +24,7 @@ export function useUpdaterImplementation<T extends typeof Model> (
   const updateResource = getImplementation<T, 'update'>('update', options.driver)
   const useFinder = getImplementation<T, 'useFinder'>('useFinder', options.driver)
 
-  const resourceFinder = useFinder(ModelClass)
+  const resourceFinder = useFinder(ModelClass, { persist: true })
 
   const driverConfig = getMergedDriverConfig(options.driver)
   const repo = useRepo<InstanceType<T>>(
@@ -228,7 +228,6 @@ export function useUpdaterImplementation<T extends typeof Model> (
 
     // On Success
     if (thisResponse?.success) {
-      if (Object.keys(activeRequests.value).length <= 1) { form.value = {} }
       options?.onSuccess?.(thisResponse)
     }
 
@@ -274,7 +273,7 @@ export function useUpdaterImplementation<T extends typeof Model> (
   })
 
   watch(form, (newForm) => {
-    if (options?.autoUpdate && Object.keys(newForm).length) {
+    if (toValue(options?.autoUpdate) && Object.keys(newForm).length) {
       updateDebounced.value()
     }
   }, { deep: true })

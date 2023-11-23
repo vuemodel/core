@@ -28,6 +28,7 @@ export function useDestroyerImplementation<T extends typeof Model> (
 
   const response = ref<DestroyResponse<T>>()
   const activeRequest = ref<Promise<DestroyResponse<T>> & { cancel(): void }>()
+  const recordBeingRemoved = ref<Item<InstanceType<T>>>()
 
   function cancel () {
     activeRequest.value?.cancel()
@@ -40,6 +41,10 @@ export function useDestroyerImplementation<T extends typeof Model> (
   })
 
   const record = computed(() => {
+    if (recordBeingRemoved.value) {
+      return recordBeingRemoved
+    }
+
     const responseRecord = response.value?.record
     if (!responseRecord) return null
 
@@ -65,6 +70,7 @@ export function useDestroyerImplementation<T extends typeof Model> (
     if (recordForRemoval) {
       clonedRecord = structuredClone(recordForRemoval)
     }
+    recordBeingRemoved.value = clonedRecord
 
     if (optimistic && persist) {
       repo.destroy(resolvedId)
@@ -119,6 +125,7 @@ export function useDestroyerImplementation<T extends typeof Model> (
     }
 
     destroying.value = false
+    recordBeingRemoved.value = undefined
 
     return request
   }

@@ -7,7 +7,7 @@ export function applyPagination (
 ) {
   if (!pagination.recordsPerPage) return
 
-  query.limit(pagination.recordsPerPage)
+  query.limit(Number(pagination.recordsPerPage ?? pagination.recordsPerPage))
 
   if (pagination.page) {
     query.offset((pagination.page - 1) * pagination.recordsPerPage)

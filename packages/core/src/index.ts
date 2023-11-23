@@ -17,6 +17,7 @@ export * from './contracts/crud/index/IndexWiths'
 export * from './contracts/crud/index/IndexPagination'
 export * from './contracts/crud/index/IndexOrders'
 export * from './implementations/useIndexerImplementation'
+export * from './contracts/crud/index/PaginationDetails'
 
 // Creator
 export * from './contracts/crud/create/Create'

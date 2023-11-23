@@ -223,7 +223,7 @@ export interface UseIndexerReturn<T extends typeof Model> {
    *
    * Note: these records are updated when a new request is made.
    */
-  records: ComputedRef<DeclassifyPiniaOrmModel<InstanceType<T>>[]>
+  records: ComputedRef<InstanceType<T>[]>
 
   /**
    * Response of the latest request.

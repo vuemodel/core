@@ -30,6 +30,11 @@ const sidebarActions = makeSidebar(fastGlob.sync('packages/core/src/actions/*.md
 const sidebarComposables = makeSidebar(fastGlob.sync('packages/core/src/composables/*.md'))
 
 export default defineConfig({
+  vue: {
+    script: {
+      defineModel: true
+    }
+  },
   title: 'VueModel',
   rewrites: {
     'packages/core/src/:parentPath/:actionKebab': ':parentPath/:actionKebab',
