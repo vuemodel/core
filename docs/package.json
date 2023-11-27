@@ -10,7 +10,7 @@
 		"@typescript-eslint/eslint-plugin": "^6.7.0",
 		"@typescript-eslint/parser": "^6.7.0",
 		"@vitejs/plugin-vue": "^4.3.4",
-		"@vuemodel/core": "^0.0.8",
+		"@vuemodel/core": "^0.0.9",
 		"@vuemodel/pinia-local-storage": "^0.0.13",
 		"@vuemodel/sample-data": "^0.0.3",
 		"eslint": "^8.51.0",
