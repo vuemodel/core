@@ -50,9 +50,10 @@ jobs:
           pnpm pinia-local-storage:build
           pnpm sample-data:build
       - name: Build with VitePress
+        working-directory: ./docs
         run: |
-          pnpm docs:build
-          touch docs/.vitepress/dist/.nojekyll
+          pnpm build
+          touch .vitepress/dist/.nojekyll
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
         with:
