@@ -1,10 +1,11 @@
 {
   "name": "@vuemodel/pinia-local-storage",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "scripts": {
     "jiti-fix": "find ./dist -type f -exec sed -i 's|file://||g' {} \\;",
     "build": "unbuild",
     "dev": "unbuild --stub && pnpm jiti-fix",
+    "watch": "nodemon --ext ts,js --exec unbuild",
     "release": "pnpm build && bumpp --tag '@vuemodel/pinia-local-storage@v%s' && pnpm publish"
   },
   "repository": {
@@ -51,6 +52,7 @@
     "@typescript-eslint/parser": "^6.7.5",
     "bumpp": "^9.2.0",
     "eslint": "^8.51.0",
+    "nodemon": "^3.0.1",
     "tslib": "^2.6.2",
     "typescript": "^5.2.2",
     "unbuild": "^2.0.0"
