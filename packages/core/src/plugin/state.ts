@@ -28,6 +28,8 @@ export type VueModelConfig = {
   pinia?: Pinia
   notifyOnError?: NotifyOnErrorOptions | undefined
   autoUpdateDebounce?: number | (() => number)
+  optimistic?: boolean
+  immediate?: boolean
   pagination?: {
     recordsPerPage?: number
   }

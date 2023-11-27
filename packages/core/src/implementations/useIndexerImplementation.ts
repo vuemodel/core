@@ -23,6 +23,7 @@ import { getRecordPrimaryKey } from '../utils/getRecordPrimaryKey'
 import { IndexWiths } from '../contracts/crud/index/IndexWiths'
 import { IndexWithsLoose } from '../contracts/crud/index/IndexWithsLoose'
 import { IndexFilters, IndexSuccessResponse } from '..'
+import { getFirstDefined } from '../utils/getFirstDefined'
 
 const defaultOptions = {
   persist: true,
@@ -172,6 +173,9 @@ export function useIndexerImplementation<T extends typeof Model> (
           (filters[entityPrimaryKey] as any).in = resolvedIds.map(id => String(id))
         }
       } else {
+        if (!filters[String(ModelClass.primaryKey) as keyof typeof filters] as any) {
+          filters[String(ModelClass.primaryKey) as keyof typeof filters] = {} as any
+        }
         (filters[String(ModelClass.primaryKey) as keyof typeof filters] as any).in = []
       }
     }
@@ -341,7 +345,7 @@ export function useIndexerImplementation<T extends typeof Model> (
     return toPage(1)
   }
 
-  if (options.immediate) {
+  if (getFirstDefined([options.immediate, driverConfig.immediate])) {
     index()
   }
 

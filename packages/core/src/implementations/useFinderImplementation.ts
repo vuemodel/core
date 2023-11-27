@@ -17,6 +17,7 @@ import { makeWithQuery } from '../utils/makeWithQuery'
 import { getRecordPrimaryKey } from '../utils/getRecordPrimaryKey'
 import { IndexWithsLoose } from '../contracts/crud/index/IndexWithsLoose'
 import { IndexWiths } from '../contracts/crud/index/IndexWiths'
+import { getFirstDefined } from '../utils/getFirstDefined'
 
 const defaultOptions = {
   persist: true,
@@ -184,7 +185,7 @@ export function useFinderImplementation<T extends typeof Model> (
     return thisResponse
   }
 
-  if (options.immediate) {
+  if (getFirstDefined([options.immediate, driverConfig.immediate])) {
     find()
   }
 

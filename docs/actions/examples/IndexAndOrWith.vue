@@ -46,6 +46,11 @@ async function indexUsers () {
       />
     </div>
 
-    <pre v-if="response">{{ response }}</pre>
+    <HighlightedCode
+      v-if="response"
+      style="max-height: 400px"
+      :content="JSON.stringify(response, undefined, 2)"
+      lang="json"
+    />
   </div>
 </template>

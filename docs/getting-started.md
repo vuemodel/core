@@ -86,13 +86,11 @@ export default boot(({ app, store }) => {
     default: 'local',
     drivers: {
       local: {
-        ...piniaLocalVueModelDriver,
+        implementation: piniaLocalVueModelDriver,
         config: { pinia: store }
       }
     },
   })
-
-  const app = createApp({})
 
   app.use(vueModel)
   app.use(piniaLocalStorage)

@@ -209,6 +209,16 @@ describe('useCreator', () => {
       .toEqual('solid title!')
   })
 
+  it('can set optimistic globally', async () => {
+    // const postCreator = useCreator(Post, { optimistic: true })
+    // piniaLocalStorageState.mockLatencyMs = 50
+
+    // postCreator.create({ title: 'solid title!' }) // intentionally not awaited
+
+    // expect(postCreator.record.value?.title)
+    //   .toEqual('solid title!')
+  })
+
   it('rolls back if the create fails when using optimistic', async () => {
     const postsRepo = useRepo(Post)
     const postCreator = useCreator(Post, { optimistic: true })

@@ -74,6 +74,10 @@ describe('useFinder', () => {
       .toHaveProperty('title', 'qui est esse')
   })
 
+  it('can set immediate globally', async () => {
+    //
+  })
+
   it('hits the "onSuccess" callback on success', async () => {
     await populateRecords('posts', 5)
     const options: UseFinderOptions<typeof Post> = {

@@ -11,6 +11,7 @@ import { populateFormWithRecord } from '../utils/populateFormWithRecord'
 import { getMergedDriverConfig } from '../utils/getMergedDriverConfig'
 import debounce from 'debounce'
 import { getRecordPrimaryKey } from '../utils/getRecordPrimaryKey'
+import { getFirstDefined } from '../utils/getFirstDefined'
 
 const defaultOptions = {
   persist: true,
@@ -179,7 +180,8 @@ export function useUpdaterImplementation<T extends typeof Model> (
     }
 
     const persist = !!toValue(options?.persist)
-    const optimistic = !!toValue(options?.optimistic) && persist
+    const optimistic = getFirstDefined<boolean>([toValue(options?.optimistic), driverConfig.optimistic]) &&
+      persist
 
     const originalRecord = structuredClone(repo.find(resolvedId))
 

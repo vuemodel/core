@@ -6,6 +6,7 @@ import { DestroyResponse, DestroySuccessResponse } from '../types/Response'
 import { StandardErrors } from '../contracts/errors/StandardErrors'
 import { Constructor } from '../types/Constructor'
 import { getMergedDriverConfig } from '../utils/getMergedDriverConfig'
+import { getFirstDefined } from '../utils/getFirstDefined'
 
 const defaultOptions = {
   persist: true,
@@ -63,7 +64,8 @@ export function useDestroyerImplementation<T extends typeof Model> (
     }
 
     const persist = !!toValue(options?.persist)
-    const optimistic = !!toValue(options?.optimistic) && persist
+    const optimistic = getFirstDefined<boolean>([toValue(options?.optimistic), driverConfig.optimistic]) &&
+      persist
 
     const recordForRemoval = repo.find(resolvedId)
     let clonedRecord: Item<InstanceType<T>> = null

@@ -1,6 +1,8 @@
 import { Model, Query } from 'pinia-orm'
 import { IndexFilters, FilterTypeToValueBase } from '@vuemodel/core'
 import { whereFunctions } from './whereFunctions'
+import { getClassAttributes, getClassRelationships } from 'pinia-orm-helpers'
+import { pick } from '../../utils/pick'
 
 type FilterGroup = Partial<Record<keyof Model, FilterTypeToValueBase | FilterTypeToValueBase[]>>[]
 
@@ -28,6 +30,9 @@ function executeFilterBlock (record: Model, filterGroups: FilterGroup): boolean[
 }
 
 export function applyFilters (query: Query, filters: IndexFilters<InstanceType<typeof Model>>) {
+  const fields = getClassAttributes(query.model.constructor)
+  const relationships = getClassRelationships(query.model.constructor)
+
   Object.entries(filters).forEach(([field, actions]) => {
     // Handle or
     if (field === 'or') {
@@ -46,11 +51,24 @@ export function applyFilters (query: Query, filters: IndexFilters<InstanceType<t
     }
 
     // Handle Field
-    Object.entries(actions as FilterTypeToValueBase).forEach(([action, compareValue]) => {
-      const whereFunction = whereFunctions[action]
-      if (typeof whereFunction === 'function') {
-        query.where(field, (val: any) => whereFunction(val, compareValue))
-      }
-    })
+    if (fields[field]) {
+      Object.entries(actions as FilterTypeToValueBase).forEach(([action, compareValue]) => {
+        const whereFunction = whereFunctions[action]
+        if (typeof whereFunction === 'function') {
+          query.where(field, (val: any) => whereFunction(val, compareValue))
+        }
+      })
+    }
+
+    // Handle Relationship
+    if (relationships[field]) {
+      const relatedsWiths = pick(filters, Object.keys(relationships))
+
+      Object.entries(relatedsWiths as FilterTypeToValueBase).forEach(([related, relatedsFilters]) => {
+        query.whereHas(related, query => {
+          applyFilters(query, relatedsFilters)
+        })
+      })
+    }
   })
 }

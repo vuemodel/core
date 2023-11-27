@@ -28,8 +28,7 @@ function makeSidebar(files: string[]) {
 
 const sidebarActions = makeSidebar(fastGlob.sync('actions/*.md'))
 const sidebarComposables = makeSidebar(fastGlob.sync('composables/*.md'))
-
-console.log(sidebarActions)
+const sidebarArchitecture = makeSidebar(fastGlob.sync('architecture/*.md'))
 
 export default defineConfig({
   vue: {
@@ -59,6 +58,11 @@ export default defineConfig({
         text: 'Actions',
         collapsed: true,
         items: sortByFileName(sidebarActions)
+      },
+      {
+        text: 'Architecture',
+        collapsed: true,
+        items: sortByFileName(sidebarArchitecture)
       },
     ],
   },

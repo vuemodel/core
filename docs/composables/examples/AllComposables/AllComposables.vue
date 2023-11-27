@@ -55,11 +55,7 @@ const mockLatencyMs = ref(0)
 </script>
 
 <template>
-  <div
-    flat
-    bordered
-    class="q-pa-md"
-  >
+  <div class="q-pa-md">
     <div class="row q-gutter-sm">
       <q-input
         v-model="mockLatencyMs"

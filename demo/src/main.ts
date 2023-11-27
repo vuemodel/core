@@ -10,9 +10,15 @@ const pinia = createPinia()
 
 const vueModel = createVueModel({
   default: 'local',
+  config: {
+    optimistic: true,
+  },
   drivers: {
     local: {
       implementation: piniaLocalVueModelDriver,
+      config: {
+        optimistic: true,
+      },
     },
   },
 })

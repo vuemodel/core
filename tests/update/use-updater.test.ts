@@ -439,6 +439,18 @@ describe('useUpdater', () => {
     expect(userUpdater.record.value?.name).toEqual('Ross')
   })
 
+  it('can set optimistic globally', async () => {
+    // await populateRecords('users', 2)
+    // await useIndexer(User).index()
+    // piniaLocalStorageState.mockLatencyMs = 50
+
+    // const userUpdater = useUpdater(User, { id: '2', optimistic: true })
+
+    // userUpdater.update({ name: 'Ross' }) // intentionally not awaited
+
+    // expect(userUpdater.record.value?.name).toEqual('Ross')
+  })
+
   it('rolls back if the update fails when using optimistic', async () => {
     await populateRecords('users', 2)
     await useIndexer(User).index()

@@ -11,7 +11,7 @@ async function populateAllRecords () {
   await populateRecords('albums')
   await populateRecords('comments', 50)
   await populateRecords('photos', 20)
-  await populateRecords('posts', 10)
+  await populateRecords('posts', 40)
   await populateRecords('users')
   await populateRecords('photo_tags')
   await populateRecords('dataverse_users')

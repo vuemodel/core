@@ -11,6 +11,7 @@ import { createORM } from 'pinia-orm'
 import ExamplePanel from '../../components/ExamplePanel/ExamplePanel.vue'
 import { setCDN } from 'shiki'
 import { Notify } from 'quasar'
+import HighlightedCode from '../../components/HighlightedCode/HighlightedCode.vue'
 
 export default {
   extends: DefaultTheme,
@@ -45,6 +46,7 @@ export default {
     ctx.app.use(piniaLocalStorage)
     ctx.app.use(piniaOrm)
     ctx.app.component('ExamplePanel', ExamplePanel)
+    ctx.app.component('HighlightedCode', HighlightedCode)
 
     ctx.app.use(Quasar, {
       plugins: {

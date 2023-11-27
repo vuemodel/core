@@ -2,18 +2,21 @@
 import { getHighlighter } from 'shiki'
 import { ref } from 'vue'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   content: string
-}>()
+  lang?: 'vue' | 'json'
+}>(), {
+  lang: 'vue',
+})
 
 const contentHighlighted = ref('')
 
 async function highlightExample () {
   getHighlighter({
     theme: 'material-theme-palenight',
-    langs: ['vue'],
+    langs: ['vue', 'json'],
   }).then(highlighter => {
-    contentHighlighted.value = highlighter.codeToHtml(props.content, { lang: 'vue' })
+    contentHighlighted.value = highlighter.codeToHtml(props.content, { lang: props.lang })
   })
 }
 
@@ -31,18 +34,24 @@ highlightExample()
       color="primary"
     />
   </div>
-  <pre
+  <code
     v-else
-    class="highlighted-code q-mt-none"
-  ><code
+    class="highlighted-code"
     v-html="contentHighlighted"
-  /></pre>
+  />
 </template>
 
 <style>
+.highlighted-code {
+  padding: 0 !important;
+  display: block;
+  overflow: auto;
+}
+
 .highlighted-code pre {
-  padding: 18px;
+  padding: 8px;
   margin: 0px;
+  height: auto;
   overflow: auto;
 }
 </style>

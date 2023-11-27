@@ -82,7 +82,7 @@ export async function index<T extends typeof Model> (
     await wait(piniaLocalStorageState.mockLatencyMs ?? 0)
     const repo = useRepo(ModelClass, piniaLocalStorageState.store)
 
-    await ensureModelRecordsInStore(ModelClass, options?.with ?? {})
+    await ensureModelRecordsInStore(ModelClass, Object.assign({}, options?.with ?? {}, options?.filters ?? {}))
     const recordsCount = repo.all().length
 
     const query = repo.query()

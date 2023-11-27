@@ -23,6 +23,11 @@ const postCreator = useCreator(Post)
       unelevated
     />
 
-    <pre>{{ postCreator.record.value }}</pre>
+    <HighlightedCode
+      v-if="postCreator.record.value"
+      style="max-height: 400px"
+      :content="JSON.stringify(postCreator.record.value, undefined, 2)"
+      lang="json"
+    />
   </q-form>
 </template>

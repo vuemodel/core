@@ -11,6 +11,7 @@ import { v4 as uuidV4 } from 'uuid'
 import { Constructor } from '../types/Constructor'
 import { getMergedDriverConfig } from '../utils/getMergedDriverConfig'
 import { getRecordPrimaryKey } from '../utils/getRecordPrimaryKey'
+import { getFirstDefined } from '../utils/getFirstDefined'
 
 const defaultOptions = {
   persist: true,
@@ -90,7 +91,8 @@ export function useCreatorImplementation<T extends typeof Model> (
     ) as PiniaOrmForm<InstanceType<T>> & { id: PrimaryKey }
 
     const persist = !!toValue(options?.persist)
-    const optimistic = !!toValue(options?.optimistic) && persist
+    const optimistic = getFirstDefined<boolean>([toValue(options?.optimistic), driverConfig.optimistic]) &&
+      persist
 
     let requestId = getRecordId(mergedForm)
     if (!requestId) {

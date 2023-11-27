@@ -24,16 +24,16 @@ export const whereFunctions: Record<string, WhereFunction> = {
     return fieldsValue >= passedValue
   },
   in: (fieldsValue: string, passedValue: (string | number)[]) => {
-    return passedValue.includes(fieldsValue)
+    return passedValue?.includes(fieldsValue)
   },
   notIn: (fieldsValue: string, passedValue: (string | number)[]) => {
-    return !passedValue.includes(fieldsValue)
+    return !passedValue?.includes(fieldsValue)
   },
   contains: (fieldsValue: string, passedValue: string) => {
-    return fieldsValue.includes(passedValue)
+    return fieldsValue?.includes(passedValue)
   },
   doesNotContain: (fieldsValue: string, passedValue: string) => {
-    return !fieldsValue.includes(passedValue)
+    return !fieldsValue?.includes(passedValue)
   },
   between: (fieldsValue: string, passedValue: [string | number | Date, string | number | Date]) => {
     return between(fieldsValue, passedValue)

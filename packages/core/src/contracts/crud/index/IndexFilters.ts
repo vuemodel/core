@@ -36,8 +36,8 @@ export type FilterTypeToValue<T extends Model> = {
   } & LogicalOperatorFilters<T>
 
 export type LogicalOperatorFilters<T extends Model> = {
-  or?: Partial<Record<keyof T, FilterTypeToValueBase>>[]
-  and?: Partial<Record<keyof T, FilterTypeToValueBase>>[]
+  or?: { [K in keyof FilterPiniaOrmModelToFieldTypes<T>]?: FilterTypeToValueBase }[]
+  and?: { [K in keyof FilterPiniaOrmModelToFieldTypes<T>]?: FilterTypeToValueBase }[]
 }
 
 export type _RelationshipFilter<

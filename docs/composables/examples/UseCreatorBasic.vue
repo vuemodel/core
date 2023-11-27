@@ -6,11 +6,7 @@ const postCreator = useCreator(Post)
 </script>
 
 <template>
-  <div
-    flat
-    bordered
-    class="q-pa-md"
-  >
+  <div class="q-pa-md">
     <div class="q-gutter-y-md">
       <q-input
         v-model="postCreator.form.value.title"
@@ -26,18 +22,11 @@ const postCreator = useCreator(Post)
       />
     </div>
 
-    <q-card
+    <HighlightedCode
       v-if="postCreator.record.value"
-      flat
-      bordered
-      class="q-mt-md"
-    >
-      <q-card-section>
-        <div class="text-body1">
-          postCreator.record.value
-        </div>
-        <pre>{{ postCreator.record.value }}</pre>
-      </q-card-section>
-    </q-card>
+      style="max-height: 400px"
+      :content="JSON.stringify(postCreator.record.value, undefined, 2)"
+      lang="json"
+    />
   </div>
 </template>

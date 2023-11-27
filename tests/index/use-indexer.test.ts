@@ -47,6 +47,10 @@ describe('useIndexer', () => {
     expect(indexer.records.value.length).greaterThan(0)
   })
 
+  it('can set immediate globally', async () => {
+    //
+  })
+
   it('sets validation errors when the response has validation errors', async () => {
     const postsIndexer = useIndexer(Post)
     piniaLocalStorageState.mockValidationErrors = {
@@ -1145,5 +1149,32 @@ describe('useIndexer', () => {
     await postIndexer.index('1')
 
     expect(indexErrorNotifierSpy).toHaveBeenCalled()
+  })
+
+  it.only('can nested filter', async () => {
+    await populateRecords('users', 10)
+    await populateRecords('posts', 10)
+    await populateRecords('comments', 10)
+
+    const postIndexer = useIndexer(User, {
+      filters: {
+        age: {
+          greaterThan: 3,
+        },
+        posts: {
+          title: {
+            equals: 'qui est esse',
+          },
+          comments: {
+            email: { equals: 'Dallas@ole.me' },
+          },
+        },
+      },
+    })
+
+    await postIndexer.index()
+
+    expect(postIndexer.records.value.length).toEqual(1)
+    expect(postIndexer.records.value[0].name).toEqual('Leanne Graham')
   })
 })

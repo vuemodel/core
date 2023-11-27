@@ -16,7 +16,8 @@ export function discoverEntities<T extends Model> (
   Object.entries(withParam).forEach(([related, relatedOptions]) => {
     const relatedFields = (new ModelClass()).$fields()
     const relatedAttribute = relatedFields[related as keyof typeof relatedFields] as Relation
-    const RelatedClass = relatedAttribute.related.constructor as typeof Model
+    const RelatedClass = relatedAttribute?.related?.constructor as typeof Model
+    if (!RelatedClass) return
     const relationships = getClassRelationships(RelatedClass)
     const relatedsWiths = pick(relatedOptions, Object.keys(relationships))
     entitiesAccumulator[related as string] = RelatedClass

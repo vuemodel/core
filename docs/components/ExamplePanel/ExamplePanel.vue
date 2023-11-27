@@ -4,7 +4,6 @@ import { defaultReplContent } from '../VueRepl/defaultReplContent'
 import { type Component, ref } from 'vue'
 import { mdiAlphaRBox, mdiCodeTags } from '@quasar/extras/mdi-v7'
 import ReplDialog from '../ReplDialog/ReplDialog.vue'
-import HighlightedCode from '../HighlightedCode/HighlightedCode.vue'
 import ResetDataButton from '../ResetDataButton/ResetDataButton.vue'
 
 withDefaults(defineProps<{
@@ -66,9 +65,6 @@ const showCode = ref(false)
 .example-component-wrapper pre {
   background: #303030;
   color: rgb(213, 213, 213);
-  padding: 6px;
-  overflow: auto;
-  max-height: calc(100vh - 180px);
   border-radius: 4px;
 }
 </style>

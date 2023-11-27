@@ -111,6 +111,19 @@ describe('useDestroyer', () => {
     expect(postRepo.all().length).toEqual(1)
   })
 
+  it('can set optimistic globally', async () => {
+    // await populateRecords('posts', 2)
+    // const postsIndexer = useIndexer(Post)
+    // await postsIndexer.index()
+    // const postRepo = useRepo(Post)
+    // const postDestroyer = useDestroyer(Post, { optimistic: true })
+    // piniaLocalStorageState.mockLatencyMs = 200
+
+    // postDestroyer.destroy('1') // intentionally not awaited
+
+    // expect(postRepo.all().length).toEqual(1)
+  })
+
   it('rolls back if the destroy fails when using optimistic', async () => {
     await populateRecords('posts', 2)
     const postsIndexer = useIndexer(Post)
