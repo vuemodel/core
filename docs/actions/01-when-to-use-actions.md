@@ -2,12 +2,13 @@
 Actions are the "bare bones" way of creating/updating/finding/indexing/destroying resources. **We usually only need them when we can't use composables**.
 
 ::: warning
-Actions are "bare bones" meaning nothing is inserted into the store.
+Actions are "bare bones" (nothing is inserted into the store).
 :::
 
-Here's some examples of where you might use one of the "actions".
+Here's some examples of where you might use **actions rather than composables**.
 
-1. Vue hasn't been created yet
+## 1. Vue hasn't been created yet
+Sometimes, requests to our backend needs to be made early in our applications lifecycle. For example, we may need to make a request before Vue is instantiated. In these scenarios, we can reach for actions:
 
 `main.ts`
 ```ts
@@ -22,7 +23,8 @@ const app = createApp(App)
 app.mount('#app')
 ```
 
-2. Used with a package that might not have access to the composition api
+## 2. External Packages
+Some packages might require configuration that doesn't have access to the composition API. In theese scenarios, we would have to use actions:
 
 `my-backend-config.ts`
 ```ts
@@ -41,7 +43,8 @@ createBackend({
 })
 ```
 
-3. Within a script, such as a cli tool (**yes**, you can use VueModel in your command line tools like node and bun!)
+## 3. Script/Cli Tool
+**Yes**, we can use VueModel in our command line tools like node and bun!
 
 The example below was tested with bun. It's much easier to get running with typescript using esm (ECMAScript Modules).
 
@@ -93,7 +96,6 @@ bun createPost.ts --title "Running with bun!" --body "Using VueModel in a cli to
 ```
 
 :::
- use VueModel in your command line tools like node and bun!)
 
 The example below was tested with bun. It's much easier to get a modern typescript project running with bun.
 

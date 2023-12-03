@@ -1,13 +1,23 @@
 <script lang="ts" setup>
 import { useIndexer } from '@vuemodel/core'
-import { User } from '@vuemodel/sample-data'
-import { ref } from 'vue'
+import { Post, User, Comment } from '@vuemodel/sample-data'
+import { computed } from 'vue'
 
-const whereIdIn = ref([])
-const whereIdInImmediate = ref(false)
-const ids = Array(20).fill(0).map((element, index) => String(index + 1))
+const usersIndexer = useIndexer(User)
+const postsIndexer = useIndexer(Post)
+const commentsIndexer = useIndexer(Comment)
 
-const usersIndexer = useIndexer(User, { whereIdIn, whereIdInImmediate })
+async function indexAll () {
+  usersIndexer.index()
+  postsIndexer.index()
+  commentsIndexer.index()
+}
+
+const usersPopulated = computed(() => {
+  return usersIndexer.makeQuery()
+    .with('posts', query => query.with('comments'))
+    .get()
+})
 </script>
 
 <template>
@@ -17,33 +27,13 @@ const usersIndexer = useIndexer(User, { whereIdIn, whereIdInImmediate })
         label="Index"
         no-caps
         color="primary"
-        @click="usersIndexer.index()"
-      />
-
-      <q-checkbox
-        v-model="whereIdInImmediate"
-        label="whereIdInImmediate"
-        class="q-mb-sm"
-        left-label
+        @click="indexAll()"
       />
     </div>
 
-    <q-select
-      v-model="whereIdIn"
-      :options="ids"
-      multiple
-      use-chips
-      filled
-      color="secondary"
-      dense
-      class="q-mb-md"
-    />
-
-    <HighlightedCode
-      v-if="usersIndexer.records.value.length"
+    <pre
+      v-if="usersPopulated.length"
       style="max-height: 400px"
-      :content="JSON.stringify(usersIndexer.records.value, undefined, 2)"
-      lang="json"
-    />
+    >{{ usersPopulated }}</pre>
   </div>
 </template>

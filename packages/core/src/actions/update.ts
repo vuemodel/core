@@ -4,6 +4,7 @@ import { Model } from 'pinia-orm'
 import { PiniaOrmForm } from 'pinia-orm-helpers'
 import { UpdateResponse } from '../types/Response'
 import { LoosePrimaryKey } from '../types/LoosePrimaryKey'
+import { resolveParams } from './resolveParams'
 
 /**
  * Update a record on the "backend".
@@ -23,12 +24,15 @@ import { LoosePrimaryKey } from '../types/LoosePrimaryKey'
  * )
  */
 export function update<T extends typeof Model> (
-  ModelClass: T,
-  id: LoosePrimaryKey,
-  form: PiniaOrmForm<InstanceType<T>>,
-  options?: UpdateOptions<T>,
+  ModelClass: T | string,
+  id: LoosePrimaryKey | T,
+  form: PiniaOrmForm<InstanceType<T>> | LoosePrimaryKey,
+  options?: UpdateOptions<T> | PiniaOrmForm<InstanceType<T>>,
 ): Promise<UpdateResponse<T>> {
-  const implementation = getImplementation('update', options?.driver) as Update<T>
+  const params = resolveParams(ModelClass, id, form, options)
+  const driver = typeof ModelClass === 'string' ? ModelClass : (options as UpdateOptions<T>)?.driver
 
-  return implementation(ModelClass, id, form, options)
+  const implementation = getImplementation('update', driver) as Update<T>
+
+  return implementation(...(params as [T, LoosePrimaryKey, PiniaOrmForm<InstanceType<T>>, UpdateOptions<T>]))
 }

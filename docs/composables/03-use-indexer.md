@@ -2,14 +2,23 @@
 import UseIndexerImmediateRaw from './examples/use-indexer/UseIndexerImmediate.vue?raw'
 import UseIndexerImmediate from './examples/use-indexer/UseIndexerImmediate.vue'
 
+import UseIndexerMakeQueryRaw from './examples/use-indexer/UseIndexerMakeQuery.vue?raw'
+import UseIndexerMakeQuery from './examples/use-indexer/UseIndexerMakeQuery.vue'
+
 import UseIndexerAndOrFiltersRaw from './examples/use-indexer/UseIndexerAndOrFilters.vue?raw'
 import UseIndexerAndOrFilters from './examples/use-indexer/UseIndexerAndOrFilters.vue'
 
 import UseIndexerBasicRaw from './examples/use-indexer/UseIndexerBasic.vue?raw'
 import UseIndexerBasic from './examples/use-indexer/UseIndexerBasic.vue'
 
+import UseIndexerPersistByRaw from './examples/use-indexer/UseIndexerPersistBy.vue?raw'
+import UseIndexerPersistBy from './examples/use-indexer/UseIndexerPersistBy.vue'
+
 import UseIndexerBasicWithRaw from './examples/use-indexer/UseIndexerBasicWith.vue?raw'
 import UseIndexerBasicWith from './examples/use-indexer/UseIndexerBasicWith.vue'
+
+import UseIndexerWithNestedRaw from './examples/use-indexer/UseIndexerWithNested.vue?raw'
+import UseIndexerWithNested from './examples/use-indexer/UseIndexerWithNested.vue'
 
 import UseIndexerEntityScopesRaw from './examples/use-indexer/UseIndexerEntityScopes.vue?raw'
 import UseIndexerEntityScopes from './examples/use-indexer/UseIndexerEntityScopes.vue'
@@ -54,12 +63,14 @@ import UseIndexerWhereIdIn from './examples/use-indexer/UseIndexerWhereIdIn.vue'
 import { useIndexer } from '@vuemodel/core'
 import { Post } from '@vuemodel/sample-data'
 
-const indexer = useIndexer(Post)
-await indexer.index()
-console.log(indexer.records.value)
+const postsIndexer = useIndexer(Post)
+await postsIndexer.index()
+console.log(postsIndexer.records.value)
 ```
 
-`useIndexer` has many features to help you **"filter"**, **"order"**, **"paginate"** and include (**"with"**) records. Let's get started with a basic example. Indexing data:
+[[toc]]
+
+`useIndexer` helps you **"filter"**, **"order"**, **"paginate"** and include (**"with"**) records. Here's a basic example:
 
 <ExamplePanel
   title="Basic Indexer"
@@ -68,7 +79,7 @@ console.log(indexer.records.value)
 />
 
 ## `records` and `request`
-When accessing `indexer.records.value`, we're **pulling it out of the store**. This is good news! It means any changes to the record in other parts of your application will be reflected when using `indexer.records.value`.
+When accessing `indexer.records.value`, we're **pulling it out of the store**. This is good news! It means any changes to the record in other parts of our application will be reflected when using `indexer.records.value`.
 
 You can also access records via `indexer.request.value.records`. These records **are not pulled from the store** and therefore, are not reactive. For example, if you later destroy a record with `useDestroyer`, that action **will not** be reflected in `indexer.request.value.records`.
 
@@ -78,13 +89,14 @@ const usersIndexer = useIndexer(User)
 
 const usersPopulated = computed(() => {
   return usersIndexer.makeQuery()
-    .with('posts.comments')
+    .with('posts', query => query.with('comments'))
+    .get()
 })
 ```
 
 In this part of the docs, "store query" means "a query for data on the frontend".
 
-One of the cool things about VueModel, is that the query you use to get data from the backend, is the same query used to get data on the frontend (store query). Therefore, if you fetch users with posts and comments (`users.posts.comments`) the store query to fetch that data is built for you automatically!
+One of the cool things about VueModel, is that the query you use to get data from the backend, is the same query used to get data on the frontend (store query). Therefore, if you fetch users with posts and comments (`users.posts.comments`) the store query to fetch that data is built for you automatically (`indexer.records`)!
 
 If you want to change this store query, you can use `makeQuery()`. `makeQuery()` builds a query with all your filters, includes, orderBys etc. This gives you more control over the store query, because now you can continue to add to this query!
 
@@ -94,13 +106,21 @@ In the following example:
 - all comments are fetched
 - we use `makeQuery()` on the user to "stitch" all this data together
 
+<ExamplePanel
+  title="Make Query"
+  :content="UseIndexerMakeQueryRaw"
+  :exampleComponent="UseIndexerMakeQuery"
+/>
 
+Isn't [PiniaORM](https://pinia-orm.codedredd.de/) wonderful? We couldn't have built VueModel without it 💚.
 
-Isn't [PiniaORM](https://pinia-orm.codedredd.de/) wonderful? We couldn't have built PiniaORM without it!
+::: info
+Take a look at PiniaORM's ["Retrieving Data" docs](https://pinia-orm.codedredd.de/api/query/all) to see other ways you can query data in the store. Or for more advanced users, jump straight to the ["Query API"](https://pinia-orm.codedredd.de/api/query/all).
+:::
 
 ## `immediate`
 ```ts
-const indexer = useIndexer(Post, { immediate: true })
+const postsIndexer = useIndexer(Post, { immediate: true })
 ```
 
 Calls `index()` when the composable has initialized.
@@ -136,7 +156,7 @@ The driver you're using might not support all the above filters.
 
 ### Usage
 ```ts
-const indexer = useIndexer(Post, {
+const postsIndexer = useIndexer(Post, {
   filters: {
     name: { equals: 'Chelsey Dietrich' },
   }
@@ -186,6 +206,7 @@ We can narrow our filters by using and/or blocks:
   :exampleComponent="UseIndexerAndOrFilters"
 />
 
+### Filtering Nested Data
 Of course, we also have nested filters! Let's find users that have posted since `2023-11-11`
 ```ts
 const usersIndexer = useIndexer(User, {
@@ -213,21 +234,21 @@ There are three notations we can use to include data:
 
 ::: code-group
 ```ts [object (recommended)]
-const indexer = useIndexer(Post, {
+const postsIndexer = useIndexer(Post, {
   with: { user: {} }
 })
 ```
 
 ```ts [string]
-const indexer = useIndexer(Post, { with: 'user' })
+const postsIndexer = useIndexer(Post, { with: 'user' })
 ```
 
 ```ts [string[]]
-const indexer = useIndexer(Post, { with: ['user', 'comments'] })
+const postsIndexer = useIndexer(Post, { with: ['user', 'comments'] })
 ```
 :::
 
-For more complex apps, we recommend sticking to object notation (the first example above). It provides better type completion, and can add useful features like `orderBy`'s and `filter`'s when they're needed.
+For more complex apps, we recommend sticking to object notation (the first example above). It provides better type completion, and allows you to add useful features like `orderBy`'s and `filter`'s when they're needed.
 
 <ExamplePanel
   title="Basic 'With'"
@@ -235,10 +256,39 @@ For more complex apps, we recommend sticking to object notation (the first examp
   :exampleComponent="UseIndexerBasicWith"
 />
 
+::: info
+`_limit` is also available when working with nested data.
+:::
+
+### Deeply nested `with`
+Of course, we can also include nested data using either object notation, or dot notation:
+
+::: code-group
+```ts [object (recommended)]
+const usersIndexer = useIndexer(User, {
+  with: { post: { comments: {} } }
+})
+```
+
+```ts [string]
+const usersIndexer = useIndexer(User, { with: 'posts.comments' })
+```
+
+```ts [string[]]
+const usersIndexer = useIndexer(User, { with: ['posts.comments'] })
+```
+:::
+
+<ExamplePanel
+  title="Deeply Nested 'With'"
+  :content="UseIndexerWithNestedRaw"
+  :exampleComponent="UseIndexerWithNested"
+/>
+
 ### Filtering Nested Data (`with`)
 While including nested data, we can apply filters!
 ```ts
-const indexer = useIndexer(Post, {
+const postsIndexer = useIndexer(Post, {
   with: {
     user: { name: { equals: 'Clementine Bauch' } }
   }
@@ -253,7 +303,7 @@ const indexer = useIndexer(Post, {
 
 and/or blocks allow us to further narrow our result.
 ```ts
-const indexer = useIndexer(Post, {
+const postsIndexer = useIndexer(Post, {
   with: {
     posts: {
       or: [
@@ -306,8 +356,25 @@ const postsIndexer = useIndexer(Post, {
 
 ## Pagination
 ```ts
-const postsIndexer = useIndexer(Post, {})
+const postsIndexer = useIndexer(Post, { pagination: { recordsPerPage: 3 } })
 ```
+Pagination with VueModel is easy!
+1. Set `recordsPerPage`
+2. Call `next()`, `previous()` or `toPage(pageNumber)` to paginate!
+
+Here's the full pagination API:
+
+**options.pagination**
+- `page`
+- `recordsPerPage`
+
+**Pagination**
+- `indexer.pagination.value.recordsCount`
+- `indexer.pagination.value.pagesCount`
+- `indexer.toFirstPage()`
+- `indexer.toLastPage()`
+- `indexer.isFirstPage.value`
+- `indexer.isLastPage.value`
 
 <ExamplePanel
   title="Pagination"
@@ -333,6 +400,30 @@ Put simply, it means we don't have to call `index()` manually when we're ready t
   title="Immediate Pagination"
   :content="UseIndexerPaginationImmediateRaw"
   :exampleComponent="UseIndexerPaginationImmediate"
+/>
+
+## `persist`
+```ts
+const postsIndexer = useIndexer(Post, { persist: false })
+```
+After indexing data, it's automatically persisted to the store. To prevent this, we can set `persist: false`.
+
+## `persistBy`
+```ts
+const postsIndexer = useIndexer(Post, { persistBy: 'insert' })
+```
+There are four different strategies we can use when persisting data to the store:
+1. [save](https://pinia-orm.codedredd.de/guide/repository/inserting-data#inserting-data-1) (default): save records **and related records** to the store
+2. [insert](https://pinia-orm.codedredd.de/guide/repository/inserting-data#inserting-data-without-normalization): save records **without related records** to the store. We might think of this as a "flat save"
+3. replace-save: flush all data from the store, then **save**
+4. replace-insert: flush all data from the store, then **insert**
+After indexing data, it's automatically persisted to the store. To prevent this, we can set `persist: false`
+
+
+<ExamplePanel
+  title="Persist By"
+  :content="UseIndexerPersistByRaw"
+  :exampleComponent="UseIndexerPersistBy"
 />
 
 ## Indexing By ID (`whereIdIn`)
@@ -419,13 +510,22 @@ vueModelState.driver.local.config.scopes = {
 The use of a `tenant_id` in the example above can be great for testing using the local driver, yet is not a secure way to filter by tenant in production.
 :::
 
-Scopes allow you to predefine filters. For example, if all your records have a `created_at` field, you may want to make a `latest` scope.
+Scopes allow you to predefine filters. For example, if all our records have a `created_at` field, you may want to make a `latest` scope.
 
 <ExamplePanel
   title="Scopes"
   :content="UseIndexerScopesRaw"
   :exampleComponent="UseIndexerScopes"
 />
+
+### Disabling Global Scopes
+We can disable global scopes with the `withoutGlobalScopes` option:
+
+```ts
+const postsIndexer = useIndexer(Post, {
+  withoutGlobalScopes: ['defaultTenant']
+})
+```
 
 ## Entity Scopes
 Entity scopes are almost identical to scopes. The difference, is that they're **only for a specific model**.
@@ -448,17 +548,11 @@ vueModelState.config.entityScopes = {
   :exampleComponent="UseIndexerEntityScopes"
 />
 
+### Disabling Global Entity Scopes
+We can disable global entity scopes with the `withoutEntityGlobalScopes` option:
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+```ts
+const postsIndexer = useIndexer(Post, {
+  withoutEntityGlobalScopes: ['orgWebsite']
+})
+```

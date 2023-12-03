@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { getHighlighter } from 'shiki'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 const props = withDefaults(defineProps<{
   content: string
@@ -20,7 +20,9 @@ async function highlightExample () {
   })
 }
 
-highlightExample()
+watch(() => props.content, () => {
+  highlightExample()
+}, { immediate: true })
 </script>
 
 <!-- eslint-disable vue/no-v-html -->

@@ -13,7 +13,7 @@ function sortByFileName(array) {
 
 function makeSidebar(files: string[]) {
   return files.map(file => {
-    const link = file
+    const link = '/' + file
     const linkSplit = file.split('/')
     const text = capitalCase(
       linkSplit[linkSplit.length - 1].replace('.md', '').slice(3)
@@ -50,6 +50,10 @@ export default defineConfig({
         link: '/getting-started'
       },
       {
+        text: 'Multiple Drivers',
+        link: '/multiple-drivers'
+      },
+      {
         text: 'Composables',
         collapsed: true,
         items: sortByFileName(sidebarComposables)
@@ -59,11 +63,11 @@ export default defineConfig({
         collapsed: true,
         items: sortByFileName(sidebarActions)
       },
-      {
-        text: 'Architecture',
-        collapsed: true,
-        items: sortByFileName(sidebarArchitecture)
-      },
+      // {
+      //   text: 'Architecture',
+      //   collapsed: true,
+      //   items: sortByFileName(sidebarArchitecture)
+      // },
     ],
   },
 })

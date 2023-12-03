@@ -1,21 +1,31 @@
 <script setup>
-import UseCreatorBasicRaw from './examples/UseCreatorBasic.vue?raw'
-import UseCreatorBasic from './examples/UseCreatorBasic.vue'
+import UseCreatorBasicRaw from './examples/use-creator/UseCreatorBasic.vue?raw'
+import UseCreatorBasic from './examples/use-creator/UseCreatorBasic.vue'
 
-import UseCreatorFormRaw from './examples/UseCreatorForm.vue?raw'
-import UseCreatorForm from './examples/UseCreatorForm.vue'
+import UseCreatorFormRaw from './examples/use-creator/UseCreatorForm.vue?raw'
+import UseCreatorForm from './examples/use-creator/UseCreatorForm.vue'
 
-import UseCreatorSpinnerRaw from './examples/UseCreatorSpinner.vue?raw'
-import UseCreatorSpinner from './examples/UseCreatorSpinner.vue'
+import UseCreatorSpinnerRaw from './examples/use-creator/UseCreatorSpinner.vue?raw'
+import UseCreatorSpinner from './examples/use-creator/UseCreatorSpinner.vue'
+
+import UseCreatorRecordResponseRaw from './examples/use-creator/UseCreatorRecordResponse.vue?raw'
+import UseCreatorRecordResponse from './examples/use-creator/UseCreatorRecordResponse.vue'
+
 </script>
 
 # `useCreator` Composable
 ```ts
+import { useCreator } from '@vuemodel/core'
+
 const postCreator = useCreator(Post)
+postCreator.form.value.title = 'VueModel Unleashed!'
+postCreator.create()
 ```
 
+[[toc]]
+
 ::: warning
-It may be tempting to destructure useCreator (`const { form } = useCreator(Post)`). **We don't recommend this**. Destructuring removes context and makes it difficult to manage variable name clashes.
+It may be tempting to destructure useCreator (`const { form } = useCreator(Post)`). **We don't recommend this**. Destructuring blurs the context, and makes it difficult to manage variable name clashes.
 :::
 
 ## The Form
@@ -64,7 +74,7 @@ As detailed above, there are 3 ways to include form data:
 
 VueModel uses a sensible precedence when merging the form:
 
-`mergeData` <- `creator.form.value` <- `creator(form)`
+`mergeData` <- `creator.form.value` <- `creator.create(form)`
 
 ## `record`
 ```ts
@@ -73,9 +83,15 @@ await postCreator.create({ title: 'My Blog Title' })
 console.log(postCreator.record.value)
 ```
 
-When accessing `creator.record.value`, we're **pulling it out of the store**. This is good news! It means any changes to the record in other parts of your application will be reflected when using `creator.record.value`
+When accessing `creator.record.value`, we're **pulling it out of the store**. This is good news! It means any changes to the record in other parts of our application will be reflected when using `creator.record.value`
 
-Note that when we set `optimistic: true`, the record is inserted into the store **before** the request is successful. This can help make your app responsive, at the cost of a "dishonest UI".
+Note that when we set `optimistic: true`, the record is inserted into the store **before** the request is successful. This can help make our app responsive, at the cost of a "dishonest UI".
+
+<ExamplePanel
+  title="Record/Response"
+  :content="UseCreatorRecordResponseRaw"
+  :exampleComponent="UseCreatorRecordResponse"
+/>
 
 ## `response`
 ```ts
@@ -121,7 +137,7 @@ console.log(postCreator.response.value.record) // logs the record
 In the example above, notice that `postCreator.response.value.record` returns the record, yet `postCreator.record.value` returns `undefined`. This is because `record` always fetches from the store. Since `persist` is `false`, no item was inserted into the store.
 :::
 
-## `activeRequests.value`
+## `activeRequests`
 Sometimes, the app might be creating more than one record at the same time. For example, if the UI allows users to start creating a second record before the first request is complete.
 
 When more than one request is active:

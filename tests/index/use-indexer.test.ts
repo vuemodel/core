@@ -1146,12 +1146,12 @@ describe('useIndexer', () => {
     const indexErrorNotifierSpy = vi.spyOn(vueModelState.config.errorNotifiers, 'index')
 
     const postIndexer = useIndexer(User, { notifyOnError: true })
-    await postIndexer.index('1')
+    await postIndexer.index(['1'])
 
     expect(indexErrorNotifierSpy).toHaveBeenCalled()
   })
 
-  it.only('can nested filter', async () => {
+  it('can nested filter', async () => {
     await populateRecords('users', 10)
     await populateRecords('posts', 10)
     await populateRecords('comments', 10)

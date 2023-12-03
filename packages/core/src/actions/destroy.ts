@@ -3,6 +3,7 @@ import { Destroy, DestroyOptions } from '../contracts/crud/destroy/Destroy'
 import { Model } from 'pinia-orm'
 import { DestroyResponse } from '../types/Response'
 import { LoosePrimaryKey } from '../types/LoosePrimaryKey'
+import { resolveParams } from './resolveParams'
 
 /**
  * Destroy (delete) a record on the "backend".
@@ -17,11 +18,15 @@ import { LoosePrimaryKey } from '../types/LoosePrimaryKey'
  * const response = await destroy(Post, '6')
  */
 export function destroy<T extends typeof Model> (
-  ModelClass: T,
-  id: LoosePrimaryKey,
-  options?: DestroyOptions<T>,
+  ModelClass: T | string,
+  id: LoosePrimaryKey | T,
+  options?: DestroyOptions<T> | LoosePrimaryKey,
+  hasDriverOptions?: DestroyOptions<T>,
 ): Promise<DestroyResponse<T>> {
-  const implementation = getImplementation('destroy', options?.driver) as Destroy<T>
+  const params = resolveParams(ModelClass, id, options, hasDriverOptions)
+  const driver = typeof ModelClass === 'string' ? ModelClass : (options as DestroyOptions<T>)?.driver
 
-  return implementation(ModelClass, id, options)
+  const implementation = getImplementation('destroy', driver) as Destroy<T>
+
+  return implementation(...(params as [T, LoosePrimaryKey, DestroyOptions<T>]))
 }

@@ -1,9 +1,7 @@
 <script lang="ts" setup>
-import { piniaLocalStorageState } from '@vuemodel/pinia-local-storage'
 import { IndexResponse, index } from '@vuemodel/core'
 import { ref } from 'vue'
 import { Post } from '@vuemodel/sample-data'
-piniaLocalStorageState.mockLatencyMs = 1500
 
 const response = ref<IndexResponse<typeof Post>>()
 const indexing = ref(false)

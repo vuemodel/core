@@ -7,11 +7,9 @@ const PostIndexer = useIndexer(Post, { immediate: true })
 
 <template>
   <div class="q-pa-md">
-    <HighlightedCode
+    <pre
       v-if="PostIndexer.records.value.length"
       style="max-height: 400px"
-      :content="JSON.stringify(PostIndexer.records.value, undefined, 2)"
-      lang="json"
-    />
+    >{{ PostIndexer.records.value }}</pre>
   </div>
 </template>

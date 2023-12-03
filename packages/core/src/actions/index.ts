@@ -2,6 +2,7 @@ import { getImplementation } from '../getImplementation'
 import { Index, IndexOptions } from '../contracts/crud/index/Index'
 import { Model } from 'pinia-orm'
 import { IndexResponse } from '../types/Response'
+import { resolveParams } from './resolveParams'
 
 /**
  * List records from the backend
@@ -25,10 +26,14 @@ import { IndexResponse } from '../types/Response'
  * )
  */
 export function index<T extends typeof Model> (
-  ModelClass: T,
-  options?: IndexOptions<T>,
+  ModelClass: T | string,
+  options?: IndexOptions<T> | T,
+  hasDriverOptions?: IndexOptions<T>,
 ): Promise<IndexResponse<T>> {
-  const implementation = getImplementation('index', options?.driver) as Index<T>
+  const params = resolveParams(ModelClass, options, hasDriverOptions)
+  const driver = typeof ModelClass === 'string' ? ModelClass : (options as IndexOptions<T>)?.driver
 
-  return implementation(ModelClass, options)
+  const implementation = getImplementation('index', driver) as Index<T>
+
+  return implementation(...(params as [T, IndexOptions<T>]))
 }

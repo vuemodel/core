@@ -3,6 +3,7 @@ import { Find, FindOptions } from '../contracts/crud/find/Find'
 import { Model } from 'pinia-orm'
 import { FindResponse } from '../types/Response'
 import { LoosePrimaryKey } from '../types/LoosePrimaryKey'
+import { resolveParams } from './resolveParams'
 
 /**
  * Find a record on the "backend".
@@ -17,11 +18,15 @@ import { LoosePrimaryKey } from '../types/LoosePrimaryKey'
  * const response = await find(Post, '1')
  */
 export function find<T extends typeof Model> (
-  ModelClass: T,
-  id: LoosePrimaryKey,
-  options?: FindOptions<T>,
+  ModelClass: T | string,
+  id: LoosePrimaryKey | T,
+  options?: FindOptions<T> | LoosePrimaryKey,
+  hasDriverOptions?: FindOptions<T>,
 ): Promise<FindResponse<T>> {
-  const implementation = getImplementation('find', options?.driver) as Find<T>
+  const params = resolveParams(ModelClass, id, options, hasDriverOptions)
+  const driver = typeof ModelClass === 'string' ? ModelClass : (options as FindOptions<T>)?.driver
 
-  return implementation(ModelClass, id, options)
+  const implementation = getImplementation('find', driver) as Find<T>
+
+  return implementation(...(params as [T, LoosePrimaryKey, FindOptions<T>]))
 }

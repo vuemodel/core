@@ -66,5 +66,7 @@ const showCode = ref(false)
   background: #303030;
   color: rgb(213, 213, 213);
   border-radius: 4px;
+  padding: 4px;
+  overflow: auto;
 }
 </style>

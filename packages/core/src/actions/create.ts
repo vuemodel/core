@@ -3,6 +3,7 @@ import { Create, CreateOptions } from '../contracts/crud/create/Create'
 import { Model } from 'pinia-orm'
 import { PiniaOrmForm } from 'pinia-orm-helpers'
 import { CreateResponse } from '../types/Response'
+import { resolveParams } from './resolveParams'
 
 /**
  * Create a record on the "backend".
@@ -19,11 +20,15 @@ import { CreateResponse } from '../types/Response'
  * })
  */
 export function create<T extends typeof Model> (
-  ModelClass: T,
-  form: PiniaOrmForm<InstanceType<T>>,
-  options?: CreateOptions<T>,
+  ModelClass: T | string,
+  form: PiniaOrmForm<InstanceType<T>> | T,
+  options?: CreateOptions<T> | PiniaOrmForm<InstanceType<T>>,
+  hasDriverOptions?: CreateOptions<T>,
 ): Promise<CreateResponse<T>> {
-  const implementation = getImplementation('create', options?.driver) as Create<T>
+  const params = resolveParams(ModelClass, form, options, hasDriverOptions)
+  const driver = typeof ModelClass === 'string' ? ModelClass : (options as CreateOptions<T>)?.driver
 
-  return implementation(ModelClass, form, options)
+  const implementation = getImplementation('create', driver) as Create<T>
+
+  return implementation(...(params as [T, PiniaOrmForm<InstanceType<T>>, CreateOptions<T>]))
 }

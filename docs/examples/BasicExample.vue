@@ -1,7 +1,6 @@
 <script lang="ts" setup>
-import { Form, useCreator, useIndexer } from '@vuemodel/core'
+import { useCreator, useIndexer } from '@vuemodel/core'
 import { User, Post } from '@vuemodel/sample-data'
-import { ref } from 'vue'
 
 const userCreator = useCreator(User)
 const usersIndexer = useIndexer(User, {

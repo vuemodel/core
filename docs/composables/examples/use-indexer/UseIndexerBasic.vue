@@ -16,11 +16,9 @@ const postsIndexer = useIndexer(Post)
       @click="postsIndexer.index()"
     />
 
-    <HighlightedCode
+    <pre
       v-if="postsIndexer.records.value.length"
       style="max-height: 400px"
-      :content="JSON.stringify(postsIndexer.records.value, undefined, 2)"
-      lang="json"
-    />
+    >{{ postsIndexer.records.value }}</pre>
   </div>
 </template>

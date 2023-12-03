@@ -6,7 +6,7 @@ import 'quasar/dist/quasar.css'
 import './styles.css'
 import { createVueModel } from '@vuemodel/core'
 import { createPinia } from 'pinia'
-import { createPiniaLocalStorage, piniaLocalVueModelDriver } from '@vuemodel/pinia-local-storage'
+import { createPiniaLocalStorage, piniaLocalStorageState, piniaLocalVueModelDriver } from '@vuemodel/pinia-local-storage'
 import { createORM } from 'pinia-orm'
 import ExamplePanel from '../../components/ExamplePanel/ExamplePanel.vue'
 import { setCDN } from 'shiki'
@@ -31,6 +31,7 @@ export default {
       frontStore: piniaFront,
       backStore: piniaBack,
     })
+    
     const vueModel = createVueModel({
       default: 'local',
       drivers: {
@@ -59,6 +60,8 @@ export default {
           accent: '#00171f'
         },
       }
-    }, { req: { headers: {} } });
+    }, { req: { headers: {} } })
+    
+    piniaLocalStorageState.mockLatencyMs = 1000
   }
 }

@@ -1,5 +1,5 @@
 import { Model, useRepo } from 'pinia-orm'
-import { computed, ref, toValue } from 'vue'
+import { computed, ref, toValue, watch } from 'vue'
 import { DeclassifyPiniaOrmModel } from 'pinia-orm-helpers'
 import { UseFinderOptions, UseFinderReturn } from '../contracts/crud/find/UseFinder'
 import { getImplementation } from '../getImplementation'
@@ -185,9 +185,18 @@ export function useFinderImplementation<T extends typeof Model> (
     return thisResponse
   }
 
-  if (getFirstDefined([options.immediate, driverConfig.immediate])) {
+  if (getFirstDefined([toValue(options.immediate), driverConfig.immediate])) {
     find()
   }
+
+  watch(
+    () => toValue(options?.id),
+    () => {
+      if (getFirstDefined([toValue(options?.immediate), driverConfig.immediate])) {
+        find()
+      }
+    },
+  )
 
   return {
     response,

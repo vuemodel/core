@@ -57,6 +57,10 @@ And a simpler implementaion where all validation errors are handled in one place
   :exampleComponent="ValidationErrorsSimple"
 />
 
+::: info
+All of these examples utilize backend validation. If you'd like to do frontend validation, we recommend [VeeValidate](https://vee-validate.logaretm.com/v4/). If in the future, VueModel (or the LSD standard) decides to tackle validation, it will likely use VeeValidate under the hood.
+:::
+
 ### Standard Errors
 ```ts
 [

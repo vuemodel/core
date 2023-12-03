@@ -109,10 +109,10 @@ import { piniaLocalStorageState } from '@vuemodel/pinia-local-storage'
 piniaLocalStorageState.mockLatencyMs = 250 // add a 250ms delay to every request
 ```
 
-## Create your first Model
+## Creating our first Model
 We use [PiniaORM](https://pinia-orm.codedredd.de/) to manage models on the frontend. This doc will give examples to get you up and running, yet we **highly recommend** going through the [PiniaORM Documentation](https://pinia-orm.codedredd.de/). It's the foundation of VueModel.
 
-To start, we sugget creating a `src/models` directory for your models.
+To start, we sugget creating a `src/models` directory for our models.
 
 (copied from [https://pinia-orm.codedredd.de/guide/getting-started/quick-start](https://pinia-orm.codedredd.de/guide/getting-started/quick-start))
 

@@ -39,11 +39,9 @@ const usersIndexer = useIndexer(User, { whereIdIn, whereIdInImmediate })
       class="q-mb-md"
     />
 
-    <HighlightedCode
+    <pre
       v-if="usersIndexer.records.value.length"
       style="max-height: 400px"
-      :content="JSON.stringify(usersIndexer.records.value, undefined, 2)"
-      lang="json"
-    />
+    >{{ usersIndexer.records.value }}</pre>
   </div>
 </template>

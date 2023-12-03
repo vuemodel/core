@@ -7,3 +7,8 @@ p {
   --vp-c-brand-2: #003459;
   --vp-c-brand-3: #00171f;
 }
+
+body {
+  font-family: var(--vp-font-family-base);
+  font-size: 16px;
+}

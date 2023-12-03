@@ -30,3 +30,5 @@ app.use(Quasar, {
     },
   },
 })
+
+piniaLocalStorageState.mockLatencyMs = 1000

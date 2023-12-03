@@ -23,7 +23,7 @@ const postCreator = useCreator(Post, { notifyOnError: true })
 
 async function createPost () {
   piniaLocalStorageState.mockStandardErrors = fakeError
-  postCreator.create()
+  await postCreator.create()
   piniaLocalStorageState.mockStandardErrors = undefined
 }
 </script>
