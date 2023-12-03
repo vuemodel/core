@@ -1,6 +1,6 @@
 {
   "name": "@vuemodel/core",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "jiti-fix": "find ./dist -type f -exec sed -i 's|file://||g' {} \\;",
@@ -16,10 +16,9 @@
   },
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
       "require": {
-        "default": "./dist/index.cjs",
-        "types": "./dist/index.d.cts"
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
       },
       "import": {
         "types": "./dist/index.d.mts",
