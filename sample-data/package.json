@@ -1,11 +1,11 @@
 {
-  "version": "0.0.3",
+  "version": "0.0.4",
   "name": "@vuemodel/sample-data",
   "author": "luke@ldiebold.com",
   "license": "ISC",
   "type": "module",
   "scripts": {
-    "build": "tsup src/index.ts --clean --format esm,cjs --dts",
+    "build": "tsup src/index.ts --clean --format esm,cjs --dts && cp -r ./src/json/ ./dist/json/",
     "release": "pnpm build && bumpp --tag '@vuemodel/sample-data@v%s' && pnpm publish"
   },
   "main": "./src/index.ts",
@@ -20,6 +20,9 @@
   },
   "devDependencies": {
     "bumpp": "^9.2.0",
-    "tsup": "^7.2.0"
+    "tsup": "^8.0.0"
+  },
+  "peerDependencies": {
+    "@vuemodel/core": "^0.0.14"
   }
 }
