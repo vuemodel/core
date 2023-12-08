@@ -1,5 +1,5 @@
 import { Item, Model, useRepo } from 'pinia-orm'
-import { computed, ref, toValue } from 'vue'
+import { computed, ref, toRaw, toValue } from 'vue'
 import { UseDestroyerOptions, UseDestroyerReturn } from '../contracts/crud/destroy/UseDestroyer'
 import { getImplementation } from '../getImplementation'
 import { DestroyResponse, DestroySuccessResponse } from '../types/Response'
@@ -70,7 +70,7 @@ export function useDestroyerImplementation<T extends typeof Model> (
     const recordForRemoval = repo.find(resolvedId)
     let clonedRecord: Item<InstanceType<T>> = null
     if (recordForRemoval) {
-      clonedRecord = structuredClone(recordForRemoval)
+      clonedRecord = structuredClone(toRaw(recordForRemoval))
     }
     recordBeingRemoved.value = clonedRecord
 

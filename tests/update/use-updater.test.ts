@@ -3,10 +3,12 @@ import { baseSetup } from '../baseSetup'
 import { UseUpdaterOptions, useIndexer, useUpdater, vueModelState } from '@vuemodel/core'
 import { DataverseUser, PhotoTag, User, populateRecords } from '@vuemodel/sample-data'
 import { useRepo } from 'pinia-orm'
-import { piniaLocalStorageState } from '@vuemodel/pinia-local-storage'
 import { ref } from 'vue'
 import { wait } from '../helpers/wait'
 import { clear as clearStorage } from 'idb-keyval'
+import { implementationSetupsMap } from '../implementations/implementationSetupsMap'
+
+const setups = implementationSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
 
 describe('useUpdater', () => {
   beforeEach(async () => {
@@ -148,7 +150,7 @@ describe('useUpdater', () => {
   it('can make the form with a provided id, where the record exists in state', async () => {
     await populateRecords('users', 5)
     await useIndexer(User).index()
-    piniaLocalStorageState.mockLatencyMs = 50
+    setups.setMockLatency(50)
 
     const updater = useUpdater(User)
     updater.makeForm('2')
@@ -215,9 +217,9 @@ describe('useUpdater', () => {
   })
 
   it('hits the "onError" callback when there is a standard error', async () => {
-    piniaLocalStorageState.mockStandardErrors = [
+    setups.setMockStandardErrors([
       { name: 'thingy-messup', message: 'The thingy messed up' },
-    ]
+    ])
 
     const options: UseUpdaterOptions<typeof User> = {
       id: '2',
@@ -234,9 +236,9 @@ describe('useUpdater', () => {
   })
 
   it('hits the "onError" callback when there is a validation error', async () => {
-    piniaLocalStorageState.mockValidationErrors = {
+    setups.setMockValidationErrors({
       title: ['title is required'],
-    }
+    })
 
     const options: UseUpdaterOptions<typeof User> = {
       id: '2',
@@ -253,9 +255,9 @@ describe('useUpdater', () => {
   })
 
   it('hits the "onStandardError" callback when there are one or more standard errors', async () => {
-    piniaLocalStorageState.mockStandardErrors = [
+    setups.setMockStandardErrors([
       { name: 'thingy-messup', message: 'The thingy messed up' },
-    ]
+    ])
     const options: UseUpdaterOptions<typeof User> = {
       id: '2',
       onStandardError () {
@@ -271,9 +273,9 @@ describe('useUpdater', () => {
   })
 
   it('hits the "onValidationError" callback when there are one or more validation errors', async () => {
-    piniaLocalStorageState.mockValidationErrors = {
+    setups.setMockValidationErrors({
       title: ['title is required'],
-    }
+    })
     const options: UseUpdaterOptions<typeof User> = {
       id: '2',
       onValidationError () {
@@ -353,7 +355,7 @@ describe('useUpdater', () => {
   it('can auto update', async () => {
     await populateRecords('users', 2)
     await useIndexer(User).index()
-    piniaLocalStorageState.mockLatencyMs = 50
+    setups.setMockLatency(50)
 
     const updater = useUpdater(User, { id: '2', autoUpdate: true, autoUpdateDebounce: 50 })
     updater.form.value.name = 'Lily Diebold'
@@ -365,7 +367,7 @@ describe('useUpdater', () => {
   it('can auto update with a debouncer', async () => {
     await populateRecords('users', 2)
     await useIndexer(User).index()
-    piniaLocalStorageState.mockLatencyMs = 100
+    setups.setMockLatency(100)
 
     const updater = useUpdater(User, { id: '2', autoUpdate: true, autoUpdateDebounce: 150 })
     updater.form.value.name = 'lu'
@@ -380,7 +382,7 @@ describe('useUpdater', () => {
   it('has highest precedence for autoUpdateDebounce from "updater.options.autoUpdateDebounce"', async () => {
     await populateRecords('users', 2)
     await useIndexer(User).index()
-    piniaLocalStorageState.mockLatencyMs = 300
+    setups.setMockLatency(300)
 
     vueModelState.drivers.local.config.autoUpdateDebounce = 50
     vueModelState.config.autoUpdateDebounce = 50
@@ -397,7 +399,7 @@ describe('useUpdater', () => {
   it('has second highest precedence for autoUpdateDebounce from "config.drivers.{driver}.config.autoUpdateDebounce"', async () => {
     await populateRecords('users', 2)
     await useIndexer(User).index()
-    piniaLocalStorageState.mockLatencyMs = 300
+    setups.setMockLatency(300)
 
     vueModelState.drivers.local.config.autoUpdateDebounce = 300
     vueModelState.config.autoUpdateDebounce = 50
@@ -414,7 +416,7 @@ describe('useUpdater', () => {
   it('has lowest precedence for autoUpdateDebounce from "config.autoUpdateDebounce"', async () => {
     await populateRecords('users', 2)
     await useIndexer(User).index()
-    piniaLocalStorageState.mockLatencyMs = 300
+    setups.setMockLatency(300)
 
     vueModelState.config.autoUpdateDebounce = 300
 
@@ -430,7 +432,7 @@ describe('useUpdater', () => {
   it('can optimistically update', async () => {
     await populateRecords('users', 2)
     await useIndexer(User).index()
-    piniaLocalStorageState.mockLatencyMs = 50
+    setups.setMockLatency(50)
 
     const userUpdater = useUpdater(User, { id: '2', optimistic: true })
 
@@ -442,7 +444,7 @@ describe('useUpdater', () => {
   it('can set optimistic globally', async () => {
     // await populateRecords('users', 2)
     // await useIndexer(User).index()
-    // piniaLocalStorageState.mockLatencyMs = 50
+    // setups.setMockLatency(50)
 
     // const userUpdater = useUpdater(User, { id: '2', optimistic: true })
 
@@ -454,10 +456,10 @@ describe('useUpdater', () => {
   it('rolls back if the update fails when using optimistic', async () => {
     await populateRecords('users', 2)
     await useIndexer(User).index()
-    piniaLocalStorageState.mockLatencyMs = 50
-    piniaLocalStorageState.mockStandardErrors = [
+    setups.setMockLatency(50)
+    setups.setMockStandardErrors([
       { name: 'thingy-messup', message: 'The thingy messed up' },
-    ]
+    ])
     const userRepo = useRepo(User)
 
     const userUpdater = useUpdater(User, { id: '2', optimistic: true })
@@ -477,9 +479,9 @@ describe('useUpdater', () => {
     await populateRecords('users', 2)
     await useIndexer(User).index()
     const userUpdater = useUpdater(User, { id: '2' })
-    piniaLocalStorageState.mockValidationErrors = {
+    setups.setMockValidationErrors({
       title: ['title is required'],
-    }
+    })
 
     await userUpdater.update({ name: 'lugu' })
 
@@ -491,16 +493,16 @@ describe('useUpdater', () => {
     await populateRecords('users', 2)
     await useIndexer(User).index()
     const userUpdater = useUpdater(User, { id: '2' })
-    piniaLocalStorageState.mockValidationErrors = {
+    setups.setMockValidationErrors({
       name: ['name is required'],
-    }
+    })
 
     await userUpdater.update({ name: 'lugu' })
 
     expect(userUpdater.validationErrors.value.name)
       .toEqual(expect.arrayContaining(['name is required']))
 
-    piniaLocalStorageState.mockValidationErrors = undefined
+    setups.setMockValidationErrors(undefined)
     await userUpdater.update({ name: 'engatoo' })
 
     expect(Object.values(userUpdater.validationErrors.value).length)
@@ -511,9 +513,9 @@ describe('useUpdater', () => {
     await populateRecords('users', 2)
     await useIndexer(User).index()
     const userUpdater = useUpdater(User, { id: '2' })
-    piniaLocalStorageState.mockStandardErrors = [
+    setups.setMockStandardErrors([
       { name: 'thingy-messup', message: 'The thingy messed up' },
-    ]
+    ])
 
     await userUpdater.update({ name: 'Sir Johnalot' })
 
@@ -525,16 +527,16 @@ describe('useUpdater', () => {
     await populateRecords('users', 2)
     await useIndexer(User).index()
     const userUpdater = useUpdater(User, { id: '2' })
-    piniaLocalStorageState.mockStandardErrors = [
+    setups.setMockStandardErrors([
       { name: 'thingy-messup', message: 'The thingy messed up' },
-    ]
+    ])
 
     await userUpdater.update({ name: 'Sir Johnalotington' })
 
     expect(userUpdater.standardErrors.value[0])
       .toEqual({ name: 'thingy-messup', message: 'The thingy messed up' })
 
-    piniaLocalStorageState.mockStandardErrors = undefined
+    setups.setMockStandardErrors(undefined)
     await userUpdater.update()
 
     expect(userUpdater.standardErrors.value.length)
@@ -544,17 +546,17 @@ describe('useUpdater', () => {
   it('success and error responses have an "action" of "update"', async () => {
     await populateRecords('users', 2)
     const userUpdater = useUpdater(User, { id: '2' })
-    piniaLocalStorageState.mockStandardErrors = [{
+    setups.setMockStandardErrors([{
       name: 'thingy-messup',
       message: 'The thingy messed up',
-    }]
+    }])
 
     await userUpdater.update({ name: 'Smelly' })
 
     expect(userUpdater.response.value.action)
       .toEqual('update')
 
-    piniaLocalStorageState.mockStandardErrors = []
+    setups.setMockStandardErrors([])
     await userUpdater.update({ name: 'Elly' })
 
     expect(userUpdater.response.value.action)
@@ -641,7 +643,7 @@ describe('useUpdater', () => {
   it('can cancel the latest request', async () => {
     await populateRecords('users', 1)
     const repo = useRepo(User)
-    piniaLocalStorageState.mockLatencyMs = 100
+    setups.setMockLatency(100)
 
     const usersUpdater = useUpdater(User)
     await usersUpdater.makeForm('1')
@@ -658,9 +660,9 @@ describe('useUpdater', () => {
   })
 
   it('can notify on error', async () => {
-    piniaLocalStorageState.mockStandardErrors = [
+    setups.setMockStandardErrors([
       { name: 'thingy-messup', message: 'The thingy messed up' },
-    ]
+    ])
     vueModelState.config.errorNotifiers = {
       update: () => {
         return ''

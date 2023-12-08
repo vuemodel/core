@@ -73,7 +73,6 @@ app.use(piniaOrm)
 
 ```ts [vue-model.ts (Quasar boot file)]
 import { boot } from 'quasar/wrappers'
-import { createApp } from 'vue'
 import { createVueModel } from '@vuemodel/core'
 import { createPiniaLocalStorage, piniaLocalVueModelDriver } from '@vuemodel/pinia-local-storage'
 

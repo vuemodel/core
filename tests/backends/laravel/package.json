@@ -1,0 +1,8 @@
+{
+    "private": true,
+    "type": "module",
+    "scripts": {},
+    "dependencies": {
+        "@vuemodel/sample-data": "^0.0.5"
+    }
+}

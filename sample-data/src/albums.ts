@@ -3,6 +3,7 @@ import { Attr, BelongsTo, HasMany, Uid } from 'pinia-orm/dist/decorators'
 import { User } from '../src/users'
 import { Photo } from '../src/photos'
 import { PiniaOrmForm } from 'pinia-orm-helpers'
+import albumsJson from './json/albums.json'
 
 export class Album extends Model {
   static entity = 'albums'
@@ -16,95 +17,4 @@ export class Album extends Model {
   @HasMany(() => Photo, 'album_id') declare photos: Photo[]
 }
 
-export const albums: PiniaOrmForm<Album>[] = [
-  {
-    user_id: '1',
-    id: '1',
-    title: 'quidem molestiae enim',
-  },
-  {
-    user_id: '1',
-    id: '2',
-    title: 'saepe unde necessitatibus rem',
-  },
-  {
-    user_id: '1',
-    id: '3',
-    title: 'distinctio laborum qui',
-  },
-  {
-    user_id: '2',
-    id: '4',
-    title: 'quam nostrum impedit mollitia quod et dolor',
-  },
-  {
-    user_id: '2',
-    id: '5',
-    title: 'consequatur autem doloribus natus consectetur',
-  },
-  {
-    user_id: '3',
-    id: '6',
-    title: 'repudiandae voluptatem optio est consequatur rem in temporibus et',
-  },
-  {
-    user_id: '4',
-    id: '7',
-    title: 'et impedit nisi quae magni necessitatibus sed aut pariatur',
-  },
-  {
-    user_id: '4',
-    id: '8',
-    title: 'unde a sequi id',
-  },
-  {
-    user_id: '4',
-    id: '9',
-    title: 'voluptas neque et sint aut quo odit',
-  },
-  {
-    user_id: '6',
-    id: '10',
-    title: 'omnis mollitia sunt aliquid eum consequatur fugit minus laudantium',
-  },
-  {
-    user_id: '7',
-    id: '11',
-    title: 'delectus iusto et',
-  },
-  {
-    user_id: '7',
-    id: '12',
-    title: 'eos ea non recusandae iste ut quasi',
-  },
-  {
-    user_id: '8',
-    id: '13',
-    title: 'quia est eius vitae dolor',
-  },
-  {
-    user_id: '8',
-    id: '14',
-    title: 'est minima eius possimus ea ratione velit et',
-  },
-  {
-    user_id: '8',
-    id: '15',
-    title: 'ipsa quae voluptas natus ut suscipit soluta quia quidem',
-  },
-  {
-    user_id: '9',
-    id: '16',
-    title: 'quibusdam sapiente et',
-  },
-  {
-    user_id: '10',
-    id: '17',
-    title: 'repellendus praesentium debitis officiis',
-  },
-  {
-    user_id: '10',
-    id: '18',
-    title: 'incidunt et et eligendi assumenda soluta quia recusandae',
-  },
-]
+export const albums: PiniaOrmForm<Album>[] = albumsJson

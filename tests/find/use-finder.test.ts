@@ -1,11 +1,13 @@
 import { describe, beforeEach, it, expect, vi } from 'vitest'
 import { useFinder, UseFinderOptions, vueModelState } from '@vuemodel/core'
-import { piniaLocalStorageState } from '@vuemodel/pinia-local-storage'
 import { DataverseUser, PhotoTag, Post, User, populateRecords } from '@vuemodel/sample-data'
 import { useRepo } from 'pinia-orm'
 import { baseSetup } from '../baseSetup'
 import { wait } from '../helpers/wait'
 import { promiseState } from '../helpers/promiseState'
+import { implementationSetupsMap } from '../implementations/implementationSetupsMap'
+
+const setups = implementationSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
 
 describe('useFinder', () => {
   beforeEach(async () => {
@@ -95,9 +97,9 @@ describe('useFinder', () => {
   })
 
   it('hits the "onError" callback when there is a standard error', async () => {
-    piniaLocalStorageState.mockStandardErrors = [
+    setups.setMockStandardErrors([
       { name: 'thingy-messup', message: 'The thingy messed up' },
-    ]
+    ])
     const options: UseFinderOptions<typeof Post> = {
       id: '2',
       onError () {
@@ -113,9 +115,9 @@ describe('useFinder', () => {
   })
 
   it('hits the "onError" callback when there is a validation error', async () => {
-    piniaLocalStorageState.mockValidationErrors = {
+    setups.setMockValidationErrors({
       title: ['title is required'],
-    }
+    })
     const options: UseFinderOptions<typeof Post> = {
       id: '2',
       onError () {
@@ -131,9 +133,9 @@ describe('useFinder', () => {
   })
 
   it('hits the "onStandardError" callback when there are one or more standard errors', async () => {
-    piniaLocalStorageState.mockStandardErrors = [
+    setups.setMockStandardErrors([
       { name: 'thingy-messup', message: 'The thingy messed up' },
-    ]
+    ])
     const options: UseFinderOptions<typeof Post> = {
       id: '2',
       onStandardError () {
@@ -149,9 +151,9 @@ describe('useFinder', () => {
   })
 
   it('hits the "onValidationError" callback when there are one or more validation errors', async () => {
-    piniaLocalStorageState.mockValidationErrors = {
+    setups.setMockValidationErrors({
       title: ['title is required'],
-    }
+    })
     const options: UseFinderOptions<typeof Post> = {
       id: '2',
       onValidationError () {
@@ -168,7 +170,7 @@ describe('useFinder', () => {
 
   it('has a "finding" value of the resources id while finding', async () => {
     await populateRecords('posts', 1)
-    piniaLocalStorageState.mockLatencyMs = 200
+    setups.setMockLatency(200)
 
     const postFinder = useFinder(Post)
     postFinder.find('1')
@@ -296,9 +298,9 @@ describe('useFinder', () => {
 
   it('sets validation errors when the response has validation errors', async () => {
     const postsFinder = useFinder(Post)
-    piniaLocalStorageState.mockValidationErrors = {
+    setups.setMockValidationErrors({
       'title[0]': ['title must be a string'],
-    }
+    })
 
     await postsFinder.find('1')
 
@@ -308,10 +310,10 @@ describe('useFinder', () => {
 
   it('clears validation errors when a request is made', async () => {
     const postsFinder = useFinder(Post)
-    piniaLocalStorageState.mockValidationErrors = {
+    setups.setMockValidationErrors({
       'title[0]': ['title must be a string'],
-    }
-    piniaLocalStorageState.mockLatencyMs = 200
+    })
+    setups.setMockLatency(200)
 
     await postsFinder.find('1')
 
@@ -325,10 +327,10 @@ describe('useFinder', () => {
 
   it('sets standard errors when the response has standard errors', async () => {
     const postsFinder = useFinder(Post)
-    piniaLocalStorageState.mockStandardErrors = [{
+    setups.setMockStandardErrors([{
       name: 'thingy-messup',
       message: 'The thingy messed up',
-    }]
+    }])
 
     await postsFinder.find('1')
 
@@ -338,10 +340,10 @@ describe('useFinder', () => {
 
   it('clears standard errors when a request is made', async () => {
     const postsFinder = useFinder(Post)
-    piniaLocalStorageState.mockStandardErrors = [{
+    setups.setMockStandardErrors([{
       name: 'thingy-messup',
       message: 'The thingy messed up',
-    }]
+    }])
 
     await postsFinder.find('1')
 
@@ -355,17 +357,17 @@ describe('useFinder', () => {
 
   it('success and error responses have an "action" of "find"', async () => {
     const postsFinder = useFinder(Post)
-    piniaLocalStorageState.mockStandardErrors = [{
+    setups.setMockStandardErrors([{
       name: 'thingy-messup',
       message: 'The thingy messed up',
-    }]
+    }])
 
     await postsFinder.find('1')
 
     expect(postsFinder.response.value.action)
       .toEqual('find')
 
-    piniaLocalStorageState.mockStandardErrors = []
+    setups.setMockStandardErrors([])
     await postsFinder.find('1')
 
     expect(postsFinder.response.value.action)
@@ -532,7 +534,7 @@ describe('useFinder', () => {
 
   it('cancels the first request if a second request is made and the first is not done yet', async () => {
     await populateRecords('posts', 10)
-    piniaLocalStorageState.mockLatencyMs = 100
+    setups.setMockLatency(100)
 
     const postsFinder = useFinder(Post)
     const findRequestA = postsFinder.find('1')
@@ -553,9 +555,9 @@ describe('useFinder', () => {
   })
 
   it('can notify on error', async () => {
-    piniaLocalStorageState.mockStandardErrors = [
+    setups.setMockStandardErrors([
       { name: 'thingy-messup', message: 'The thingy messed up' },
-    ]
+    ])
     vueModelState.config.errorNotifiers = {
       find: () => {
         return ''

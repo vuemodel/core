@@ -4,8 +4,10 @@ import { useIndexer, useDestroyer, UseDestroyerOptions, vueModelState } from '@v
 import { DataverseUser, PhotoTag, Post, User, populateRecords } from '@vuemodel/sample-data'
 import { useRepo } from 'pinia-orm'
 import { ref } from 'vue'
-import { piniaLocalStorageState } from '@vuemodel/pinia-local-storage'
 import { wait } from '../helpers/wait'
+import { implementationSetupsMap } from '../implementations/implementationSetupsMap'
+
+const setups = implementationSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
 
 describe('useDestroyer', () => {
   beforeEach(async () => {
@@ -65,7 +67,7 @@ describe('useDestroyer', () => {
 
   it('has a "destroying" value of the records id while destroying', async () => {
     await populateRecords('posts', 2)
-    piniaLocalStorageState.mockLatencyMs = 150
+    setups.setMockLatency(150)
 
     const postDestroyer = useDestroyer(Post)
     const destroyPromise = postDestroyer.destroy('2')
@@ -104,7 +106,7 @@ describe('useDestroyer', () => {
     await postsIndexer.index()
     const postRepo = useRepo(Post)
     const postDestroyer = useDestroyer(Post, { optimistic: true })
-    piniaLocalStorageState.mockLatencyMs = 200
+    setups.setMockLatency(200)
 
     postDestroyer.destroy('1') // intentionally not awaited
 
@@ -117,7 +119,7 @@ describe('useDestroyer', () => {
     // await postsIndexer.index()
     // const postRepo = useRepo(Post)
     // const postDestroyer = useDestroyer(Post, { optimistic: true })
-    // piniaLocalStorageState.mockLatencyMs = 200
+    // setups.setMockLatency(200)
 
     // postDestroyer.destroy('1') // intentionally not awaited
 
@@ -132,8 +134,8 @@ describe('useDestroyer', () => {
 
     const postDestroyer = useDestroyer(Post, { optimistic: true })
 
-    piniaLocalStorageState.mockStandardErrors = [{ message: 'something went wrong', name: 'oops' }]
-    piniaLocalStorageState.mockLatencyMs = 200
+    setups.setMockStandardErrors([{ message: 'something went wrong', name: 'oops' }])
+    setups.setMockLatency(200)
     const destroyPromise = postDestroyer.destroy('1') // intentionally not awaited
 
     expect(postRepo.all().length).toEqual(1)
@@ -144,9 +146,9 @@ describe('useDestroyer', () => {
 
   it('sets standard errors when the response has standard errors', async () => {
     const postDestroyer = useDestroyer(Post)
-    piniaLocalStorageState.mockStandardErrors = [
+    setups.setMockStandardErrors([
       { name: 'thingy-messup', message: 'The thingy messed up' },
-    ]
+    ])
 
     await postDestroyer.destroy('1')
 
@@ -160,16 +162,16 @@ describe('useDestroyer', () => {
     await postsIndexer.index()
 
     const postDestroyer = useDestroyer(Post)
-    piniaLocalStorageState.mockStandardErrors = [
+    setups.setMockStandardErrors([
       { name: 'thingy-messup', message: 'The thingy messed up' },
-    ]
+    ])
 
     await postDestroyer.destroy('1')
 
     expect(postDestroyer.standardErrors.value[0])
       .toEqual({ name: 'thingy-messup', message: 'The thingy messed up' })
 
-    piniaLocalStorageState.mockStandardErrors = undefined
+    setups.setMockStandardErrors(undefined)
     await postDestroyer.destroy('2')
 
     expect(postDestroyer.standardErrors.value.length)
@@ -178,17 +180,17 @@ describe('useDestroyer', () => {
 
   it('success and error responses have an "action" of "destroy"', async () => {
     const postDestroy = useDestroyer(Post)
-    piniaLocalStorageState.mockStandardErrors = [{
+    setups.setMockStandardErrors([{
       name: 'thingy-messup',
       message: 'The thingy messed up',
-    }]
+    }])
 
     await postDestroy.destroy('1')
 
     expect(postDestroy.response.value.action)
       .toEqual('destroy')
 
-    piniaLocalStorageState.mockStandardErrors = []
+    setups.setMockStandardErrors([])
     await postDestroy.destroy('2')
 
     expect(postDestroy.response.value.action)
@@ -233,7 +235,7 @@ describe('useDestroyer', () => {
 
   it('can destroy two records at the same time', async () => {
     await populateRecords('posts', 3)
-    piniaLocalStorageState.mockLatencyMs = 100
+    setups.setMockLatency(100)
     const postRepo = useRepo(Post)
     const postDestroyer = useDestroyer(Post)
 
@@ -250,7 +252,7 @@ describe('useDestroyer', () => {
     await populateRecords('users', 2)
     await useIndexer(User).index()
     const repo = useRepo(User)
-    piniaLocalStorageState.mockLatencyMs = 100
+    setups.setMockLatency(100)
 
     const usersDestroyer = useDestroyer(User)
     const destoryRequest = usersDestroyer.destroy('1')
@@ -266,9 +268,9 @@ describe('useDestroyer', () => {
   })
 
   it('can notify on error', async () => {
-    piniaLocalStorageState.mockStandardErrors = [
+    setups.setMockStandardErrors([
       { name: 'thingy-messup', message: 'The thingy messed up' },
-    ]
+    ])
     vueModelState.config.errorNotifiers = {
       destroy: () => {
         return ''

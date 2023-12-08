@@ -1,9 +1,11 @@
 import { describe, beforeEach, it, expect, vi } from 'vitest'
 import { index, destroy, vueModelState } from '@vuemodel/core'
 import { Post, populateRecords } from '@vuemodel/sample-data'
-import { piniaLocalStorageState } from '@vuemodel/pinia-local-storage'
 import { baseSetup } from '../baseSetup'
 import 'fake-indexeddb/auto'
+import { implementationSetupsMap } from '../implementations/implementationSetupsMap'
+
+const setups = implementationSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
 
 describe('destroy', () => {
   beforeEach(async () => {
@@ -24,9 +26,9 @@ describe('destroy', () => {
   })
 
   it('can respond with standard errors', async () => {
-    piniaLocalStorageState.mockStandardErrors = [
+    setups.setMockStandardErrors([
       { message: 'something went horribly wrong', name: 'oops' },
-    ]
+    ])
 
     const result = await destroy(Post, '1')
 
@@ -34,7 +36,7 @@ describe('destroy', () => {
   })
 
   it('can notify on error', async () => {
-    piniaLocalStorageState.mockStandardErrors = [{ message: 'something went horribly wrong', name: 'oops' }]
+    setups.setMockStandardErrors([{ message: 'something went horribly wrong', name: 'oops' }])
     vueModelState.drivers.local.config = {
       errorNotifiers: {
         destroy: () => { return {} },
@@ -48,7 +50,7 @@ describe('destroy', () => {
   })
 
   it('does not notify on error by default', async () => {
-    piniaLocalStorageState.mockStandardErrors = [{ message: 'something went horribly wrong', name: 'oops' }]
+    setups.setMockStandardErrors([{ message: 'something went horribly wrong', name: 'oops' }])
     vueModelState.drivers.local.config = {
       errorNotifiers: {
         destroy: () => { return {} },
@@ -62,7 +64,7 @@ describe('destroy', () => {
   })
 
   it('has a first preference for notifyOnError passed as a param', async () => {
-    piniaLocalStorageState.mockStandardErrors = [{ message: 'something went horribly wrong', name: 'oops' }]
+    setups.setMockStandardErrors([{ message: 'something went horribly wrong', name: 'oops' }])
     vueModelState.config.notifyOnError = { destroy: false }
     vueModelState.drivers.local.config = {
       errorNotifiers: {
@@ -78,7 +80,7 @@ describe('destroy', () => {
   })
 
   it('has a second preference for notifyOnError set at a "state.driver.xxx.config" level', async () => {
-    piniaLocalStorageState.mockStandardErrors = [{ message: 'something went horribly wrong', name: 'oops' }]
+    setups.setMockStandardErrors([{ message: 'something went horribly wrong', name: 'oops' }])
     vueModelState.config.notifyOnError = { destroy: false }
     vueModelState.drivers.local.config = {
       errorNotifiers: {
@@ -94,7 +96,7 @@ describe('destroy', () => {
   })
 
   it('has a third preference for notifyOnError set at a "state.config" level', async () => {
-    piniaLocalStorageState.mockStandardErrors = [{ message: 'something went horribly wrong', name: 'oops' }]
+    setups.setMockStandardErrors([{ message: 'something went horribly wrong', name: 'oops' }])
     vueModelState.config.notifyOnError = { destroy: true }
     vueModelState.drivers.local.config = {
       errorNotifiers: {
@@ -118,7 +120,7 @@ describe('destroy', () => {
   })
 
   it('does not throw if "options.throw" is false', async () => {
-    piniaLocalStorageState.mockStandardErrors = [{ name: 'oops', message: 'something went baaad!' }]
+    setups.setMockStandardErrors([{ name: 'oops', message: 'something went baaad!' }])
     await populateRecords('posts', 1)
     expect(async () => await destroy(Post, '1')).not.toThrow()
   })
@@ -126,7 +128,7 @@ describe('destroy', () => {
   it('has first precedence for options.throw', async () => {
     vueModelState.drivers.local.config.throw = false
     vueModelState.config.throw = false
-    piniaLocalStorageState.mockStandardErrors = [{ name: 'oops', message: 'something went baaad!' }]
+    setups.setMockStandardErrors([{ name: 'oops', message: 'something went baaad!' }])
     await populateRecords('posts', 1)
 
     expect(async () => await destroy(Post, '1', { throw: true })).rejects.toThrow()
@@ -136,7 +138,7 @@ describe('destroy', () => {
     vueModelState.drivers.local.config.throw = true
     vueModelState.config.throw = false
     await populateRecords('posts', 1)
-    piniaLocalStorageState.mockStandardErrors = [{ name: 'oops', message: 'something went baaad!' }]
+    setups.setMockStandardErrors([{ name: 'oops', message: 'something went baaad!' }])
 
     expect(async () => await destroy(Post, '1')).rejects.toThrow()
   })
@@ -144,7 +146,7 @@ describe('destroy', () => {
   it('has third precedence for options.throw', async () => {
     vueModelState.config.throw = true
     await populateRecords('posts', 1)
-    piniaLocalStorageState.mockStandardErrors = [{ name: 'oops', message: 'something went baaad!' }]
+    setups.setMockStandardErrors([{ name: 'oops', message: 'something went baaad!' }])
 
     expect(async () => await destroy(Post, '1')).rejects.toThrow()
   })

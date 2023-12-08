@@ -1,9 +1,11 @@
 import { describe, beforeEach, it, expect, vi } from 'vitest'
 import { update, vueModelState } from '@vuemodel/core'
-import { piniaLocalStorageState } from '@vuemodel/pinia-local-storage'
 import { Post, User, populateRecords } from '@vuemodel/sample-data'
 import 'fake-indexeddb/auto'
 import { baseSetup } from '../baseSetup'
+import { implementationSetupsMap } from '../implementations/implementationSetupsMap'
+
+const setups = implementationSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
 
 describe('update', () => {
   beforeEach(async () => {
@@ -22,9 +24,9 @@ describe('update', () => {
   })
 
   it('can respond with validation errors', async () => {
-    piniaLocalStorageState.mockValidationErrors = {
+    setups.setMockValidationErrors({
       email: ['email is required'],
-    }
+    })
 
     const result = await update(User, '1', {})
 
@@ -32,9 +34,9 @@ describe('update', () => {
   })
 
   it('can respond with standard errors', async () => {
-    piniaLocalStorageState.mockStandardErrors = [
+    setups.setMockStandardErrors([
       { name: 'thingy-messup', message: 'The thingy messed up' },
-    ]
+    ])
 
     const result = await update(User, '1', {})
 
@@ -42,7 +44,7 @@ describe('update', () => {
   })
 
   it('can notify on error', async () => {
-    piniaLocalStorageState.mockStandardErrors = [{ message: 'something went horribly wrong', name: 'oops' }]
+    setups.setMockStandardErrors([{ message: 'something went horribly wrong', name: 'oops' }])
     vueModelState.drivers.local.config = {
       errorNotifiers: {
         update: () => { return {} },
@@ -56,7 +58,7 @@ describe('update', () => {
   })
 
   it('does not notify on error by default', async () => {
-    piniaLocalStorageState.mockStandardErrors = [{ message: 'something went horribly wrong', name: 'oops' }]
+    setups.setMockStandardErrors([{ message: 'something went horribly wrong', name: 'oops' }])
     vueModelState.drivers.local.config = {
       errorNotifiers: {
         update: () => { return {} },
@@ -70,7 +72,7 @@ describe('update', () => {
   })
 
   it('has a first preference for notifyOnError passed as a param', async () => {
-    piniaLocalStorageState.mockStandardErrors = [{ message: 'something went horribly wrong', name: 'oops' }]
+    setups.setMockStandardErrors([{ message: 'something went horribly wrong', name: 'oops' }])
     vueModelState.config.notifyOnError = { update: false }
     vueModelState.drivers.local.config = {
       errorNotifiers: {
@@ -86,7 +88,7 @@ describe('update', () => {
   })
 
   it('has a second preference for notifyOnError set at a "state.driver.config" level', async () => {
-    piniaLocalStorageState.mockStandardErrors = [{ message: 'something went horribly wrong', name: 'oops' }]
+    setups.setMockStandardErrors([{ message: 'something went horribly wrong', name: 'oops' }])
     vueModelState.config.notifyOnError = { update: false }
     vueModelState.drivers.local.config = {
       errorNotifiers: {
@@ -102,7 +104,7 @@ describe('update', () => {
   })
 
   it('has a third preference for notifyOnError set at a "state.config" level', async () => {
-    piniaLocalStorageState.mockStandardErrors = [{ message: 'something went horribly wrong', name: 'oops' }]
+    setups.setMockStandardErrors([{ message: 'something went horribly wrong', name: 'oops' }])
     vueModelState.config.notifyOnError = { update: true }
     vueModelState.drivers.local.config = {
       errorNotifiers: {
@@ -117,14 +119,14 @@ describe('update', () => {
   })
 
   it('does not throw if "options.throw" is false', async () => {
-    piniaLocalStorageState.mockStandardErrors = [{ name: 'oops', message: 'something went baaad!' }]
+    setups.setMockStandardErrors([{ name: 'oops', message: 'something went baaad!' }])
     expect(async () => await update(Post, 'id', { title: 'beep' })).not.toThrow()
   })
 
   it('has first precedence for options.throw', async () => {
     vueModelState.drivers.local.config.throw = false
     vueModelState.config.throw = false
-    piniaLocalStorageState.mockStandardErrors = [{ name: 'oops', message: 'something went baaad!' }]
+    setups.setMockStandardErrors([{ name: 'oops', message: 'something went baaad!' }])
 
     expect(async () => await update(Post, 'id', { title: 'beep' }, { throw: true })).rejects.toThrow()
   })
@@ -132,14 +134,14 @@ describe('update', () => {
   it('has second precedence for options.driver.throw', async () => {
     vueModelState.drivers.local.config.throw = true
     vueModelState.config.throw = false
-    piniaLocalStorageState.mockStandardErrors = [{ name: 'oops', message: 'something went baaad!' }]
+    setups.setMockStandardErrors([{ name: 'oops', message: 'something went baaad!' }])
 
     expect(async () => await update(Post, '1', { title: 'beep' })).rejects.toThrow()
   })
 
   it('has third precedence for options.throw', async () => {
     vueModelState.config.throw = true
-    piniaLocalStorageState.mockStandardErrors = [{ name: 'oops', message: 'something went baaad!' }]
+    setups.setMockStandardErrors([{ name: 'oops', message: 'something went baaad!' }])
 
     expect(async () => await update(Post, '1', { title: 'beep' })).rejects.toThrow()
   })

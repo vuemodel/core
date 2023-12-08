@@ -1,10 +1,12 @@
 import { describe, beforeEach, it, expect, vi } from 'vitest'
 import { index, vueModelState } from '@vuemodel/core'
 import { Post, posts, populateRecords } from '@vuemodel/sample-data'
-import { piniaLocalStorageState } from '@vuemodel/pinia-local-storage'
 import { baseSetup } from '../baseSetup'
 import 'fake-indexeddb/auto'
 import { wait } from '../helpers/wait'
+import { implementationSetupsMap } from '../implementations/implementationSetupsMap'
+
+const setups = implementationSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
 
 describe('index', () => {
   beforeEach(async () => {
@@ -21,9 +23,9 @@ describe('index', () => {
   })
 
   it('can respond with validation errors', async () => {
-    piniaLocalStorageState.mockValidationErrors = {
+    setups.setMockValidationErrors({
       'comments[0]': ['the "paramater" field is required'],
-    }
+    })
 
     const result = await index(Post)
 
@@ -31,9 +33,9 @@ describe('index', () => {
   })
 
   it('can respond with standard errors', async () => {
-    piniaLocalStorageState.mockStandardErrors = [
+    setups.setMockStandardErrors([
       { message: 'something went horribly wrong', name: 'oops' },
-    ]
+    ])
 
     const result = await index(Post)
 
@@ -41,7 +43,7 @@ describe('index', () => {
   })
 
   it('can notify on error', async () => {
-    piniaLocalStorageState.mockStandardErrors = [{ message: 'something went horribly wrong', name: 'oops' }]
+    setups.setMockStandardErrors([{ message: 'something went horribly wrong', name: 'oops' }])
     vueModelState.drivers.local.config = {
       errorNotifiers: {
         index: () => { return {} },
@@ -55,7 +57,7 @@ describe('index', () => {
   })
 
   it('does not notify on error by default', async () => {
-    piniaLocalStorageState.mockStandardErrors = [{ message: 'something went horribly wrong', name: 'oops' }]
+    setups.setMockStandardErrors([{ message: 'something went horribly wrong', name: 'oops' }])
     vueModelState.drivers.local.config = {
       errorNotifiers: {
         index: () => { return {} },
@@ -69,7 +71,7 @@ describe('index', () => {
   })
 
   it('has a first preference for notifyOnError passed as a param', async () => {
-    piniaLocalStorageState.mockStandardErrors = [{ message: 'something went horribly wrong', name: 'oops' }]
+    setups.setMockStandardErrors([{ message: 'something went horribly wrong', name: 'oops' }])
     vueModelState.config.notifyOnError = { index: false }
     vueModelState.drivers.local.config = {
       errorNotifiers: {
@@ -85,7 +87,7 @@ describe('index', () => {
   })
 
   it('has a second preference for notifyOnError set at a "state.driver.xxx.config" level', async () => {
-    piniaLocalStorageState.mockStandardErrors = [{ message: 'something went horribly wrong', name: 'oops' }]
+    setups.setMockStandardErrors([{ message: 'something went horribly wrong', name: 'oops' }])
     vueModelState.config.notifyOnError = { index: false }
     vueModelState.drivers.local.config = {
       errorNotifiers: {
@@ -101,7 +103,7 @@ describe('index', () => {
   })
 
   it('has a third preference for notifyOnError set at a "state.config" level', async () => {
-    piniaLocalStorageState.mockStandardErrors = [{ message: 'something went horribly wrong', name: 'oops' }]
+    setups.setMockStandardErrors([{ message: 'something went horribly wrong', name: 'oops' }])
     vueModelState.config.notifyOnError = { index: true }
     vueModelState.drivers.local.config = {
       errorNotifiers: {
@@ -117,7 +119,7 @@ describe('index', () => {
 
   it('can abort an index request (immediate)', async () => {
     await populateRecords('posts', 1)
-    piniaLocalStorageState.mockLatencyMs = 500
+    setups.setMockLatency(500)
 
     const controller = new AbortController()
     const signal = controller.signal
@@ -132,7 +134,7 @@ describe('index', () => {
 
   it('can abort an index request (not immediately)', async () => {
     await populateRecords('posts', 1)
-    piniaLocalStorageState.mockLatencyMs = 500
+    setups.setMockLatency(500)
 
     const controller = new AbortController()
     const signal = controller.signal
@@ -147,29 +149,30 @@ describe('index', () => {
   })
 
   it('does not throw if "options.throw" is false', async () => {
-    piniaLocalStorageState.mockStandardErrors = [{ name: 'oops', message: 'something went baaad!' }]
+    setups.setMockStandardErrors([{ name: 'oops', message: 'something went baaad!' }])
+
     expect(async () => await index(Post)).not.toThrow()
   })
 
   it('has first precedence for options.throw', async () => {
+    setups.setMockStandardErrors([{ name: 'oops', message: 'something went baaad!' }])
     vueModelState.drivers.local.config.throw = false
     vueModelState.config.throw = false
-    piniaLocalStorageState.mockStandardErrors = [{ name: 'oops', message: 'something went baaad!' }]
 
     expect(async () => await index(Post, { throw: true })).rejects.toThrow()
   })
 
   it('has second precedence for options.driver.throw', async () => {
+    setups.setMockStandardErrors([{ name: 'oops', message: 'something went baaad!' }])
     vueModelState.drivers.local.config.throw = true
     vueModelState.config.throw = false
-    piniaLocalStorageState.mockStandardErrors = [{ name: 'oops', message: 'something went baaad!' }]
 
     expect(async () => await index(Post)).rejects.toThrow()
   })
 
   it('has third precedence for options.throw', async () => {
+    setups.setMockStandardErrors([{ name: 'oops', message: 'something went baaad!' }])
     vueModelState.config.throw = true
-    piniaLocalStorageState.mockStandardErrors = [{ name: 'oops', message: 'something went baaad!' }]
 
     expect(async () => await index(Post)).rejects.toThrow()
   })

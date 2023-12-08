@@ -1,11 +1,13 @@
 import { describe, beforeEach, it, expect, vi } from 'vitest'
 import { Form, UseCreatorOptions, useCreator, vueModelState } from '@vuemodel/core'
-import { piniaLocalStorageState } from '@vuemodel/pinia-local-storage'
 import { DataverseUser, PhotoTag, Post, User } from '@vuemodel/sample-data'
 import { ref } from 'vue'
 import { useRepo } from 'pinia-orm'
 import { wait } from '../helpers/wait'
 import { baseSetup } from '../baseSetup'
+import { implementationSetupsMap } from '../implementations/implementationSetupsMap'
+
+const setups = implementationSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
 
 describe('useCreator', () => {
   beforeEach(async () => {
@@ -107,8 +109,8 @@ describe('useCreator', () => {
   })
 
   it('has a "creating" value of true while creating', async () => {
+    setups.setMockLatency(50)
     const postCreator = useCreator(Post)
-    piniaLocalStorageState.mockLatencyMs = 50
     postCreator.form.value.title = 'LSD Standard'
 
     postCreator.create() // intentionally not awaited
@@ -128,9 +130,9 @@ describe('useCreator', () => {
 
   it('sets validation errors when the response has validation errors', async () => {
     const postCreator = useCreator(Post)
-    piniaLocalStorageState.mockValidationErrors = {
+    setups.setMockValidationErrors({
       title: ['title is required'],
-    }
+    })
 
     await postCreator.create()
 
@@ -140,16 +142,16 @@ describe('useCreator', () => {
 
   it('clears validation errors when a request is made', async () => {
     const postCreator = useCreator(Post)
-    piniaLocalStorageState.mockValidationErrors = {
+    setups.setMockValidationErrors({
       title: ['title is required'],
-    }
+    })
 
     await postCreator.create()
 
     expect(postCreator.validationErrors.value.title)
       .toEqual(expect.arrayContaining(['title is required']))
 
-    piniaLocalStorageState.mockValidationErrors = undefined
+    setups.setMockValidationErrors(undefined)
     await postCreator.create()
 
     expect(Object.values(postCreator.validationErrors.value).length)
@@ -158,9 +160,9 @@ describe('useCreator', () => {
 
   it('sets standard errors when the response has standard errors', async () => {
     const postCreator = useCreator(Post)
-    piniaLocalStorageState.mockStandardErrors = [
+    setups.setMockStandardErrors([
       { name: 'thingy-messup', message: 'The thingy messed up' },
-    ]
+    ])
 
     await postCreator.create()
 
@@ -170,16 +172,16 @@ describe('useCreator', () => {
 
   it('clears standard errors when a request is made', async () => {
     const postCreator = useCreator(Post)
-    piniaLocalStorageState.mockStandardErrors = [
+    setups.setMockStandardErrors([
       { name: 'thingy-messup', message: 'The thingy messed up' },
-    ]
+    ])
 
     await postCreator.create()
 
     expect(postCreator.standardErrors.value[0])
       .toEqual({ name: 'thingy-messup', message: 'The thingy messed up' })
 
-    piniaLocalStorageState.mockStandardErrors = undefined
+    setups.setMockStandardErrors(undefined)
     await postCreator.create()
 
     expect(postCreator.standardErrors.value.length)
@@ -189,9 +191,9 @@ describe('useCreator', () => {
   it('does not reset the form if create fails', async () => {
     const postCreator = useCreator(Post)
     postCreator.form.value.title = 'solid title!'
-    piniaLocalStorageState.mockStandardErrors = [
+    setups.setMockStandardErrors([
       { name: 'thingy-messup', message: 'The thingy messed up' },
-    ]
+    ])
 
     await postCreator.create()
 
@@ -201,7 +203,7 @@ describe('useCreator', () => {
 
   it('can optimistically create', async () => {
     const postCreator = useCreator(Post, { optimistic: true })
-    piniaLocalStorageState.mockLatencyMs = 50
+    setups.setMockLatency(50)
 
     postCreator.create({ title: 'solid title!' }) // intentionally not awaited
 
@@ -211,7 +213,7 @@ describe('useCreator', () => {
 
   it('can set optimistic globally', async () => {
     // const postCreator = useCreator(Post, { optimistic: true })
-    // piniaLocalStorageState.mockLatencyMs = 50
+    // setups.setMockLatency(50)
 
     // postCreator.create({ title: 'solid title!' }) // intentionally not awaited
 
@@ -222,10 +224,10 @@ describe('useCreator', () => {
   it('rolls back if the create fails when using optimistic', async () => {
     const postsRepo = useRepo(Post)
     const postCreator = useCreator(Post, { optimistic: true })
-    piniaLocalStorageState.mockLatencyMs = 50
-    piniaLocalStorageState.mockStandardErrors = [
+    setups.setMockLatency(50)
+    setups.setMockStandardErrors([
       { name: 'thingy-messup', message: 'The thingy messed up' },
-    ]
+    ])
 
     const createPromise = postCreator.create({ title: 'solid title!' }) // intentionally not awaited
 
@@ -244,10 +246,10 @@ describe('useCreator', () => {
   it('can rollback correctly when creating two records at the same time', async () => {
     const postsRepo = useRepo(Post)
     const postCreator = useCreator(Post, { optimistic: true })
-    piniaLocalStorageState.mockLatencyMs = 150
-    piniaLocalStorageState.mockStandardErrors = [
+    setups.setMockLatency(150)
+    setups.setMockStandardErrors([
       { name: 'thingy-messup', message: 'The thingy messed up' },
-    ]
+    ])
 
     const createPromise1 = postCreator.create({ title: 'promise 1' }) // intentionally not awaited
     await wait(50)
@@ -267,7 +269,7 @@ describe('useCreator', () => {
 
   it('deletes an active request on success', async () => {
     const postCreator = useCreator(Post)
-    piniaLocalStorageState.mockLatencyMs = 150
+    setups.setMockLatency(150)
 
     const createPromise1 = postCreator.create({ title: 'promise 1' }) // intentionally not awaited
     await wait(50)
@@ -284,10 +286,10 @@ describe('useCreator', () => {
 
   it('deletes an active request on error', async () => {
     const postCreator = useCreator(Post)
-    piniaLocalStorageState.mockLatencyMs = 150
-    piniaLocalStorageState.mockStandardErrors = [
+    setups.setMockLatency(150)
+    setups.setMockStandardErrors([
       { name: 'thingy-messup', message: 'The thingy messed up' },
-    ]
+    ])
 
     const createPromise1 = postCreator.create({ title: 'promise 1' }) // intentionally not awaited
     await wait(50)
@@ -305,17 +307,17 @@ describe('useCreator', () => {
 
   it('success and error responses have an "action" of "create"', async () => {
     const postCreator = useCreator(Post)
-    piniaLocalStorageState.mockStandardErrors = [{
+    setups.setMockStandardErrors([{
       name: 'thingy-messup',
       message: 'The thingy messed up',
-    }]
+    }])
 
     await postCreator.create({})
 
     expect(postCreator.response.value.action)
       .toEqual('create')
 
-    piniaLocalStorageState.mockStandardErrors = []
+    setups.setMockStandardErrors([])
     await postCreator.create({})
 
     expect(postCreator.response.value.action)
@@ -337,9 +339,9 @@ describe('useCreator', () => {
   })
 
   it('hits the "onError" callback when there is a standard error', async () => {
-    piniaLocalStorageState.mockStandardErrors = [
+    setups.setMockStandardErrors([
       { name: 'thingy-messup', message: 'The thingy messed up' },
-    ]
+    ])
     const options: UseCreatorOptions<typeof Post> = {
       onError () {
         return true
@@ -354,9 +356,9 @@ describe('useCreator', () => {
   })
 
   it('hits the "onError" callback when there is a validation error', async () => {
-    piniaLocalStorageState.mockValidationErrors = {
+    setups.setMockValidationErrors({
       title: ['title is required'],
-    }
+    })
     const options: UseCreatorOptions<typeof Post> = {
       onError () {
         return true
@@ -371,9 +373,9 @@ describe('useCreator', () => {
   })
 
   it('hits the "onStandardError" callback when there are one or more standard errors', async () => {
-    piniaLocalStorageState.mockStandardErrors = [
+    setups.setMockStandardErrors([
       { name: 'thingy-messup', message: 'The thingy messed up' },
-    ]
+    ])
     const options: UseCreatorOptions<typeof Post> = {
       onStandardError () {
         return true
@@ -388,9 +390,9 @@ describe('useCreator', () => {
   })
 
   it('hits the "onValidationError" callback when there are one or more validation errors', async () => {
-    piniaLocalStorageState.mockValidationErrors = {
+    setups.setMockValidationErrors({
       title: ['title is required'],
-    }
+    })
     const options: UseCreatorOptions<typeof Post> = {
       onValidationError () {
         return true
@@ -454,7 +456,7 @@ describe('useCreator', () => {
 
   it('can cancel the request', async () => {
     const repo = useRepo(User)
-    piniaLocalStorageState.mockLatencyMs = 100
+    setups.setMockLatency(100)
 
     const usersCreator = useCreator(User)
     const createRequest = usersCreator.create({ name: 'lugu' })
@@ -467,9 +469,9 @@ describe('useCreator', () => {
   })
 
   it('can notify on error', async () => {
-    piniaLocalStorageState.mockStandardErrors = [
+    setups.setMockStandardErrors([
       { name: 'thingy-messup', message: 'The thingy messed up' },
-    ]
+    ])
     vueModelState.config.errorNotifiers = {
       create: () => {
         return ''

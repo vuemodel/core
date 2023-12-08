@@ -5,7 +5,9 @@
     "module": "ES2022",
     "moduleResolution": "Node",
     "experimentalDecorators": true,
+    "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true,
     "strict": true
   }
 }

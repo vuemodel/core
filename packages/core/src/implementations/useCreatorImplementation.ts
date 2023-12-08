@@ -1,5 +1,5 @@
 import { Model, PrimaryKey, useRepo } from 'pinia-orm'
-import { Ref, computed, ref, toValue } from 'vue'
+import { Ref, computed, ref, toRaw, toValue } from 'vue'
 import { DeclassifyPiniaOrmModel, PiniaOrmForm } from 'pinia-orm-helpers'
 import { UseCreatorOptions, UseCreatorReturn } from '../contracts/crud/create/UseCreator'
 import { getImplementation } from '../getImplementation'
@@ -127,7 +127,7 @@ export function useCreatorImplementation<T extends typeof Model> (
       controller.abort()
     }
 
-    activeRequests.value[requestId] = { request, form: structuredClone(mergedForm) }
+    activeRequests.value[requestId] = { request, form: structuredClone(toRaw(mergedForm)) }
 
     activeRequest.value = request
 

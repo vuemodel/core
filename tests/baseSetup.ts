@@ -6,12 +6,13 @@ import { clear as clearStorage } from 'idb-keyval'
 import { Album, Comment, Photo, Post, User } from '@vuemodel/sample-data'
 import { createORM, useRepo } from 'pinia-orm'
 import 'fake-indexeddb/auto'
+import { implementationSetupsMap } from './implementations/implementationSetupsMap'
+
+const setups = implementationSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
 
 export async function baseSetup () {
   await clearStorage()
-  piniaLocalStorageState.mockStandardErrors = undefined
-  piniaLocalStorageState.mockValidationErrors = undefined
-  piniaLocalStorageState.mockLatencyMs = 0
+  await setups.baseSetup()
 
   const piniaOrm = createORM()
   const piniaFront = createPinia()

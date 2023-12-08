@@ -1,12 +1,14 @@
 import { describe, beforeEach, it, expect, vi } from 'vitest'
 import { useIndexer, vueModelState } from '@vuemodel/core'
-import { piniaLocalStorageState } from '@vuemodel/pinia-local-storage'
 import { Photo, PhotoTag, Post, User, populateRecords } from '@vuemodel/sample-data'
 import { useRepo } from 'pinia-orm'
 import { baseSetup } from '../baseSetup'
 import { nextTick, ref } from 'vue'
 import { promiseState } from '../helpers/promiseState'
 import { wait } from '../helpers/wait'
+import { implementationSetupsMap } from '../implementations/implementationSetupsMap'
+
+const setups = implementationSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
 
 describe('useIndexer', () => {
   beforeEach(async () => {
@@ -53,9 +55,9 @@ describe('useIndexer', () => {
 
   it('sets validation errors when the response has validation errors', async () => {
     const postsIndexer = useIndexer(Post)
-    piniaLocalStorageState.mockValidationErrors = {
+    setups.setMockValidationErrors({
       'title[0]': ['title must be a string'],
-    }
+    })
 
     await postsIndexer.index()
 
@@ -65,10 +67,10 @@ describe('useIndexer', () => {
 
   it('clears validation errors when a request is made', async () => {
     const postsIndexer = useIndexer(Post)
-    piniaLocalStorageState.mockValidationErrors = {
+    setups.setMockValidationErrors({
       'title[0]': ['title must be a string'],
-    }
-    piniaLocalStorageState.mockLatencyMs = 200
+    })
+    setups.setMockLatency(200)
 
     await postsIndexer.index()
 
@@ -82,10 +84,10 @@ describe('useIndexer', () => {
 
   it('sets standard errors when the response has standard errors', async () => {
     const postsIndexer = useIndexer(Post)
-    piniaLocalStorageState.mockStandardErrors = [{
+    setups.setMockStandardErrors([{
       name: 'thingy-messup',
       message: 'The thingy messed up',
-    }]
+    }])
 
     await postsIndexer.index()
 
@@ -95,10 +97,10 @@ describe('useIndexer', () => {
 
   it('clears standard errors when a request is made', async () => {
     const postsIndexer = useIndexer(Post)
-    piniaLocalStorageState.mockStandardErrors = [{
+    setups.setMockStandardErrors([{
       name: 'thingy-messup',
       message: 'The thingy messed up',
-    }]
+    }])
 
     await postsIndexer.index()
 
@@ -112,17 +114,17 @@ describe('useIndexer', () => {
 
   it('success and error responses have an "action" of "index"', async () => {
     const postsIndexer = useIndexer(Post)
-    piniaLocalStorageState.mockStandardErrors = [{
+    setups.setMockStandardErrors([{
       name: 'thingy-messup',
       message: 'The thingy messed up',
-    }]
+    }])
 
     await postsIndexer.index()
 
     expect(postsIndexer.response.value.action)
       .toEqual('index')
 
-    piniaLocalStorageState.mockStandardErrors = []
+    setups.setMockStandardErrors([])
     await postsIndexer.index()
 
     expect(postsIndexer.response.value.action)
@@ -1100,7 +1102,7 @@ describe('useIndexer', () => {
 
   it('can cancel the latest request', async () => {
     await populateRecords('posts', 10)
-    piniaLocalStorageState.mockLatencyMs = 100
+    setups.setMockLatency(100)
 
     const postsIndexer = useIndexer(Post)
     const indexRequest = postsIndexer.index()
@@ -1113,7 +1115,7 @@ describe('useIndexer', () => {
 
   it('cancels the first request if a second request is made and the first is not done yet', async () => {
     await populateRecords('posts', 10)
-    piniaLocalStorageState.mockLatencyMs = 100
+    setups.setMockLatency(100)
 
     const postsIndexer = useIndexer(Post)
     const indexRequestA = postsIndexer.index()
@@ -1134,9 +1136,9 @@ describe('useIndexer', () => {
   })
 
   it('can notify on error', async () => {
-    piniaLocalStorageState.mockStandardErrors = [
+    setups.setMockStandardErrors([
       { name: 'thingy-messup', message: 'The thingy messed up' },
-    ]
+    ])
     vueModelState.config.errorNotifiers = {
       index: () => {
         return ''
@@ -1176,5 +1178,9 @@ describe('useIndexer', () => {
 
     expect(postIndexer.records.value.length).toEqual(1)
     expect(postIndexer.records.value[0].name).toEqual('Leanne Graham')
+  })
+
+  it('can use a creator to add created records', async () => {
+    //
   })
 })
