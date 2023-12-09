@@ -56,15 +56,19 @@ describe('index', () => {
     expect(response.records[0].posts[0].comments.length).toEqual(5)
   })
 
-  it('can filter nested records', async () => {
+  it.only('can filter nested records', async () => {
     await populateRecords('users', 1)
     await populateRecords('posts', 20)
+    await populateRecords('comments', 20)
 
     const response = await index(User, {
       with: {
         posts: {
           title: {
             contains: 'optio',
+          },
+          comments: {
+            name: { equals: 'alias odio sit' },
           },
         },
       },
@@ -76,6 +80,10 @@ describe('index', () => {
         '1',
         '10',
       ]))
+
+    const comments = response.records[0].posts[0].comments
+    expect(comments.length).toEqual(1)
+    expect(comments[0].name).toEqual('alias odio sit')
   })
 
   it('can order nested records', async () => {

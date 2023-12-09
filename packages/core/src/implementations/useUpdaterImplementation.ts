@@ -1,5 +1,5 @@
 import { Model, useRepo } from 'pinia-orm'
-import { Ref, computed, ref, toRaw, toValue, watch } from 'vue'
+import { Ref, computed, ref, toValue, watch } from 'vue'
 import { DeclassifyPiniaOrmModel, PiniaOrmForm } from 'pinia-orm-helpers'
 import { UseUpdaterOptions, UseUpdaterReturn } from '../contracts/crud/update/UseUpdater'
 import { getImplementation } from '../getImplementation'
@@ -12,6 +12,7 @@ import { getMergedDriverConfig } from '../utils/getMergedDriverConfig'
 import debounce from 'debounce'
 import { getRecordPrimaryKey } from '../utils/getRecordPrimaryKey'
 import { getFirstDefined } from '../utils/getFirstDefined'
+import clone from 'just-clone'
 
 const defaultOptions = {
   persist: true,
@@ -183,7 +184,7 @@ export function useUpdaterImplementation<T extends typeof Model> (
     const optimistic = getFirstDefined<boolean>([toValue(options?.optimistic), driverConfig.optimistic]) &&
       persist
 
-    const originalRecord = structuredClone(toRaw(repo.find(resolvedId)))
+    const originalRecord = clone(repo.find(resolvedId) ?? {})
 
     let thisOptimisticRecord: InstanceType<T> | undefined
     if (optimistic && persist) {
@@ -216,7 +217,7 @@ export function useUpdaterImplementation<T extends typeof Model> (
 
     activeRequest.value = request
 
-    activeRequests.value[resolvedId] = { request, form: structuredClone(toRaw(mergedForm)) }
+    activeRequests.value[resolvedId] = { request, form: clone(mergedForm) }
 
     const thisResponse = await request
     activeRequest.value = undefined

@@ -199,6 +199,9 @@ importers:
       deepmerge-ts:
         specifier: ^5.1.0
         version: 5.1.0
+      just-clone:
+        specifier: ^6.2.0
+        version: 6.2.0
       pinia:
         specifier: ^2.x
         version: 2.1.7(typescript@5.3.2)(vue@3.3.10)
@@ -257,6 +260,9 @@ importers:
       idb-keyval:
         specifier: ^6.2.1
         version: 6.2.1
+      just-clone:
+        specifier: ^6.2.0
+        version: 6.2.0
       pinia:
         specifier: ^2.x
         version: 2.1.7(typescript@5.3.2)(vue@3.3.10)
@@ -4191,6 +4197,10 @@ packages:
     optionalDependencies:
       graceful-fs: 4.2.11
     dev: true
+
+  /just-clone@6.2.0:
+    resolution: {integrity: sha512-1IynUYEc/HAwxhi3WDpIpxJbZpMCvvrrmZVqvj9EhpvbH8lls7HhdhiByjL7DkAaWlLIzpC0Xc/VPvy/UxLNjA==}
+    dev: false
 
   /keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}

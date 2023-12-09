@@ -7,7 +7,7 @@ import { piniaLocalStorageState } from '../../plugin/state'
 import { wait } from '../../utils/wait'
 import { makeMockErrorResponse } from '../../utils/makeMockErrorResponse'
 import { LoosePrimaryKey } from '@vuemodel/core/src/types/LoosePrimaryKey'
-import { toRaw } from 'vue'
+import clone from 'just-clone'
 
 export async function update<T extends typeof Model> (
   ModelClass: T,
@@ -77,7 +77,7 @@ export async function update<T extends typeof Model> (
       })
     }
 
-    const recordClone = structuredClone(toRaw(recordForUpdate))
+    const recordClone = clone(recordForUpdate)
     const attributes = getClassAttributes(ModelClass)
     const updatedRecord = Object.assign({}, recordClone, pick(form, Object.keys(attributes)))
 

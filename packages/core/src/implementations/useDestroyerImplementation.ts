@@ -1,5 +1,5 @@
 import { Item, Model, useRepo } from 'pinia-orm'
-import { computed, ref, toRaw, toValue } from 'vue'
+import { computed, ref, toValue } from 'vue'
 import { UseDestroyerOptions, UseDestroyerReturn } from '../contracts/crud/destroy/UseDestroyer'
 import { getImplementation } from '../getImplementation'
 import { DestroyResponse, DestroySuccessResponse } from '../types/Response'
@@ -7,6 +7,7 @@ import { StandardErrors } from '../contracts/errors/StandardErrors'
 import { Constructor } from '../types/Constructor'
 import { getMergedDriverConfig } from '../utils/getMergedDriverConfig'
 import { getFirstDefined } from '../utils/getFirstDefined'
+import clone from 'just-clone'
 
 const defaultOptions = {
   persist: true,
@@ -70,7 +71,7 @@ export function useDestroyerImplementation<T extends typeof Model> (
     const recordForRemoval = repo.find(resolvedId)
     let clonedRecord: Item<InstanceType<T>> = null
     if (recordForRemoval) {
-      clonedRecord = structuredClone(toRaw(recordForRemoval))
+      clonedRecord = clone(recordForRemoval)
     }
     recordBeingRemoved.value = clonedRecord
 
