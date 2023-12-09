@@ -8,8 +8,8 @@ type UnwrapType<T> =
   never;
 
 export type FilterTypeParamType = [
-  ['equals', string | number],
-  ['doesNotEqual', string | number],
+  ['equals', string | number | boolean | null],
+  ['doesNotEqual', string | number | boolean | null],
   ['lessThan', string | number],
   ['lessThanOrEqual', string | number],
   ['greaterThan', string | number],
