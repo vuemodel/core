@@ -4,11 +4,10 @@ import { between } from './between'
 export type WhereFunction = (fieldsValue: string, passedValue: any) => boolean
 
 export const whereFunctions: Record<string, WhereFunction> = {
-  equals: (fieldsValue: string, passedValue: string | number) => {
-    if (!passedValue) return true
+  equals: (fieldsValue: string, passedValue: string | number | boolean | null) => {
     return fieldsValue == passedValue
   },
-  doesNotEqual: (fieldsValue: string, passedValue: string | number) => {
+  doesNotEqual: (fieldsValue: string, passedValue: string | number | boolean | null) => {
     return fieldsValue != passedValue
   },
   lessThan: (fieldsValue: string, passedValue: string | number) => {
