@@ -1,5 +1,5 @@
 {
-  "version": "0.0.5",
+  "version": "0.0.6",
   "name": "@vuemodel/sample-data",
   "author": "luke@ldiebold.com",
   "license": "ISC",
@@ -8,8 +8,20 @@
     "build": "tsup src/index.ts --clean --format esm,cjs --dts && rm -rf ./dist/json/ && cp -r ./src/json/ ./dist",
     "release": "pnpm build && bumpp --tag '@vuemodel/sample-data@v%s' && pnpm publish"
   },
-  "main": "./src/index.ts",
-  "module": "./src/index.ts",
+  "exports": {
+    ".": {
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      },
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
     "dist"
