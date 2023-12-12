@@ -1,6 +1,6 @@
 {
   "name": "@vuemodel/pinia-local-storage",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "scripts": {
     "jiti-fix": "find ./dist -type f -exec sed -i 's|file://||g' {} \\;",
     "build": "unbuild",
@@ -48,7 +48,7 @@
     "pinia-orm-helpers": "^0.0.11"
   },
   "peerDependencies": {
-    "@vuemodel/core": "^0.0.14",
+    "@vuemodel/core": "^0.0.x",
     "pinia": "^2.x",
     "pinia-orm": "^1.x",
     "vue": "^3.x"
