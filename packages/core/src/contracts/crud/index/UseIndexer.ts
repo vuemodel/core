@@ -1,4 +1,4 @@
-import { Model, Query } from 'pinia-orm'
+import { Model, Query, Repository } from 'pinia-orm'
 import { IndexFilters } from './IndexFilters'
 import { OrderBy } from './IndexOrders'
 import { QueryValidationErrors } from '../../errors/QueryValidationErrors'
@@ -171,14 +171,16 @@ export interface UseIndexerReturn<T extends typeof Model> {
   index(
     options?: {
       page?: number,
-      recordsPerPage?: number
+      recordsPerPage?: number,
+      filters?: IndexFilters<InstanceType<T>>
     }
   ): Promise<IndexResponse<T>>
   index(
     ids?: LoosePrimaryKey[],
     options?: {
       page?: number,
-      recordsPerPage?: number
+      recordsPerPage?: number,
+      filters?: IndexFilters<InstanceType<T>>
     }
   ): Promise<IndexResponse<T>>
 
@@ -299,6 +301,16 @@ export interface UseIndexerReturn<T extends typeof Model> {
    * `true` if the latest request retrieved the last page
    */
   isLastPage: ComputedRef<boolean | undefined>
+
+  /**
+   * The PiniaORM model used to create this composable
+   */
+  // ModelClass: T
+
+  /**
+   * The PiniaORM repo
+   */
+  repo: Repository<InstanceType<T>>
 }
 
 export type UseIndexer<T extends typeof Model> = (

@@ -103,9 +103,7 @@ export function useIndexerImplementation<T extends typeof Model> (
 
     const query = repo.query()
 
-    if (toValue(responseIds).length) {
-      query.whereId(toValue(responseIds))
-    }
+    query.whereId(toValue(responseIds) ?? [])
     if (withObject) applyWiths(ModelClass, query, withObject)
     if (filtersObject) applyFilters(query, filtersObject)
     if (orderByArray) applyOrderBys(query, orderByArray)
@@ -121,8 +119,8 @@ export function useIndexerImplementation<T extends typeof Model> (
   })
 
   const index: UseIndexerReturn<T>['index'] = async function index (
-    optionsOrId?: IndexIdsParam | IndexOptionsParam,
-    optionsParam?: IndexOptionsParam,
+    optionsOrId?: IndexIdsParam | IndexOptionsParam<T>,
+    optionsParam?: IndexOptionsParam<T>,
   ) {
     if (activeRequest.value) {
       activeRequest.value.cancel()
@@ -143,8 +141,8 @@ export function useIndexerImplementation<T extends typeof Model> (
     )
 
     const withQuery = makeWithQuery(toValue(options?.with) as IndexWithsLoose)
-
     const filters = deepmerge(
+      resolvedParams.options?.filters ?? {},
       toValue(options?.filters) ?? {},
       resolvedScopes.filters ?? {},
     ) as IndexFilters<InstanceType<T>>
@@ -376,5 +374,7 @@ export function useIndexerImplementation<T extends typeof Model> (
     isLastPage,
     isFirstPage,
     cancel,
+    // ModelClass,
+    repo,
   }
 }

@@ -1,4 +1,4 @@
-import { Item, Model } from 'pinia-orm'
+import { Item, Model, Repository } from 'pinia-orm'
 import { FormValidationErrors } from '../../errors/FormValidationErrors'
 import { ComputedRef, MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
 import { PiniaOrmForm } from 'pinia-orm-helpers'
@@ -168,6 +168,16 @@ export interface UseCreatorReturn<T extends typeof Model> {
    * Cancel the latest request.
    */
   cancel: () => void
+
+  /**
+   * The PiniaORM model used to create this composable
+   */
+  // ModelClass: T
+
+  /**
+   * The PiniaORM repo
+   */
+  repo: Repository<InstanceType<T>>
 }
 
 export type UseCreator<T extends typeof Model> = (

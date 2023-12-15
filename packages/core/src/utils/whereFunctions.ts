@@ -29,10 +29,10 @@ export const whereFunctions: Record<string, WhereFunction> = {
     return !passedValue?.includes(fieldsValue)
   },
   contains: (fieldsValue: string, passedValue: string) => {
-    return fieldsValue?.includes(passedValue)
+    return fieldsValue?.toLowerCase()?.includes(passedValue?.toLowerCase())
   },
   doesNotContain: (fieldsValue: string, passedValue: string) => {
-    return !fieldsValue?.includes(passedValue)
+    return !fieldsValue?.toLowerCase()?.includes(passedValue?.toLowerCase())
   },
   between: (fieldsValue: string, passedValue: [string | number | Date, string | number | Date]) => {
     return between(fieldsValue, passedValue)

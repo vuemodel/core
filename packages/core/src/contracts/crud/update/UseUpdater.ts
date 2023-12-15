@@ -1,4 +1,4 @@
-import { Item, Model } from 'pinia-orm'
+import { Item, Model, Repository } from 'pinia-orm'
 import { FormValidationErrors } from '../../errors/FormValidationErrors'
 import { ComputedRef, MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
 import { PiniaOrmForm } from 'pinia-orm-helpers'
@@ -260,6 +260,16 @@ export interface UseUpdaterReturn<T extends typeof Model> {
    * `makeFormFinder` is that `useFind` composable.
    */
   makeFormFinder: UseFinderReturn<T>
+
+  /**
+   * The PiniaORM model used to create this composable
+   */
+  // ModelClass: T
+
+  /**
+   * The PiniaORM repo
+   */
+  repo: Repository<InstanceType<T>>
 }
 
 export type UseUpdater<T extends typeof Model> = (

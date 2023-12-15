@@ -1,11 +1,12 @@
 import { IndexIdsParam, IndexOptionsParam } from '../types/UseIndexerParams'
+import { Model } from 'pinia-orm'
 
-export function resolveIndexParams (
-  optionsOrId?: IndexIdsParam | IndexOptionsParam,
-  options?: IndexOptionsParam,
+export function resolveIndexParams<T extends typeof Model> (
+  optionsOrId?: IndexIdsParam | IndexOptionsParam<T>,
+  options?: IndexOptionsParam<T>,
 ): {
   ids?: IndexIdsParam
-  options: IndexOptionsParam
+  options: IndexOptionsParam<T>
 } {
   if (Array.isArray(optionsOrId)) {
     return {

@@ -56,7 +56,7 @@ describe('index', () => {
     expect(response.records[0].posts[0].comments.length).toEqual(5)
   })
 
-  it.only('can filter nested records', async () => {
+  it('can filter nested records', async () => {
     await populateRecords('users', 1)
     await populateRecords('posts', 20)
     await populateRecords('comments', 20)

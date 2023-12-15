@@ -1174,13 +1174,22 @@ describe('useIndexer', () => {
       },
     })
 
-    await postIndexer.index()
+    const response = await postIndexer.index()
 
     expect(postIndexer.records.value.length).toEqual(1)
     expect(postIndexer.records.value[0].name).toEqual('Leanne Graham')
   })
 
-  it('can use a creator to add created records', async () => {
-    //
+  it('can pass filters directly to indexer.index(filters)', async () => {
+    await populateRecords('users', 5)
+
+    const postIndexer = useIndexer(User)
+
+    await postIndexer.index({
+      filters: { name: { equals: 'Clementine Bauch' } },
+    })
+
+    expect(postIndexer.records.value.length).toEqual(1)
+    expect(postIndexer.records.value[0].name).toEqual('Clementine Bauch')
   })
 })

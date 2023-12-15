@@ -141,5 +141,7 @@ export function useDestroyerImplementation<T extends typeof Model> (
     record,
     activeRequests,
     standardErrors,
+    // ModelClass,
+    repo,
   }
 }

@@ -294,5 +294,7 @@ export function useUpdaterImplementation<T extends typeof Model> (
     standardErrors,
     makingForm,
     cancel,
+    // ModelClass,
+    repo,
   }
 }

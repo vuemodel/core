@@ -83,11 +83,11 @@ export async function index<T extends typeof Model> (
     const repo = useRepo(ModelClass, piniaLocalStorageState.store)
 
     await ensureModelRecordsInStore(ModelClass, Object.assign({}, options?.with ?? {}, options?.filters ?? {}))
-    const recordsCount = repo.all().length
 
     const query = repo.query()
 
     if (options?.filters) applyFilters(query, options.filters)
+    const recordsCount = query.get().length
     if (options?.with) applyWiths(ModelClass, query, options.with)
     if (options?.orderBy) applyOrderBys<InstanceType<T>>(query, options.orderBy)
     if (options?.pagination) applyPagination(query, options.pagination)

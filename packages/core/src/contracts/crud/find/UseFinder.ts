@@ -1,4 +1,4 @@
-import { Item, Model, Query } from 'pinia-orm'
+import { Item, Model, Query, Repository } from 'pinia-orm'
 import { QueryValidationErrors } from '../../errors/QueryValidationErrors'
 import { ComputedRef, MaybeRefOrGetter, Ref } from 'vue'
 import { StandardErrors } from '../../errors/StandardErrors'
@@ -164,6 +164,16 @@ export interface UseFinderReturn<T extends typeof Model> {
    *  .first()
    */
   makeQuery(idParam?: LoosePrimaryKey): Query<InstanceType<T>>
+
+  /**
+   * The PiniaORM model used to create this composable
+   */
+  // ModelClass: T
+
+  /**
+   * The PiniaORM repo
+   */
+  repo: Repository<InstanceType<T>>
 }
 
 export type UseFinder<T extends typeof Model> = (

@@ -207,5 +207,7 @@ export function useFinderImplementation<T extends typeof Model> (
     standardErrors,
     makeQuery,
     cancel,
+    // ModelClass,
+    repo,
   }
 }

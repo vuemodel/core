@@ -1,4 +1,4 @@
-import { Item, Model } from 'pinia-orm'
+import { Item, Model, Repository } from 'pinia-orm'
 import { ComputedRef, MaybeRefOrGetter, Ref } from 'vue'
 import { StandardErrors } from '../../errors/StandardErrors'
 import { DestroyErrorResponse, DestroyResponse, DestroySuccessResponse } from '../../../types/Response'
@@ -111,6 +111,16 @@ export interface UseDestroyerReturn<T extends typeof Model> {
    * Cancel the latest request.
    */
   cancel: () => void
+
+  /**
+   * The PiniaORM model used to create this composable
+   */
+  // ModelClass: T
+
+  /**
+   * The PiniaORM repo
+   */
+  repo: Repository<InstanceType<T>>
 }
 
 export type UseDestroyer<T extends typeof Model> = (

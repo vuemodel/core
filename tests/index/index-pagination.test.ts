@@ -18,6 +18,7 @@ describe('index', () => {
     })
 
     expect(response.records.length).toEqual(5)
+    expect(response.pagination.recordsCount).toEqual(10)
   })
 
   it('can paginate', async () => {
@@ -36,6 +37,24 @@ describe('index', () => {
     expect(response.records[2].id).toEqual('8')
     expect(response.records[3].id).toEqual('9')
     expect(response.records[4].id).toEqual('10')
+
+    expect(response.pagination.recordsCount).toEqual(10)
+  })
+
+  it('has the correct record count when paginating with filters', async () => {
+    await populateRecords('posts', 20)
+
+    const response = await index(Post, {
+      filters: {
+        user_id: { equals: '1' },
+      },
+      pagination: {
+        recordsPerPage: 5,
+        page: 2,
+      },
+    })
+
+    expect(response.pagination.recordsCount).toEqual(10)
   })
 
   it('sets a standard error if the page is a negative number', async () => {
