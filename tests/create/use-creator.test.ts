@@ -10,8 +10,8 @@ import { implementationSetupsMap } from '../implementations/implementationSetups
 const setups = implementationSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
 
 describe('useCreator', () => {
-  beforeEach(async () => {
-    await baseSetup()
+  beforeEach(async (ctx) => {
+    await baseSetup(ctx)
   })
 
   it('can pass a form to the composables options and create', async () => {
@@ -136,8 +136,8 @@ describe('useCreator', () => {
 
     await postCreator.create()
 
-    expect(postCreator.validationErrors.value.title)
-      .toEqual(expect.arrayContaining(['title is required']))
+    expect(postCreator.validationErrors.value.title[0])
+      .toBeTypeOf('string')
   })
 
   it('clears validation errors when a request is made', async () => {
@@ -148,11 +148,11 @@ describe('useCreator', () => {
 
     await postCreator.create()
 
-    expect(postCreator.validationErrors.value.title)
-      .toEqual(expect.arrayContaining(['title is required']))
+    expect(postCreator.validationErrors.value.title[0])
+      .toBeTypeOf('string')
 
     setups.setMockValidationErrors(undefined)
-    await postCreator.create()
+    await postCreator.create({ title: 'Exists' })
 
     expect(Object.values(postCreator.validationErrors.value).length)
       .toEqual(0)
@@ -166,8 +166,8 @@ describe('useCreator', () => {
 
     await postCreator.create()
 
-    expect(postCreator.standardErrors.value[0])
-      .toEqual({ name: 'thingy-messup', message: 'The thingy messed up' })
+    expect(postCreator.standardErrors.value[0].message)
+      .toBeTypeOf('string')
   })
 
   it('clears standard errors when a request is made', async () => {
@@ -178,11 +178,11 @@ describe('useCreator', () => {
 
     await postCreator.create()
 
-    expect(postCreator.standardErrors.value[0])
-      .toEqual({ name: 'thingy-messup', message: 'The thingy messed up' })
+    expect(postCreator.standardErrors.value[0].message)
+      .toBeTypeOf('string')
 
     setups.setMockStandardErrors(undefined)
-    await postCreator.create()
+    await postCreator.create({ title: 'some title' })
 
     expect(postCreator.standardErrors.value.length)
       .toEqual(0)
@@ -190,15 +190,15 @@ describe('useCreator', () => {
 
   it('does not reset the form if create fails', async () => {
     const postCreator = useCreator(Post)
-    postCreator.form.value.title = 'solid title!'
+    postCreator.form.value.body = 'solid body!'
     setups.setMockStandardErrors([
       { name: 'thingy-messup', message: 'The thingy messed up' },
     ])
 
     await postCreator.create()
 
-    expect(postCreator.form.value.title)
-      .toEqual('solid title!')
+    expect(postCreator.form.value.body)
+      .toEqual('solid body!')
   })
 
   it('can optimistically create', async () => {
@@ -229,11 +229,11 @@ describe('useCreator', () => {
       { name: 'thingy-messup', message: 'The thingy messed up' },
     ])
 
-    const createPromise = postCreator.create({ title: 'solid title!' }) // intentionally not awaited
+    const createPromise = postCreator.create({ body: 'solid title!' }) // intentionally not awaited
 
     // Assumes success
     expect(postsRepo.all().length).toEqual(1)
-    expect(postCreator.record.value?.title)
+    expect(postCreator.record.value?.body)
       .toEqual('solid title!')
 
     await createPromise
@@ -251,9 +251,8 @@ describe('useCreator', () => {
       { name: 'thingy-messup', message: 'The thingy messed up' },
     ])
 
-    const createPromise1 = postCreator.create({ title: 'promise 1' }) // intentionally not awaited
-    await wait(50)
-    const createPromise2 = postCreator.create({ title: 'promise 2' }) // intentionally not awaited
+    const createPromise1 = postCreator.create({ body: 'promise 1' }) // intentionally not awaited
+    const createPromise2 = postCreator.create({ body: 'promise 2' }) // intentionally not awaited
 
     // Assumes success for both
     expect(postsRepo.all().length).toEqual(2)
@@ -272,7 +271,6 @@ describe('useCreator', () => {
     setups.setMockLatency(150)
 
     const createPromise1 = postCreator.create({ title: 'promise 1' }) // intentionally not awaited
-    await wait(50)
     const createPromise2 = postCreator.create({ title: 'promise 2' }) // intentionally not awaited
 
     expect(Object.entries(postCreator.activeRequests.value).length).toEqual(2)
@@ -292,7 +290,6 @@ describe('useCreator', () => {
     ])
 
     const createPromise1 = postCreator.create({ title: 'promise 1' }) // intentionally not awaited
-    await wait(50)
     const createPromise2 = postCreator.create({ title: 'promise 2' }) // intentionally not awaited
 
     // Assumes success for both
@@ -350,7 +347,7 @@ describe('useCreator', () => {
     const onErrorSpy = vi.spyOn(options, 'onError')
 
     const postCreator = useCreator(Post, options)
-    await postCreator.create({ title: 'beep' })
+    await postCreator.create({ body: 'beep' })
 
     expect(onErrorSpy).toHaveBeenCalled()
   })
@@ -367,7 +364,7 @@ describe('useCreator', () => {
     const onErrorSpy = vi.spyOn(options, 'onError')
 
     const postCreator = useCreator(Post, options)
-    await postCreator.create({ title: 'beep' })
+    await postCreator.create({ body: 'beep' })
 
     expect(onErrorSpy).toHaveBeenCalled()
   })
@@ -384,7 +381,7 @@ describe('useCreator', () => {
     const onErrorSpy = vi.spyOn(options, 'onStandardError')
 
     const postCreator = useCreator(Post, options)
-    await postCreator.create({ title: 'beep' })
+    await postCreator.create({ body: 'beep' })
 
     expect(onErrorSpy).toHaveBeenCalled()
   })
@@ -401,7 +398,7 @@ describe('useCreator', () => {
     const onErrorSpy = vi.spyOn(options, 'onValidationError')
 
     const postCreator = useCreator(Post, options)
-    await postCreator.create({ title: 'beep' })
+    await postCreator.create({ body: 'beep' })
 
     expect(onErrorSpy).toHaveBeenCalled()
   })

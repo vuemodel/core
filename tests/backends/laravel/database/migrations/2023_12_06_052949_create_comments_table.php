@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('comments', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id');
             $table->timestamps();
 
             $table->timestamp('commented_on')->nullable();
@@ -20,8 +20,7 @@ return new class extends Migration
             $table->string('email')->nullable();
             $table->string('body')->nullable();
 
-            $table->foreignId('post_id')->nullable()
-                ->references('id')->on('posts');
+            $table->string('post_id')->nullable();
         });
     }
 

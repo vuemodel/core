@@ -1,16 +1,19 @@
-import { describe, beforeEach, it, expect } from 'vitest'
+import { describe, beforeEach, it, expect, vi } from 'vitest'
 import { index } from '@vuemodel/core'
 import { User, populateRecords } from '@vuemodel/sample-data'
 import { baseSetup } from '../baseSetup'
+import { implementationSetupsMap } from '../implementations/implementationSetupsMap'
+
+const setups = implementationSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
 
 describe('index', () => {
-  beforeEach(async () => {
-    await baseSetup()
+  beforeEach(async (ctx) => {
+    await baseSetup(ctx)
   })
 
   it('can populate a resource', async () => {
-    await populateRecords('users', 1)
-    await populateRecords('posts', 5)
+    await setups.populateRecords('users', 1)
+    await setups.populateRecords('posts', 5)
 
     const response = await index(User, {
       with: {
@@ -23,9 +26,9 @@ describe('index', () => {
   })
 
   it('can populate multiple resources', async () => {
-    await populateRecords('users', 1)
-    await populateRecords('posts', 5)
-    await populateRecords('albums', 5)
+    await setups.populateRecords('users', 1)
+    await setups.populateRecords('posts', 5)
+    await setups.populateRecords('albums', 5)
 
     const response = await index(User, {
       with: {
@@ -40,9 +43,9 @@ describe('index', () => {
   })
 
   it('can nested populate', async () => {
-    await populateRecords('users', 1)
-    await populateRecords('posts', 5)
-    await populateRecords('comments', 5)
+    await setups.populateRecords('users', 1)
+    await setups.populateRecords('posts', 5)
+    await setups.populateRecords('comments', 5)
 
     const response = await index(User, {
       with: {
@@ -57,9 +60,9 @@ describe('index', () => {
   })
 
   it('can filter nested records', async () => {
-    await populateRecords('users', 1)
-    await populateRecords('posts', 20)
-    await populateRecords('comments', 20)
+    await setups.populateRecords('users', 1)
+    await setups.populateRecords('posts', 20)
+    await setups.populateRecords('comments', 20)
 
     const response = await index(User, {
       with: {
@@ -87,8 +90,23 @@ describe('index', () => {
   })
 
   it('can order nested records', async () => {
-    await populateRecords('users', 1)
-    await populateRecords('posts', 5)
+    if (!setups.implementation.features.find.order.nested) {
+      const consoleMock = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+      await index(User, {
+        with: {
+          posts: {
+            _orderBy: [
+              { field: 'title', direction: 'ascending' },
+            ],
+          },
+        },
+      })
+      expect(consoleMock).toHaveBeenCalledWith('implementation "testDriver" does not support feature "find.order.nested"')
+      return
+    }
+
+    await setups.populateRecords('users', 1)
+    await setups.populateRecords('posts', 5)
 
     const response = await index(User, {
       with: {

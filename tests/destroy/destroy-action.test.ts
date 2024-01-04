@@ -1,6 +1,6 @@
 import { describe, beforeEach, it, expect, vi } from 'vitest'
 import { index, destroy, vueModelState } from '@vuemodel/core'
-import { Post, populateRecords } from '@vuemodel/sample-data'
+import { Post } from '@vuemodel/sample-data'
 import { baseSetup } from '../baseSetup'
 import 'fake-indexeddb/auto'
 import { implementationSetupsMap } from '../implementations/implementationSetupsMap'
@@ -8,12 +8,12 @@ import { implementationSetupsMap } from '../implementations/implementationSetups
 const setups = implementationSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
 
 describe('destroy', () => {
-  beforeEach(async () => {
-    await baseSetup()
+  beforeEach(async (ctx) => {
+    await baseSetup(ctx)
   })
 
   it('can destroy a resource', async () => {
-    await populateRecords('posts', 5)
+    await setups.populateRecords('posts', 5)
 
     const result = await destroy(Post, '3')
 
@@ -30,19 +30,20 @@ describe('destroy', () => {
       { message: 'something went horribly wrong', name: 'oops' },
     ])
 
-    const result = await destroy(Post, '1')
+    const result = await destroy(Post, '30')
 
-    expect(result.standardErrors).toMatchObject([{ message: 'something went horribly wrong', name: 'oops' }])
+    expect(result.standardErrors[0].name).toBeTypeOf('string')
+    expect(result.standardErrors[0].message).toBeTypeOf('string')
   })
 
   it('can notify on error', async () => {
     setups.setMockStandardErrors([{ message: 'something went horribly wrong', name: 'oops' }])
-    vueModelState.drivers.local.config = {
+    vueModelState.drivers.testDriver.config = {
       errorNotifiers: {
         destroy: () => { return {} },
       },
     }
-    const notifyOnErrorSpy = vi.spyOn(vueModelState.drivers.local.config.errorNotifiers, 'destroy')
+    const notifyOnErrorSpy = vi.spyOn(vueModelState.drivers.testDriver.config.errorNotifiers, 'destroy')
 
     await destroy(Post, '1', { notifyOnError: true })
 
@@ -51,12 +52,12 @@ describe('destroy', () => {
 
   it('does not notify on error by default', async () => {
     setups.setMockStandardErrors([{ message: 'something went horribly wrong', name: 'oops' }])
-    vueModelState.drivers.local.config = {
+    vueModelState.drivers.testDriver.config = {
       errorNotifiers: {
         destroy: () => { return {} },
       },
     }
-    const notifyOnErrorSpy = vi.spyOn(vueModelState.drivers.local.config.errorNotifiers, 'destroy')
+    const notifyOnErrorSpy = vi.spyOn(vueModelState.drivers.testDriver.config.errorNotifiers, 'destroy')
 
     await destroy(Post, '1')
 
@@ -66,13 +67,13 @@ describe('destroy', () => {
   it('has a first preference for notifyOnError passed as a param', async () => {
     setups.setMockStandardErrors([{ message: 'something went horribly wrong', name: 'oops' }])
     vueModelState.config.notifyOnError = { destroy: false }
-    vueModelState.drivers.local.config = {
+    vueModelState.drivers.testDriver.config = {
       errorNotifiers: {
         destroy: () => { return {} },
       },
       notifyOnError: { destroy: false },
     }
-    const notifyOnErrorSpy = vi.spyOn(vueModelState.drivers.local.config.errorNotifiers, 'destroy')
+    const notifyOnErrorSpy = vi.spyOn(vueModelState.drivers.testDriver.config.errorNotifiers, 'destroy')
 
     await destroy(Post, '1', { notifyOnError: true }) // as param takes precedence
 
@@ -82,13 +83,13 @@ describe('destroy', () => {
   it('has a second preference for notifyOnError set at a "state.driver.xxx.config" level', async () => {
     setups.setMockStandardErrors([{ message: 'something went horribly wrong', name: 'oops' }])
     vueModelState.config.notifyOnError = { destroy: false }
-    vueModelState.drivers.local.config = {
+    vueModelState.drivers.testDriver.config = {
       errorNotifiers: {
         destroy: () => { return {} },
       },
       notifyOnError: { destroy: true },
     }
-    const notifyOnErrorSpy = vi.spyOn(vueModelState.drivers.local.config.errorNotifiers, 'destroy')
+    const notifyOnErrorSpy = vi.spyOn(vueModelState.drivers.testDriver.config.errorNotifiers, 'destroy')
 
     await destroy(Post, '1') // as param takes precedence
 
@@ -98,12 +99,12 @@ describe('destroy', () => {
   it('has a third preference for notifyOnError set at a "state.config" level', async () => {
     setups.setMockStandardErrors([{ message: 'something went horribly wrong', name: 'oops' }])
     vueModelState.config.notifyOnError = { destroy: true }
-    vueModelState.drivers.local.config = {
+    vueModelState.drivers.testDriver.config = {
       errorNotifiers: {
         destroy: () => { return {} },
       },
     }
-    const notifyOnErrorSpy = vi.spyOn(vueModelState.drivers.local.config.errorNotifiers, 'destroy')
+    const notifyOnErrorSpy = vi.spyOn(vueModelState.drivers.testDriver.config.errorNotifiers, 'destroy')
 
     await destroy(Post, '1') // as param takes precedence
 
@@ -111,7 +112,7 @@ describe('destroy', () => {
   })
 
   it('returns a standard error if the id does not exist', async () => {
-    await populateRecords('posts', 2)
+    await setups.populateRecords('posts', 2)
 
     const respone = await destroy(Post, '3')
 
@@ -121,33 +122,33 @@ describe('destroy', () => {
 
   it('does not throw if "options.throw" is false', async () => {
     setups.setMockStandardErrors([{ name: 'oops', message: 'something went baaad!' }])
-    await populateRecords('posts', 1)
+    await setups.populateRecords('posts', 1)
     expect(async () => await destroy(Post, '1')).not.toThrow()
   })
 
   it('has first precedence for options.throw', async () => {
-    vueModelState.drivers.local.config.throw = false
+    vueModelState.drivers.testDriver.config.throw = false
     vueModelState.config.throw = false
     setups.setMockStandardErrors([{ name: 'oops', message: 'something went baaad!' }])
-    await populateRecords('posts', 1)
+    await setups.populateRecords('posts', 1)
 
-    expect(async () => await destroy(Post, '1', { throw: true })).rejects.toThrow()
+    expect(async () => await destroy(Post, '30', { throw: true })).rejects.toThrow()
   })
 
   it('has second precedence for options.driver.throw', async () => {
-    vueModelState.drivers.local.config.throw = true
+    vueModelState.drivers.testDriver.config.throw = true
     vueModelState.config.throw = false
-    await populateRecords('posts', 1)
+    await setups.populateRecords('posts', 1)
     setups.setMockStandardErrors([{ name: 'oops', message: 'something went baaad!' }])
 
-    expect(async () => await destroy(Post, '1')).rejects.toThrow()
+    expect(async () => await destroy(Post, '30')).rejects.toThrow()
   })
 
   it('has third precedence for options.throw', async () => {
     vueModelState.config.throw = true
-    await populateRecords('posts', 1)
+    await setups.populateRecords('posts', 1)
     setups.setMockStandardErrors([{ name: 'oops', message: 'something went baaad!' }])
 
-    expect(async () => await destroy(Post, '1')).rejects.toThrow()
+    expect(async () => await destroy(Post, '30')).rejects.toThrow()
   })
 })

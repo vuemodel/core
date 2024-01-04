@@ -12,12 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('photo_tags', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id');
             $table->timestamps();
 
-            $table->foreignId('photo_id')->nullable()
-                ->references('id')->on('photos');
-            $table->foreignId('tag_id')->nullable();
+            $table->string('photo_id')->nullable();
+            $table->string('tag_id')->nullable();
         });
     }
 

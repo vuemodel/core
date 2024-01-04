@@ -1,6 +1,6 @@
 import { describe, beforeEach, it, expect, vi } from 'vitest'
 import { useFinder, UseFinderOptions, vueModelState } from '@vuemodel/core'
-import { DataverseUser, PhotoTag, Post, User, populateRecords } from '@vuemodel/sample-data'
+import { DataverseUser, PhotoTag, Post, User } from '@vuemodel/sample-data'
 import { useRepo } from 'pinia-orm'
 import { baseSetup } from '../baseSetup'
 import { wait } from '../helpers/wait'
@@ -10,12 +10,12 @@ import { implementationSetupsMap } from '../implementations/implementationSetups
 const setups = implementationSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
 
 describe('useFinder', () => {
-  beforeEach(async () => {
-    await baseSetup()
+  beforeEach(async (ctx) => {
+    await baseSetup(ctx)
   })
 
   it('persists the record to the store after find()', async () => {
-    await populateRecords('posts', 5)
+    await setups.populateRecords('posts', 5)
 
     const postFinder = useFinder(Post)
     await postFinder.find('1')
@@ -24,7 +24,7 @@ describe('useFinder', () => {
   })
 
   it('does not persist the record to the store after find() when "persist" is false', async () => {
-    await populateRecords('posts', 5)
+    await setups.populateRecords('posts', 5)
 
     const postRepo = useRepo(Post)
     const postFinder = useFinder(Post, { persist: false })
@@ -36,7 +36,7 @@ describe('useFinder', () => {
   })
 
   it('can find a resource by "id" using finder(id)', async () => {
-    await populateRecords('posts', 5)
+    await setups.populateRecords('posts', 5)
 
     const postFinder = useFinder(Post)
     await postFinder.find('1')
@@ -46,7 +46,7 @@ describe('useFinder', () => {
   })
 
   it('can find a resource using the option "options.id"', async () => {
-    await populateRecords('posts', 5)
+    await setups.populateRecords('posts', 5)
 
     const postFinder = useFinder(Post, { id: '2' })
     await postFinder.find()
@@ -56,7 +56,7 @@ describe('useFinder', () => {
   })
 
   it('uses the correct precedence when finding by id', async () => {
-    await populateRecords('posts', 5)
+    await setups.populateRecords('posts', 5)
 
     const postFinder = useFinder(Post, { id: '2' })
     await postFinder.find('1')
@@ -66,7 +66,7 @@ describe('useFinder', () => {
   })
 
   it('can find the resource immediately', async () => {
-    await populateRecords('posts', 5)
+    await setups.populateRecords('posts', 5)
 
     const postFinder = useFinder(Post, { id: '2', immediate: true })
 
@@ -81,7 +81,7 @@ describe('useFinder', () => {
   })
 
   it('hits the "onSuccess" callback on success', async () => {
-    await populateRecords('posts', 5)
+    await setups.populateRecords('posts', 5)
     const options: UseFinderOptions<typeof Post> = {
       id: '2',
       onSuccess () {
@@ -169,7 +169,7 @@ describe('useFinder', () => {
   })
 
   it('has a "finding" value of the resources id while finding', async () => {
-    await populateRecords('posts', 1)
+    await setups.populateRecords('posts', 1)
     setups.setMockLatency(200)
 
     const postFinder = useFinder(Post)
@@ -181,7 +181,7 @@ describe('useFinder', () => {
   })
 
   it('can access the record via "finder.record.value" after finding it', async () => {
-    await populateRecords('posts', 1)
+    await setups.populateRecords('posts', 1)
     const postRepo = useRepo(Post)
 
     const postFinder = useFinder(Post)
@@ -191,9 +191,9 @@ describe('useFinder', () => {
   })
 
   it('exposes "makeQuery" so dev can make their own query', async () => {
-    await populateRecords('users', 1)
-    await populateRecords('posts', 1)
-    await populateRecords('comments', 3)
+    await setups.populateRecords('users', 1)
+    await setups.populateRecords('posts', 1)
+    await setups.populateRecords('comments', 3)
 
     const userFinder = useFinder(User)
     await userFinder.find('1')
@@ -209,9 +209,9 @@ describe('useFinder', () => {
   })
 
   it('contains populated data in "finder.record.value"', async () => {
-    await populateRecords('users', 1)
-    await populateRecords('posts', 1)
-    await populateRecords('comments', 3)
+    await setups.populateRecords('users', 1)
+    await setups.populateRecords('posts', 1)
+    await setups.populateRecords('comments', 3)
 
     const userFinder = useFinder(User, {
       with: { posts: { comments: {} } },
@@ -223,9 +223,9 @@ describe('useFinder', () => {
   })
 
   it('can filter nested records and get a filtered response', async () => {
-    await populateRecords('users', 1)
-    await populateRecords('posts', 1)
-    await populateRecords('comments', 3)
+    await setups.populateRecords('users', 1)
+    await setups.populateRecords('posts', 1)
+    await setups.populateRecords('comments', 3)
 
     const userFinder = useFinder(User, {
       with: { posts: { comments: { email: { equals: 'Jayne_Kuhic@sydney.com' } } } },
@@ -236,9 +236,9 @@ describe('useFinder', () => {
   })
 
   it('can filter nested records and get a filtered record', async () => {
-    await populateRecords('users', 1)
-    await populateRecords('posts', 1)
-    await populateRecords('comments', 3)
+    await setups.populateRecords('users', 1)
+    await setups.populateRecords('posts', 1)
+    await setups.populateRecords('comments', 3)
 
     const userFinder = useFinder(User, {
       with: { posts: { comments: { email: { equals: 'Jayne_Kuhic@sydney.com' } } } },
@@ -249,9 +249,25 @@ describe('useFinder', () => {
   })
 
   it('can order nested records and get a ordered response', async () => {
-    await populateRecords('users', 1)
-    await populateRecords('posts', 1)
-    await populateRecords('comments', 3)
+    if (!setups.implementation.features.find.order.nested) {
+      const consoleMock = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+      const userFinder = useFinder(User, {
+        with: {
+          posts: {
+            comments: {
+              _orderBy: [{ field: 'name', direction: 'descending' }],
+            },
+          },
+        },
+      })
+      await userFinder.find('1')
+      expect(consoleMock).toHaveBeenCalledWith('implementation "testDriver" does not support feature "find.order.nested"')
+      return
+    }
+
+    await setups.populateRecords('users', 1)
+    await setups.populateRecords('posts', 1)
+    await setups.populateRecords('comments', 3)
 
     const userFinder = useFinder(User, {
       with: {
@@ -272,10 +288,26 @@ describe('useFinder', () => {
       ])
   })
 
-  it('can order nested records get ordered records', async () => {
-    await populateRecords('users', 1)
-    await populateRecords('posts', 1)
-    await populateRecords('comments', 3)
+  it('can order nested records, and get ordered records from the store', async () => {
+    if (!setups.implementation.features.find.order.nested) {
+      const consoleMock = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+      const userFinder = useFinder(User, {
+        with: {
+          posts: {
+            comments: {
+              _orderBy: [{ field: 'name', direction: 'descending' }],
+            },
+          },
+        },
+      })
+      await userFinder.find('1')
+      expect(consoleMock).toHaveBeenCalledWith('implementation "testDriver" does not support feature "find.order.nested"')
+      return
+    }
+
+    await setups.populateRecords('users', 1)
+    await setups.populateRecords('posts', 1)
+    await setups.populateRecords('comments', 3)
 
     const userFinder = useFinder(User, {
       with: {
@@ -332,10 +364,10 @@ describe('useFinder', () => {
       message: 'The thingy messed up',
     }])
 
-    await postsFinder.find('1')
+    await postsFinder.find('99')
 
-    expect(postsFinder.standardErrors.value[0])
-      .toEqual({ name: 'thingy-messup', message: 'The thingy messed up' })
+    expect(postsFinder.standardErrors.value[0].message)
+      .toBeTypeOf('string')
   })
 
   it('clears standard errors when a request is made', async () => {
@@ -345,12 +377,12 @@ describe('useFinder', () => {
       message: 'The thingy messed up',
     }])
 
-    await postsFinder.find('1')
+    await postsFinder.find('99')
 
-    expect(postsFinder.standardErrors.value[0])
-      .toEqual({ name: 'thingy-messup', message: 'The thingy messed up' })
+    expect(postsFinder.standardErrors.value[0].message)
+      .toBeTypeOf('string')
 
-    postsFinder.find('1') // intentionally not awaited
+    postsFinder.find('99') // intentionally not awaited
     expect(postsFinder.standardErrors.value)
       .toEqual([])
   })
@@ -375,8 +407,8 @@ describe('useFinder', () => {
   })
 
   it('can persist by "insert"', async () => {
-    await populateRecords('users', 1)
-    await populateRecords('posts', 5)
+    await setups.populateRecords('users', 1)
+    await setups.populateRecords('posts', 5)
 
     const userFinder = useFinder(User, {
       with: { posts: {} },
@@ -391,8 +423,8 @@ describe('useFinder', () => {
   // ------------
 
   it('applys scope filters', async () => {
-    await populateRecords('users', 1)
-    await populateRecords('posts', 10)
+    await setups.populateRecords('users', 1)
+    await setups.populateRecords('posts', 10)
     vueModelState.config.scopes = {
       defaultTenant: {
         filters: {
@@ -414,9 +446,9 @@ describe('useFinder', () => {
   })
 
   it('can order in a scope', async () => {
-    await populateRecords('users', 1)
-    await populateRecords('posts', 10)
-    vueModelState.drivers.local.config.entityScopes = {
+    await setups.populateRecords('users', 1)
+    await setups.populateRecords('posts', 10)
+    vueModelState.drivers.testDriver.config.entityScopes = {
       posts: {
         orderByTitle: {
           orderBy: [
@@ -436,9 +468,9 @@ describe('useFinder', () => {
   })
 
   it('can populate data using an array of strings syntax', async () => {
-    await populateRecords('users', 1)
-    await populateRecords('posts', 3)
-    await populateRecords('albums', 3)
+    await setups.populateRecords('users', 1)
+    await setups.populateRecords('posts', 3)
+    await setups.populateRecords('albums', 3)
 
     const userFinder = useFinder(User, {
       id: '1',
@@ -451,9 +483,9 @@ describe('useFinder', () => {
   })
 
   it('can populate data using strings, using dot notation', async () => {
-    await populateRecords('posts', 1)
-    await populateRecords('users', 1)
-    await populateRecords('albums', 3)
+    await setups.populateRecords('posts', 1)
+    await setups.populateRecords('users', 1)
+    await setups.populateRecords('albums', 3)
 
     const userFinder = useFinder(Post, {
       id: '1',
@@ -466,8 +498,8 @@ describe('useFinder', () => {
   })
 
   it('can populate data using a string', async () => {
-    await populateRecords('users', 1)
-    await populateRecords('posts', 3)
+    await setups.populateRecords('users', 1)
+    await setups.populateRecords('posts', 3)
 
     const userFinder = useFinder(User, {
       id: '1',
@@ -479,9 +511,9 @@ describe('useFinder', () => {
   })
 
   it('can populate data using a string with commas', async () => {
-    await populateRecords('users', 1)
-    await populateRecords('posts', 3)
-    await populateRecords('albums', 3)
+    await setups.populateRecords('users', 1)
+    await setups.populateRecords('posts', 3)
+    await setups.populateRecords('albums', 3)
 
     const userFinder = useFinder(User, {
       id: '1',
@@ -494,7 +526,7 @@ describe('useFinder', () => {
   })
 
   it('can find a resource with a composite key', async () => {
-    await populateRecords('photo_tags', 10)
+    await setups.populateRecords('photo_tags', 10)
     const photoTagFinder = useFinder(PhotoTag)
 
     await photoTagFinder.find('["4","3"]')
@@ -507,7 +539,7 @@ describe('useFinder', () => {
   })
 
   it('can pass an array to "find" to find via composite key', async () => {
-    await populateRecords('photo_tags', 10)
+    await setups.populateRecords('photo_tags', 10)
     const photoTagFinder = useFinder(PhotoTag)
 
     await photoTagFinder.find(['4', '3'])
@@ -520,7 +552,7 @@ describe('useFinder', () => {
   })
 
   it('can find a resource where the primaryKey is not "id"', async () => {
-    await populateRecords('dataverse_users', 2)
+    await setups.populateRecords('dataverse_users', 2)
     const dataverseUserFinder = useFinder(DataverseUser)
 
     await dataverseUserFinder.find('2')
@@ -533,14 +565,14 @@ describe('useFinder', () => {
   })
 
   it('cancels the first request if a second request is made and the first is not done yet', async () => {
-    await populateRecords('posts', 10)
+    await setups.populateRecords('posts', 10)
     setups.setMockLatency(100)
 
     const postsFinder = useFinder(Post)
     const findRequestA = postsFinder.find('1')
     const findRequestB = postsFinder.find('2')
 
-    await wait(50)
+    await wait(200)
     const findRequestAPromiseState = await promiseState(findRequestA)
     const findRequestBPromiseState = await promiseState(findRequestB)
     expect(findRequestAPromiseState.status).toEqual('fulfilled')

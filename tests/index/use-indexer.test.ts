@@ -11,12 +11,12 @@ import { implementationSetupsMap } from '../implementations/implementationSetups
 const setups = implementationSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
 
 describe('useIndexer', () => {
-  beforeEach(async () => {
-    await baseSetup()
+  beforeEach(async (ctx) => {
+    await baseSetup(ctx)
   })
 
   it('persists the records to the store after index()', async () => {
-    await populateRecords('posts', 3)
+    await setups.populateRecords('posts', 3)
     const postsRepo = useRepo(Post)
 
     const indexer = useIndexer(Post)
@@ -26,7 +26,7 @@ describe('useIndexer', () => {
   })
 
   it('does not persist the records to the store after index() when "persist" is false', async () => {
-    await populateRecords('posts', 3)
+    await setups.populateRecords('posts', 3)
     const postsRepo = useRepo(Post)
 
     const indexer = useIndexer(Post)
@@ -38,7 +38,7 @@ describe('useIndexer', () => {
   })
 
   it('can index resources immediately', async () => {
-    await populateRecords('posts', 15)
+    await setups.populateRecords('posts', 15)
 
     const indexer = useIndexer(Post, { immediate: true })
 
@@ -132,9 +132,9 @@ describe('useIndexer', () => {
   })
 
   it('contains populated data in "indexer.record.value"', async () => {
-    await populateRecords('users', 2)
-    await populateRecords('posts', 15)
-    await populateRecords('comments', 63)
+    await setups.populateRecords('users', 2)
+    await setups.populateRecords('posts', 15)
+    await setups.populateRecords('comments', 63)
 
     const postIndexer = useIndexer(User, {
       with: { posts: { comments: {} } },
@@ -145,9 +145,9 @@ describe('useIndexer', () => {
   })
 
   it('exposes "makeQuery" so dev can make their own query', async () => {
-    await populateRecords('users', 2)
-    await populateRecords('posts', 20)
-    await populateRecords('comments', 80)
+    await setups.populateRecords('users', 2)
+    await setups.populateRecords('posts', 20)
+    await setups.populateRecords('comments', 80)
 
     const usersIndexer = useIndexer(User)
     await usersIndexer.index()
@@ -166,9 +166,9 @@ describe('useIndexer', () => {
   })
 
   it('can filter nested records and get a filtered response', async () => {
-    await populateRecords('users', 1)
-    await populateRecords('posts', 1)
-    await populateRecords('comments', 3)
+    await setups.populateRecords('users', 1)
+    await setups.populateRecords('posts', 1)
+    await setups.populateRecords('comments', 3)
 
     const usersIndexer = useIndexer(User, {
       with: {
@@ -186,9 +186,9 @@ describe('useIndexer', () => {
   })
 
   it('can filter nested records and get a filtered record', async () => {
-    await populateRecords('users', 1)
-    await populateRecords('posts', 1)
-    await populateRecords('comments', 3)
+    await setups.populateRecords('users', 1)
+    await setups.populateRecords('posts', 1)
+    await setups.populateRecords('comments', 3)
 
     const usersIndexer = useIndexer(User, {
       with: {
@@ -205,10 +205,26 @@ describe('useIndexer', () => {
     expect(usersIndexer.records.value[0].posts[0].comments.length).toBe(1)
   })
 
-  it('can order nested records and get a ordered response', async () => {
-    await populateRecords('users', 1)
-    await populateRecords('posts', 1)
-    await populateRecords('comments', 3)
+  it('can order nested records and get an ordered response', async () => {
+    if (!setups.implementation.features.index.order.nested) {
+      const consoleMock = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+      const usersIndexer = useIndexer(User, {
+        with: {
+          posts: {
+            comments: {
+              _orderBy: [{ field: 'name', direction: 'descending' }],
+            },
+          },
+        },
+      })
+      await usersIndexer.index()
+      expect(consoleMock).toHaveBeenCalledWith('implementation "testDriver" does not support feature "find.order.nested"')
+      return
+    }
+
+    await setups.populateRecords('users', 1)
+    await setups.populateRecords('posts', 1)
+    await setups.populateRecords('comments', 3)
 
     const usersIndexer = useIndexer(User, {
       with: {
@@ -230,9 +246,25 @@ describe('useIndexer', () => {
   })
 
   it('can order nested records get ordered records', async () => {
-    await populateRecords('users', 1)
-    await populateRecords('posts', 1)
-    await populateRecords('comments', 3)
+    if (!setups.implementation.features.index.order.nested) {
+      const consoleMock = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+      const usersIndexer = useIndexer(User, {
+        with: {
+          posts: {
+            comments: {
+              _orderBy: [{ field: 'name', direction: 'descending' }],
+            },
+          },
+        },
+      })
+      await usersIndexer.index()
+      expect(consoleMock).toHaveBeenCalledWith('implementation "testDriver" does not support feature "find.order.nested"')
+      return
+    }
+
+    await setups.populateRecords('users', 1)
+    await setups.populateRecords('posts', 1)
+    await setups.populateRecords('comments', 3)
 
     const usersIndexer = useIndexer(User, {
       with: {
@@ -274,7 +306,7 @@ describe('useIndexer', () => {
   })
 
   it('can limit the records being indexed via "options.recordsPerPage"', async () => {
-    await populateRecords('posts', 9)
+    await setups.populateRecords('posts', 9)
 
     const indexer = useIndexer(Post, { pagination: { recordsPerPage: 3 } })
     await indexer.index()
@@ -283,7 +315,7 @@ describe('useIndexer', () => {
   })
 
   it('can paginate via indexer.next()', async () => {
-    await populateRecords('posts', 9)
+    await setups.populateRecords('posts', 9)
 
     const indexer = useIndexer(Post, { pagination: { recordsPerPage: 3 } })
     await indexer.index()
@@ -297,7 +329,7 @@ describe('useIndexer', () => {
   })
 
   it('can paginate via indexer.previous()', async () => {
-    await populateRecords('posts', 9)
+    await setups.populateRecords('posts', 9)
 
     const indexer = useIndexer(Post, { pagination: { recordsPerPage: 3 } })
     await indexer.index()
@@ -312,7 +344,7 @@ describe('useIndexer', () => {
   })
 
   it('indexes the first page when using "indexer.next()", if there is no pagination data', async () => {
-    await populateRecords('posts', 9)
+    await setups.populateRecords('posts', 9)
 
     const indexer = useIndexer(Post, { pagination: { recordsPerPage: 3 } })
 
@@ -322,7 +354,7 @@ describe('useIndexer', () => {
   })
 
   it('indexes the first page when using "indexer.previous()", if there is no pagination data', async () => {
-    await populateRecords('posts', 9)
+    await setups.populateRecords('posts', 9)
 
     const indexer = useIndexer(Post, { pagination: { recordsPerPage: 3 } })
 
@@ -332,21 +364,21 @@ describe('useIndexer', () => {
   })
 
   it('throws an error when calling "indexer.next()" when "recordsPerPage" is not set', async () => {
-    await populateRecords('posts', 3)
+    await setups.populateRecords('posts', 3)
     const indexer = useIndexer(Post)
 
     expect(() => indexer.next()).rejects.toThrowError('recordsPerPage')
   })
 
   it('throws an error when calling "indexer.previous()" when "recordsPerPage" is not set', async () => {
-    await populateRecords('posts', 3)
+    await setups.populateRecords('posts', 3)
     const indexer = useIndexer(Post)
 
     expect(() => indexer.previous()).rejects.toThrowError('recordsPerPage')
   })
 
   it('can navigate directly to a page via indexer.toPage()', async () => {
-    await populateRecords('posts', 9)
+    await setups.populateRecords('posts', 9)
 
     const indexer = useIndexer(Post, { pagination: { recordsPerPage: 3 } })
 
@@ -356,14 +388,14 @@ describe('useIndexer', () => {
   })
 
   it('throws an error when calling "indexer.toPage()" when "recordsPerPage" is not set', async () => {
-    await populateRecords('posts', 3)
+    await setups.populateRecords('posts', 3)
     const indexer = useIndexer(Post)
 
     expect(() => indexer.toPage(1)).rejects.toThrowError('recordsPerPage')
   })
 
   it('can navigate directly to the first page via indexer.toFirstPage()', async () => {
-    await populateRecords('posts', 6)
+    await setups.populateRecords('posts', 6)
     const indexer = useIndexer(Post, { pagination: { recordsPerPage: 2 } })
 
     await indexer.next()
@@ -375,14 +407,14 @@ describe('useIndexer', () => {
   })
 
   it('throws an error when calling "indexer.toFirstPage()" when "recordsPerPage" is not set', async () => {
-    await populateRecords('posts', 3)
+    await setups.populateRecords('posts', 3)
     const indexer = useIndexer(Post)
 
     expect(() => indexer.toFirstPage()).rejects.toThrowError('recordsPerPage')
   })
 
   it('can navigate directly to the last page via indexer.toLastPage()', async () => {
-    await populateRecords('posts', 6)
+    await setups.populateRecords('posts', 6)
     const indexer = useIndexer(Post, { pagination: { recordsPerPage: 2 } })
 
     await indexer.toLastPage()
@@ -392,14 +424,14 @@ describe('useIndexer', () => {
   })
 
   it('throws an error when calling "indexer.toLastPage()" when "recordsPerPage" is not set', async () => {
-    await populateRecords('posts', 3)
+    await setups.populateRecords('posts', 3)
     const indexer = useIndexer(Post)
 
     expect(() => indexer.toLastPage()).rejects.toThrowError('recordsPerPage')
   })
 
   it('can paginate immediately when "pagination.value.page" changes', async () => {
-    await populateRecords('posts', 9)
+    await setups.populateRecords('posts', 9)
 
     const indexer = useIndexer(Post, {
       paginateImmediate: true,
@@ -415,7 +447,7 @@ describe('useIndexer', () => {
   })
 
   it('can paginate immediately when "pagination.value.recordsPerPage" changes', async () => {
-    await populateRecords('posts', 10)
+    await setups.populateRecords('posts', 10)
 
     const indexer = useIndexer(Post, {
       paginateImmediate: true,
@@ -432,9 +464,9 @@ describe('useIndexer', () => {
   })
 
   it('has a first preference for "index({ recordsPerPage })"', async () => {
-    await populateRecords('posts', 10)
+    await setups.populateRecords('posts', 10)
     vueModelState.config.pagination = { recordsPerPage: 2 }
-    vueModelState.drivers.local.config.pagination = { recordsPerPage: 3 }
+    vueModelState.drivers.testDriver.config.pagination = { recordsPerPage: 3 }
 
     const indexer = useIndexer(Post, {
       pagination: { recordsPerPage: 4 },
@@ -446,9 +478,9 @@ describe('useIndexer', () => {
   })
 
   it('has a seconds preference for "options.pagination.value.recordsPerPage"', async () => {
-    await populateRecords('posts', 10)
+    await setups.populateRecords('posts', 10)
     vueModelState.config.pagination = { recordsPerPage: 2 }
-    vueModelState.drivers.local.config.pagination = { recordsPerPage: 3 }
+    vueModelState.drivers.testDriver.config.pagination = { recordsPerPage: 3 }
 
     const indexer = useIndexer(Post, {
       pagination: { recordsPerPage: 4 },
@@ -460,9 +492,9 @@ describe('useIndexer', () => {
   })
 
   it('has a third preference for "config.driver.config.pagination.recordsPerPage"', async () => {
-    await populateRecords('posts', 10)
+    await setups.populateRecords('posts', 10)
     vueModelState.config.pagination = { recordsPerPage: 2 }
-    vueModelState.drivers.local.config.pagination = { recordsPerPage: 3 }
+    vueModelState.drivers.testDriver.config.pagination = { recordsPerPage: 3 }
 
     const indexer = useIndexer(Post)
 
@@ -472,7 +504,7 @@ describe('useIndexer', () => {
   })
 
   it('has a fourth preference for "config.pagination.recordsPerPage"', async () => {
-    await populateRecords('posts', 10)
+    await setups.populateRecords('posts', 10)
     vueModelState.config.pagination = { recordsPerPage: 2 }
 
     const indexer = useIndexer(Post)
@@ -483,7 +515,7 @@ describe('useIndexer', () => {
   })
 
   it('refreshes the current page when "index()" is called', async () => {
-    await populateRecords('posts', 4)
+    await setups.populateRecords('posts', 4)
 
     const indexer = useIndexer(Post, { pagination: { recordsPerPage: 2 } })
 
@@ -497,7 +529,7 @@ describe('useIndexer', () => {
   })
 
   it('has an "indexer.isLastPage.value" of true when on the last page and false when not on the last page', async () => {
-    await populateRecords('posts', 4)
+    await setups.populateRecords('posts', 4)
 
     const indexer = useIndexer(Post, { pagination: { recordsPerPage: 2 } })
 
@@ -509,7 +541,7 @@ describe('useIndexer', () => {
   })
 
   it('has an "indexer.isFirstPage.value" of true when on the first page and false when not on the first page', async () => {
-    await populateRecords('posts', 4)
+    await setups.populateRecords('posts', 4)
 
     const indexer = useIndexer(Post, { pagination: { recordsPerPage: 2 } })
 
@@ -521,7 +553,7 @@ describe('useIndexer', () => {
   })
 
   it('sets a standard error when trying to navigate after the last page', async () => {
-    await populateRecords('posts', 4)
+    await setups.populateRecords('posts', 4)
 
     const indexer = useIndexer(Post, { pagination: { recordsPerPage: 2 } })
 
@@ -534,7 +566,7 @@ describe('useIndexer', () => {
   })
 
   it('sets a standard error when trying to navigate before the first page', async () => {
-    await populateRecords('posts', 2)
+    await setups.populateRecords('posts', 2)
 
     const indexer = useIndexer(Post, { pagination: { recordsPerPage: 2 } })
 
@@ -545,7 +577,7 @@ describe('useIndexer', () => {
   })
 
   it('can filter in a scope', async () => {
-    await populateRecords('users', 10)
+    await setups.populateRecords('users', 10)
     vueModelState.config.scopes = {
       defaultTenant: {
         filters: {
@@ -565,7 +597,7 @@ describe('useIndexer', () => {
   })
 
   it('can order in a scope', async () => {
-    await populateRecords('users', 10)
+    await setups.populateRecords('users', 10)
     vueModelState.config.scopes = {
       orderByName: {
         orderBy: [
@@ -583,9 +615,9 @@ describe('useIndexer', () => {
   })
 
   it('can populate in a scope', async () => {
-    await populateRecords('users', 1)
-    await populateRecords('posts', 1)
-    await populateRecords('comments', 6)
+    await setups.populateRecords('users', 1)
+    await setups.populateRecords('posts', 1)
+    await setups.populateRecords('comments', 6)
     vueModelState.config.scopes = {
       withPosts: {
         with: {
@@ -603,7 +635,7 @@ describe('useIndexer', () => {
   })
 
   it('can pass an array with strings to scope', async () => {
-    await populateRecords('users', 5)
+    await setups.populateRecords('users', 5)
     vueModelState.config.scopes = {
       defaultTenant: {
         filters: {
@@ -621,7 +653,7 @@ describe('useIndexer', () => {
   })
 
   it('can pass an array with objects to scope', async () => {
-    await populateRecords('users', 5)
+    await setups.populateRecords('users', 5)
     vueModelState.config.scopes = {
       whereTenantId: (_context, payload: { tenantId: string }) => {
         return {
@@ -641,7 +673,7 @@ describe('useIndexer', () => {
   })
 
   it('can pass a ref to "useIndexer({ scopes })"', async () => {
-    await populateRecords('users', 5)
+    await setups.populateRecords('users', 5)
     vueModelState.config.scopes = {
       primaryTenant: {
         filters: {
@@ -669,7 +701,7 @@ describe('useIndexer', () => {
   })
 
   it('can apply a scope via "config.scopes"', async () => {
-    await populateRecords('users', 10)
+    await setups.populateRecords('users', 10)
     vueModelState.config.scopes = {
       defaultTenant: () => {
         return {
@@ -691,7 +723,7 @@ describe('useIndexer', () => {
   })
 
   it('can apply a scope via "config.entityScopes"', async () => {
-    await populateRecords('users', 10)
+    await setups.populateRecords('users', 10)
     vueModelState.config.entityScopes = {
       users: {
         defaultTenant: {
@@ -713,7 +745,7 @@ describe('useIndexer', () => {
   })
 
   it('can apply a scope via "config.entityScopes" (function)', async () => {
-    await populateRecords('users', 10)
+    await setups.populateRecords('users', 10)
     vueModelState.config.entityScopes = {
       users: {
         defaultTenant: () => {
@@ -737,7 +769,7 @@ describe('useIndexer', () => {
   })
 
   it('can apply a scope globally via "config.globallyAppliedScopes"', async () => {
-    await populateRecords('users', 10)
+    await setups.populateRecords('users', 10)
     vueModelState.config.scopes = {
       defaultTenant: {
         filters: {
@@ -756,7 +788,7 @@ describe('useIndexer', () => {
   })
 
   it('can apply a scope globally via "config.globallyAppliedScopes"', async () => {
-    await populateRecords('users', 10)
+    await setups.populateRecords('users', 10)
     vueModelState.config.scopes = {
       tenant: (_context, payload: { tenantId: string }) => {
         return {
@@ -781,7 +813,7 @@ describe('useIndexer', () => {
   })
 
   it('can apply an entity scope globally via "config.globallyAppliedEntityScopes"', async () => {
-    await populateRecords('users', 10)
+    await setups.populateRecords('users', 10)
     vueModelState.config.entityScopes = {
       users: {
         defaultTenant: {
@@ -804,7 +836,7 @@ describe('useIndexer', () => {
   })
 
   it('can apply an entity scope globally via "config.globallyAppliedEntityScopes"', async () => {
-    await populateRecords('users', 10)
+    await setups.populateRecords('users', 10)
     vueModelState.config.entityScopes = {
       users: {
         tenant: (_context, payload: { tenantId: string }) => {
@@ -833,7 +865,7 @@ describe('useIndexer', () => {
   })
 
   it('can disable a global scope with "withoutGlobalScopes"', async () => {
-    await populateRecords('users', 10)
+    await setups.populateRecords('users', 10)
     vueModelState.config.scopes = {
       defaultTenant: {
         filters: {
@@ -852,7 +884,7 @@ describe('useIndexer', () => {
   })
 
   it('can disable an entity global scope with "withoutEntityGlobalScopes"', async () => {
-    await populateRecords('users', 10)
+    await setups.populateRecords('users', 10)
     vueModelState.config.entityScopes = {
       users: {
         defaultTenant: {
@@ -873,7 +905,7 @@ describe('useIndexer', () => {
   })
 
   it('merges scopes correctly', async () => {
-    await populateRecords('users', 10)
+    await setups.populateRecords('users', 10)
     vueModelState.config.entityScopes = {
       users: { nameStartC: { filters: { name: { startsWith: 'C' } } } },
     }
@@ -890,8 +922,8 @@ describe('useIndexer', () => {
   })
 
   it('applys global scopes to nested resources', async () => {
-    await populateRecords('users', 1)
-    await populateRecords('posts', 10)
+    await setups.populateRecords('users', 1)
+    await setups.populateRecords('posts', 10)
     vueModelState.config.entityScopes = {
       posts: {
         titleStartE: { filters: { title: { startsWith: 'e' } } },
@@ -908,8 +940,8 @@ describe('useIndexer', () => {
   })
 
   it('can persist by "insert"', async () => {
-    await populateRecords('users', 1)
-    await populateRecords('posts', 5)
+    await setups.populateRecords('users', 1)
+    await setups.populateRecords('posts', 5)
 
     const usersIndexer = useIndexer(User, {
       with: { posts: {} },
@@ -921,8 +953,8 @@ describe('useIndexer', () => {
   })
 
   it('can persist by "replace-save"', async () => {
-    await populateRecords('users', 4)
-    await populateRecords('posts', 5)
+    await setups.populateRecords('users', 4)
+    await setups.populateRecords('posts', 5)
     const userRepo = useRepo(User)
 
     const usersIndexer = useIndexer(User, {
@@ -940,8 +972,8 @@ describe('useIndexer', () => {
   })
 
   it('can persist by "replace-insert"', async () => {
-    await populateRecords('users', 4)
-    await populateRecords('posts', 5)
+    await setups.populateRecords('users', 4)
+    await setups.populateRecords('posts', 5)
     const userRepo = useRepo(User)
 
     const usersIndexer = useIndexer(User, {
@@ -959,7 +991,7 @@ describe('useIndexer', () => {
   })
 
   it('can index an array of ids via indexer.index(idsArray)', async () => {
-    await populateRecords('posts', 5)
+    await setups.populateRecords('posts', 5)
 
     const postsIndexer = useIndexer(Post)
     await postsIndexer.index(['1', '2', '5'])
@@ -969,7 +1001,7 @@ describe('useIndexer', () => {
   })
 
   it('can index an array of ids via indexer.options.whereIdIn', async () => {
-    await populateRecords('posts', 5)
+    await setups.populateRecords('posts', 5)
 
     const postsIndexer = useIndexer(Post, { whereIdIn: [1, 2, 5] })
     await postsIndexer.index()
@@ -979,7 +1011,7 @@ describe('useIndexer', () => {
   })
 
   it('has highest precedence for ids from indexer.index(idsArray)', async () => {
-    await populateRecords('posts', 5)
+    await setups.populateRecords('posts', 5)
 
     const postsIndexer = useIndexer(Post, { whereIdIn: [1, 2, 5] })
     await postsIndexer.index([3, 4])
@@ -989,7 +1021,7 @@ describe('useIndexer', () => {
   })
 
   it('it immediately submit a request when indexer.ids.value changes, and options.idsImmediate is true', async () => {
-    await populateRecords('posts', 5)
+    await setups.populateRecords('posts', 5)
 
     const whereIdIn = ref([])
     const postsIndexer = useIndexer(Post, {
@@ -1005,7 +1037,7 @@ describe('useIndexer', () => {
   })
 
   it('can index records that have a composite key', async () => {
-    await populateRecords('photo_tags', 5)
+    await setups.populateRecords('photo_tags', 5)
 
     const photoTagsIndexer = useIndexer(PhotoTag)
     await photoTagsIndexer.index()
@@ -1015,7 +1047,7 @@ describe('useIndexer', () => {
   })
 
   it('can index records that have a composite key using "index(ids)"', async () => {
-    await populateRecords('photo_tags', 5)
+    await setups.populateRecords('photo_tags', 5)
 
     const photoTagsIndexer = useIndexer(PhotoTag)
     await photoTagsIndexer.index([['1', '1'], ['2', '1'], ['4', '3']])
@@ -1038,7 +1070,7 @@ describe('useIndexer', () => {
   })
 
   it('can index records that have a composite key using "indexer.options.whereIdIn"', async () => {
-    await populateRecords('photo_tags', 5)
+    await setups.populateRecords('photo_tags', 5)
 
     const photoTagsIndexer = useIndexer(PhotoTag, {
       whereIdIn: [['1', '1'], ['2', '1'], ['4', '3']],
@@ -1063,7 +1095,7 @@ describe('useIndexer', () => {
   })
 
   it('can access records from "indexer.records.value" when indexing with composite keys', async () => {
-    await populateRecords('photo_tags', 5)
+    await setups.populateRecords('photo_tags', 5)
 
     const photoTagsIndexer = useIndexer(PhotoTag)
     await photoTagsIndexer.index([['1', '1'], ['2', '1'], ['4', '3']])
@@ -1086,8 +1118,8 @@ describe('useIndexer', () => {
   })
 
   it('can populate a related record where the related record has a composite key', async () => {
-    await populateRecords('photo_tags', 10)
-    await populateRecords('photos', 20)
+    await setups.populateRecords('photo_tags', 10)
+    await setups.populateRecords('photos', 20)
 
     const photosIndexer = useIndexer(Photo, { with: { photo_tags: {} } })
     await photosIndexer.index()
@@ -1101,7 +1133,7 @@ describe('useIndexer', () => {
   })
 
   it('can cancel the latest request', async () => {
-    await populateRecords('posts', 10)
+    await setups.populateRecords('posts', 10)
     setups.setMockLatency(100)
 
     const postsIndexer = useIndexer(Post)
@@ -1114,7 +1146,7 @@ describe('useIndexer', () => {
   })
 
   it('cancels the first request if a second request is made and the first is not done yet', async () => {
-    await populateRecords('posts', 10)
+    await setups.populateRecords('posts', 10)
     setups.setMockLatency(100)
 
     const postsIndexer = useIndexer(Post)
@@ -1154,9 +1186,9 @@ describe('useIndexer', () => {
   })
 
   it('can nested filter', async () => {
-    await populateRecords('users', 10)
-    await populateRecords('posts', 10)
-    await populateRecords('comments', 10)
+    await setups.populateRecords('users', 10)
+    await setups.populateRecords('posts', 10)
+    await setups.populateRecords('comments', 10)
 
     const postIndexer = useIndexer(User, {
       filters: {
@@ -1174,14 +1206,14 @@ describe('useIndexer', () => {
       },
     })
 
-    const response = await postIndexer.index()
+    await postIndexer.index()
 
     expect(postIndexer.records.value.length).toEqual(1)
     expect(postIndexer.records.value[0].name).toEqual('Leanne Graham')
   })
 
   it('can pass filters directly to indexer.index(filters)', async () => {
-    await populateRecords('users', 5)
+    await setups.populateRecords('users', 5)
 
     const postIndexer = useIndexer(User)
 

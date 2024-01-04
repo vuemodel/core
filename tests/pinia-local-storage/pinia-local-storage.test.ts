@@ -3,14 +3,21 @@ import { baseSetup } from '../baseSetup'
 import { useIndexer } from '@vuemodel/core'
 import { User, populateRecords } from '@vuemodel/sample-data'
 import { useRepo } from 'pinia-orm'
+import { implementationSetupsMap } from '../implementations/implementationSetupsMap'
+
+const setups = implementationSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
 
 describe('useUpdater', () => {
-  beforeEach(async () => {
-    await baseSetup()
+  beforeEach(async (ctx) => {
+    if (import.meta.env.IMPLEMENTATION !== 'piniaLocalStorage') {
+      ctx.skip()
+      return
+    }
+    await baseSetup(ctx)
   })
 
   it('isolates the backend store from the frontend store', async () => {
-    await populateRecords('users', 2)
+    await setups.populateRecords('users', 2)
     await useIndexer(User, { persist: false }).index()
 
     expect(useRepo(User).all().length).toEqual(0)

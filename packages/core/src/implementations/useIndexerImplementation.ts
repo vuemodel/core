@@ -282,11 +282,19 @@ export function useIndexerImplementation<T extends typeof Model> (
   }
 
   async function next () {
-    const paginationResolved = toValue(pagination)
-    if (!paginationResolved.recordsPerPage) {
+    const { page, pagesCount, recordsPerPage } = toValue(pagination)
+    if (!recordsPerPage) {
       throw new Error("Cannot paginate to next records. 'recordsPerPage' must be set.")
     }
-    const page = paginationResolved.page
+
+    if (page && pagesCount && (page === pagesCount)) {
+      const errorMessage = `cannot navigate beyond the last page: "${page}/${pagesCount}"`
+      standardErrors.value.push({
+        name: 'beyond last page',
+        message: errorMessage,
+      })
+      throw new Error(errorMessage)
+    }
     pauseImmediatePaginationWatcher()
     pagination.value.page = page ? (page + 1) : 1
     resumeImmediatePaginationWatcher()
@@ -295,11 +303,20 @@ export function useIndexerImplementation<T extends typeof Model> (
   }
 
   async function previous () {
-    const paginationResolved = toValue(pagination)
-    if (!paginationResolved.recordsPerPage) {
+    const { recordsPerPage, page, pagesCount } = toValue(pagination)
+    if (!recordsPerPage) {
       throw new Error("Cannot paginate to previous records. 'recordsPerPage' must be set.")
     }
-    const page = paginationResolved.page
+
+    if (typeof page === 'number' && page === 1) {
+      const errorMessage = `cannot navigate before the first page: "${page}/${pagesCount}"`
+      standardErrors.value.push({
+        name: 'before first page',
+        message: errorMessage,
+      })
+      throw new Error(errorMessage)
+    }
+
     pauseImmediatePaginationWatcher()
     pagination.value.page = page ? (page - 1) : 1
     resumeImmediatePaginationWatcher()

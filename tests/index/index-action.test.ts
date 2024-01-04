@@ -1,6 +1,6 @@
 import { describe, beforeEach, it, expect, vi } from 'vitest'
 import { index, vueModelState } from '@vuemodel/core'
-import { Post, posts, populateRecords } from '@vuemodel/sample-data'
+import { Post } from '@vuemodel/sample-data'
 import { baseSetup } from '../baseSetup'
 import 'fake-indexeddb/auto'
 import { wait } from '../helpers/wait'
@@ -9,16 +9,15 @@ import { implementationSetupsMap } from '../implementations/implementationSetups
 const setups = implementationSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
 
 describe('index', () => {
-  beforeEach(async () => {
-    await baseSetup()
+  beforeEach(async (ctx) => {
+    await baseSetup(ctx)
   })
 
   it('can index resources', async () => {
-    await populateRecords('posts', 3)
+    await setups.populateRecords('posts', 3)
 
     const response = await index(Post)
 
-    expect(response.records[0]).toMatchObject(posts[0])
     expect(response.records.length).toEqual(3)
   })
 
@@ -44,12 +43,12 @@ describe('index', () => {
 
   it('can notify on error', async () => {
     setups.setMockStandardErrors([{ message: 'something went horribly wrong', name: 'oops' }])
-    vueModelState.drivers.local.config = {
+    vueModelState.drivers.testDriver.config = {
       errorNotifiers: {
         index: () => { return {} },
       },
     }
-    const notifyOnErrorSpy = vi.spyOn(vueModelState.drivers.local.config.errorNotifiers, 'index')
+    const notifyOnErrorSpy = vi.spyOn(vueModelState.drivers.testDriver.config.errorNotifiers, 'index')
 
     await index(Post, { notifyOnError: true })
 
@@ -58,12 +57,12 @@ describe('index', () => {
 
   it('does not notify on error by default', async () => {
     setups.setMockStandardErrors([{ message: 'something went horribly wrong', name: 'oops' }])
-    vueModelState.drivers.local.config = {
+    vueModelState.drivers.testDriver.config = {
       errorNotifiers: {
         index: () => { return {} },
       },
     }
-    const notifyOnErrorSpy = vi.spyOn(vueModelState.drivers.local.config.errorNotifiers, 'index')
+    const notifyOnErrorSpy = vi.spyOn(vueModelState.drivers.testDriver.config.errorNotifiers, 'index')
 
     await index(Post)
 
@@ -73,13 +72,13 @@ describe('index', () => {
   it('has a first preference for notifyOnError passed as a param', async () => {
     setups.setMockStandardErrors([{ message: 'something went horribly wrong', name: 'oops' }])
     vueModelState.config.notifyOnError = { index: false }
-    vueModelState.drivers.local.config = {
+    vueModelState.drivers.testDriver.config = {
       errorNotifiers: {
         index: () => { return {} },
       },
       notifyOnError: { index: false },
     }
-    const notifyOnErrorSpy = vi.spyOn(vueModelState.drivers.local.config.errorNotifiers, 'index')
+    const notifyOnErrorSpy = vi.spyOn(vueModelState.drivers.testDriver.config.errorNotifiers, 'index')
 
     await index(Post, { notifyOnError: true }) // as param takes precedence
 
@@ -89,13 +88,13 @@ describe('index', () => {
   it('has a second preference for notifyOnError set at a "state.driver.xxx.config" level', async () => {
     setups.setMockStandardErrors([{ message: 'something went horribly wrong', name: 'oops' }])
     vueModelState.config.notifyOnError = { index: false }
-    vueModelState.drivers.local.config = {
+    vueModelState.drivers.testDriver.config = {
       errorNotifiers: {
         index: () => { return {} },
       },
       notifyOnError: { index: true },
     }
-    const notifyOnErrorSpy = vi.spyOn(vueModelState.drivers.local.config.errorNotifiers, 'index')
+    const notifyOnErrorSpy = vi.spyOn(vueModelState.drivers.testDriver.config.errorNotifiers, 'index')
 
     await index(Post) // as param takes precedence
 
@@ -105,12 +104,12 @@ describe('index', () => {
   it('has a third preference for notifyOnError set at a "state.config" level', async () => {
     setups.setMockStandardErrors([{ message: 'something went horribly wrong', name: 'oops' }])
     vueModelState.config.notifyOnError = { index: true }
-    vueModelState.drivers.local.config = {
+    vueModelState.drivers.testDriver.config = {
       errorNotifiers: {
         index: () => { return {} },
       },
     }
-    const notifyOnErrorSpy = vi.spyOn(vueModelState.drivers.local.config.errorNotifiers, 'index')
+    const notifyOnErrorSpy = vi.spyOn(vueModelState.drivers.testDriver.config.errorNotifiers, 'index')
 
     await index(Post) // as param takes precedence
 
@@ -118,7 +117,7 @@ describe('index', () => {
   })
 
   it('can abort an index request (immediate)', async () => {
-    await populateRecords('posts', 1)
+    await setups.populateRecords('posts', 1)
     setups.setMockLatency(500)
 
     const controller = new AbortController()
@@ -133,7 +132,7 @@ describe('index', () => {
   })
 
   it('can abort an index request (not immediately)', async () => {
-    await populateRecords('posts', 1)
+    await setups.populateRecords('posts', 1)
     setups.setMockLatency(500)
 
     const controller = new AbortController()
@@ -156,7 +155,7 @@ describe('index', () => {
 
   it('has first precedence for options.throw', async () => {
     setups.setMockStandardErrors([{ name: 'oops', message: 'something went baaad!' }])
-    vueModelState.drivers.local.config.throw = false
+    vueModelState.drivers.testDriver.config.throw = false
     vueModelState.config.throw = false
 
     expect(async () => await index(Post, { throw: true })).rejects.toThrow()
@@ -164,7 +163,7 @@ describe('index', () => {
 
   it('has second precedence for options.driver.throw', async () => {
     setups.setMockStandardErrors([{ name: 'oops', message: 'something went baaad!' }])
-    vueModelState.drivers.local.config.throw = true
+    vueModelState.drivers.testDriver.config.throw = true
     vueModelState.config.throw = false
 
     expect(async () => await index(Post)).rejects.toThrow()

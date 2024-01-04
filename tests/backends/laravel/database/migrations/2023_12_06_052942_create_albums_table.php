@@ -12,13 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('albums', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id');
             $table->timestamps();
 
             $table->string('title')->nullable();
 
-            $table->foreignId('user_id')->nullable()
-                ->references('id')->on('users');
+            $table->string('user_id')->nullable();
         });
     }
 

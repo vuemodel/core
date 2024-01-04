@@ -1,7 +1,10 @@
 <?php
 
+use App\Helpers\ModelHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
+use Orion\Facades\Orion;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,19 +17,27 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/beep', function (Request $request) {
-    // Specify the path to your JSON file
-    $usersJsonFilePath = base_path('node_modules/@vuemodel/sample-data/dist/json/users.json');
-
-    // Read the file contents
-    $jsonString = file_get_contents($usersJsonFilePath);
-
-    // Decode JSON data to PHP array
-    $dataArray = json_decode($jsonString, true);
-
-    return $dataArray;
+Route::get('/seed/all', function (Request $request) {
+    ModelHelper::seedAll();
 });
 
 Route::get('/seed/{entityName}/{numberOfRecords?}', function (string $entityName, ?string $numberOfRecords = null) {
-    return [$entityName, $numberOfRecords];
+    ModelHelper::seed($entityName, $numberOfRecords);
+    return 'success';
+});
+
+Route::get('/artisan/{command}', function (string $command) {
+    Artisan::call($command);
+    return 'success';
+});
+
+Route::group(['as' => 'api.'], function () {
+    Orion::resource('posts', \App\Http\Controllers\PostsController::class);
+    Orion::resource('albums', \App\Http\Controllers\AlbumsController::class);
+    Orion::resource('comments', \App\Http\Controllers\CommentsController::class);
+    Orion::resource('dataverse_users', \App\Http\Controllers\DataverseUsersController::class);
+    Orion::resource('photos', \App\Http\Controllers\PhotosController::class);
+    Orion::resource('photoTags', \App\Http\Controllers\PhotoTagsController::class);
+    Orion::resource('posts', \App\Http\Controllers\PostsController::class);
+    Orion::resource('users', \App\Http\Controllers\UsersController::class);
 });

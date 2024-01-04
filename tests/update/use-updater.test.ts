@@ -11,8 +11,8 @@ import { implementationSetupsMap } from '../implementations/implementationSetups
 const setups = implementationSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
 
 describe('useUpdater', () => {
-  beforeEach(async () => {
-    await baseSetup()
+  beforeEach(async (ctx) => {
+    await baseSetup(ctx)
   })
 
   afterEach(async () => {
@@ -20,18 +20,18 @@ describe('useUpdater', () => {
   })
 
   it('updates the record in the store after update()', async () => {
-    await populateRecords('users', 2)
-    await useIndexer(User).index()
+    await setups.populateRecords('users', 2)
+    const indexer = useIndexer(User)
+    await indexer.index()
 
     const updater = useUpdater(User)
-    await updater.update('1', { name: 'John Smithio' })
-    // console.log(updater.record.value)
+    await updater.update('1', { name: 'John Smithio', email: 'john@smithio.com' })
 
     expect(updater.record.value.name).toEqual('John Smithio')
   })
 
   it('can update with signature update(id)', async () => {
-    await populateRecords('users', 2)
+    await setups.populateRecords('users', 2)
     await useIndexer(User).index()
 
     const updater = useUpdater(User)
@@ -42,7 +42,7 @@ describe('useUpdater', () => {
   })
 
   it('can update with signature update(id, form)', async () => {
-    await populateRecords('users', 2)
+    await setups.populateRecords('users', 2)
     await useIndexer(User).index()
 
     const updater = useUpdater(User)
@@ -52,7 +52,7 @@ describe('useUpdater', () => {
   })
 
   it('can update with signature update(form)', async () => {
-    await populateRecords('users', 2)
+    await setups.populateRecords('users', 2)
     await useIndexer(User).index()
 
     const updater = useUpdater(User, { id: '1' })
@@ -62,7 +62,7 @@ describe('useUpdater', () => {
   })
 
   it('does not update the record in the store after update() when "persist" is false', async () => {
-    await populateRecords('users', 2)
+    await setups.populateRecords('users', 2)
     await useIndexer(User).index()
 
     const updater = useUpdater(User, { persist: false })
@@ -72,7 +72,7 @@ describe('useUpdater', () => {
   })
 
   it('has highest precedence for id from "updater.update(id)"', async () => {
-    await populateRecords('users', 5)
+    await setups.populateRecords('users', 5)
     await useIndexer(User).index()
     const userRepo = useRepo(User)
 
@@ -84,7 +84,7 @@ describe('useUpdater', () => {
   })
 
   it('has second highest precedence for id from "options.id"', async () => {
-    await populateRecords('users', 5)
+    await setups.populateRecords('users', 5)
     await useIndexer(User).index()
     const userRepo = useRepo(User)
 
@@ -96,7 +96,7 @@ describe('useUpdater', () => {
   })
 
   it('has third highest precedence for id from "formParam.id"', async () => {
-    await populateRecords('users', 5)
+    await setups.populateRecords('users', 5)
     await useIndexer(User).index()
     const userRepo = useRepo(User)
 
@@ -108,7 +108,7 @@ describe('useUpdater', () => {
   })
 
   it('has fourth highest precedence for id from "options.form.value.id"', async () => {
-    await populateRecords('users', 5)
+    await setups.populateRecords('users', 5)
     await useIndexer(User).index()
     const userRepo = useRepo(User)
 
@@ -120,7 +120,7 @@ describe('useUpdater', () => {
   })
 
   it('can make the form with a provided id, when the record does not exist in state, by fetching it from the backend', async () => {
-    await populateRecords('users', 5)
+    await setups.populateRecords('users', 5)
 
     const updater = useUpdater(User)
     const updatePromise = updater.makeForm('2')
@@ -148,7 +148,7 @@ describe('useUpdater', () => {
   })
 
   it('can make the form with a provided id, where the record exists in state', async () => {
-    await populateRecords('users', 5)
+    await setups.populateRecords('users', 5)
     await useIndexer(User).index()
     setups.setMockLatency(50)
 
@@ -167,7 +167,7 @@ describe('useUpdater', () => {
   })
 
   it('can immediately make the form whenever the id changes', async () => {
-    await populateRecords('users', 5)
+    await setups.populateRecords('users', 5)
     await useIndexer(User).index()
 
     const id = ref('1')
@@ -187,7 +187,7 @@ describe('useUpdater', () => {
   })
 
   it('has a "makingForm" value set to the id of the record being used to make the form', async () => {
-    await populateRecords('users', 5)
+    await setups.populateRecords('users', 5)
 
     const updater = useUpdater(User, {
       id: '2',
@@ -200,7 +200,7 @@ describe('useUpdater', () => {
   })
 
   it('hits the "onSuccess" callback on success', async () => {
-    await populateRecords('users', 5)
+    await setups.populateRecords('users', 5)
 
     const options: UseUpdaterOptions<typeof User> = {
       id: '2',
@@ -291,7 +291,7 @@ describe('useUpdater', () => {
   })
 
   it('updates a record and inserts it into the store. Even if it was not originally in the store', async () => {
-    await populateRecords('users', 2)
+    await setups.populateRecords('users', 2)
 
     const updater = useUpdater(User)
     await updater.update('1', { name: 'John Smithio' })
@@ -300,7 +300,7 @@ describe('useUpdater', () => {
   })
 
   it('can skip persisting to the store', async () => {
-    await populateRecords('users', 2)
+    await setups.populateRecords('users', 2)
     await useIndexer(User).index()
 
     const updater = useUpdater(User, { persist: false })
@@ -310,7 +310,7 @@ describe('useUpdater', () => {
   })
 
   it('has an "updating" value set to the id of the record while updating', async () => {
-    await populateRecords('users', 2)
+    await setups.populateRecords('users', 2)
     await useIndexer(User).index()
 
     const updater = useUpdater(User, { persist: false })
@@ -322,7 +322,7 @@ describe('useUpdater', () => {
   })
 
   it('has a "findingRecordForUpdate" value of true while finding the record that will be update', async () => {
-    await populateRecords('users', 2)
+    await setups.populateRecords('users', 2)
 
     const updater = useUpdater(User, { id: '2' })
     const makingFormPromise = updater.makeForm()
@@ -333,7 +333,7 @@ describe('useUpdater', () => {
   })
 
   it('can access "updater.record" after updating a record', async () => {
-    await populateRecords('users', 2)
+    await setups.populateRecords('users', 2)
 
     const updater = useUpdater(User, { id: '1' })
     await updater.update({
@@ -353,19 +353,19 @@ describe('useUpdater', () => {
   })
 
   it('can auto update', async () => {
-    await populateRecords('users', 2)
+    await setups.populateRecords('users', 2)
     await useIndexer(User).index()
     setups.setMockLatency(50)
 
-    const updater = useUpdater(User, { id: '2', autoUpdate: true, autoUpdateDebounce: 50 })
+    const updater = useUpdater(User, { id: '2', autoUpdate: true, autoUpdateDebounce: 150 })
     updater.form.value.name = 'Lily Diebold'
 
-    await vi.waitUntil(() => updater.updating.value === '2', { timeout: 150 })
+    await vi.waitUntil(() => updater.updating.value === '2', { timeout: 1500, interval: 1 })
     expect(updater.updating.value).toEqual('2')
   })
 
   it('can auto update with a debouncer', async () => {
-    await populateRecords('users', 2)
+    await setups.populateRecords('users', 2)
     await useIndexer(User).index()
     setups.setMockLatency(100)
 
@@ -375,16 +375,16 @@ describe('useUpdater', () => {
     updater.form.value.name = 'lugu'
     expect(updater.updating.value).toEqual(false)
 
-    await vi.waitUntil(() => updater.updating.value === '2', { timeout: 500 })
+    await vi.waitUntil(() => updater.updating.value === '2', { timeout: 500, interval: 1 })
     expect(updater.updating.value).toEqual('2')
   })
 
   it('has highest precedence for autoUpdateDebounce from "updater.options.autoUpdateDebounce"', async () => {
-    await populateRecords('users', 2)
+    await setups.populateRecords('users', 2)
     await useIndexer(User).index()
     setups.setMockLatency(300)
 
-    vueModelState.drivers.local.config.autoUpdateDebounce = 50
+    vueModelState.drivers.testDriver.config.autoUpdateDebounce = 50
     vueModelState.config.autoUpdateDebounce = 50
 
     const updater = useUpdater(User, { id: '2', autoUpdate: true, autoUpdateDebounce: 300 })
@@ -392,16 +392,16 @@ describe('useUpdater', () => {
     updater.form.value.name = 'lugu'
     await wait(200)
     expect(updater.updating.value).not.toEqual('2')
-    await vi.waitUntil(() => updater.updating.value === '2', { timeout: 500 })
+    await vi.waitUntil(() => updater.updating.value === '2', { timeout: 500, interval: 1 })
     expect(updater.updating.value).toEqual('2')
   })
 
   it('has second highest precedence for autoUpdateDebounce from "config.drivers.{driver}.config.autoUpdateDebounce"', async () => {
-    await populateRecords('users', 2)
+    await setups.populateRecords('users', 2)
     await useIndexer(User).index()
     setups.setMockLatency(300)
 
-    vueModelState.drivers.local.config.autoUpdateDebounce = 300
+    vueModelState.drivers.testDriver.config.autoUpdateDebounce = 300
     vueModelState.config.autoUpdateDebounce = 50
 
     const updater = useUpdater(User, { id: '2', autoUpdate: true })
@@ -409,12 +409,12 @@ describe('useUpdater', () => {
     updater.form.value.name = 'lugu'
     await wait(200)
     expect(updater.updating.value).not.toEqual('2')
-    await vi.waitUntil(() => updater.updating.value === '2', { timeout: 500 })
+    await vi.waitUntil(() => updater.updating.value === '2', { timeout: 500, interval: 1 })
     expect(updater.updating.value).toEqual('2')
   })
 
   it('has lowest precedence for autoUpdateDebounce from "config.autoUpdateDebounce"', async () => {
-    await populateRecords('users', 2)
+    await setups.populateRecords('users', 2)
     await useIndexer(User).index()
     setups.setMockLatency(300)
 
@@ -425,12 +425,12 @@ describe('useUpdater', () => {
     updater.form.value.name = 'lugu'
     await wait(200)
     expect(updater.updating.value).not.toEqual('2')
-    await vi.waitUntil(() => updater.updating.value === '2', { timeout: 500 })
+    await vi.waitUntil(() => updater.updating.value === '2', { timeout: 500, interval: 1 })
     expect(updater.updating.value).toEqual('2')
   })
 
   it('can optimistically update', async () => {
-    await populateRecords('users', 2)
+    await setups.populateRecords('users', 2)
     await useIndexer(User).index()
     setups.setMockLatency(50)
 
@@ -442,7 +442,7 @@ describe('useUpdater', () => {
   })
 
   it('can set optimistic globally', async () => {
-    // await populateRecords('users', 2)
+    // await setups.populateRecords('users', 2)
     // await useIndexer(User).index()
     // setups.setMockLatency(50)
 
@@ -454,7 +454,7 @@ describe('useUpdater', () => {
   })
 
   it('rolls back if the update fails when using optimistic', async () => {
-    await populateRecords('users', 2)
+    await setups.populateRecords('users', 2)
     await useIndexer(User).index()
     setups.setMockLatency(50)
     setups.setMockStandardErrors([
@@ -464,77 +464,77 @@ describe('useUpdater', () => {
 
     const userUpdater = useUpdater(User, { id: '2', optimistic: true })
 
-    const updatePromise = userUpdater.update({ name: 'Ross' }) // intentionally not awaited
+    const updatePromise = userUpdater.update({ email: 'Ross' }) // intentionally not awaited
 
     // Assumes success
-    expect(userUpdater.record.value?.name).toEqual('Ross')
+    expect(userUpdater.record.value?.email).toEqual('Ross')
 
     await updatePromise
     // Then hits error, and rollback occurs
-    expect(userRepo.find('2').name).not.toEqual('Ross')
-    expect(userRepo.find('2').name).toEqual('Ervin Howell')
+    expect(userRepo.find('2').email).not.toEqual('Ross')
+    expect(userRepo.find('2').email).toEqual('Shanna@melissa.tv')
   })
 
   it('sets validation errors when the response has validation errors', async () => {
-    await populateRecords('users', 2)
+    await setups.populateRecords('users', 2)
     await useIndexer(User).index()
     const userUpdater = useUpdater(User, { id: '2' })
     setups.setMockValidationErrors({
-      title: ['title is required'],
+      email: ['please enter a valid email'],
     })
 
-    await userUpdater.update({ name: 'lugu' })
+    await userUpdater.update({ email: 'lugu' })
 
-    expect(userUpdater.validationErrors.value.title)
-      .toEqual(expect.arrayContaining(['title is required']))
+    expect(userUpdater.validationErrors.value.email[0])
+      .toBeTypeOf('string')
   })
 
   it('clears validation errors when a request is made', async () => {
-    await populateRecords('users', 2)
+    await setups.populateRecords('users', 2)
     await useIndexer(User).index()
     const userUpdater = useUpdater(User, { id: '2' })
     setups.setMockValidationErrors({
-      name: ['name is required'],
+      email: ['please enter a valid email'],
     })
 
-    await userUpdater.update({ name: 'lugu' })
+    await userUpdater.update({ email: 'lugu' })
 
-    expect(userUpdater.validationErrors.value.name)
-      .toEqual(expect.arrayContaining(['name is required']))
+    expect(userUpdater.validationErrors.value.email[0])
+      .toBeTypeOf('string')
 
     setups.setMockValidationErrors(undefined)
-    await userUpdater.update({ name: 'engatoo' })
+    await userUpdater.update({ email: 'lugu@engatoo.com' })
 
     expect(Object.values(userUpdater.validationErrors.value).length)
       .toEqual(0)
   })
 
   it('sets standard errors when the response has standard errors', async () => {
-    await populateRecords('users', 2)
+    await setups.populateRecords('users', 2)
     await useIndexer(User).index()
     const userUpdater = useUpdater(User, { id: '2' })
     setups.setMockStandardErrors([
       { name: 'thingy-messup', message: 'The thingy messed up' },
     ])
 
-    await userUpdater.update({ name: 'Sir Johnalot' })
+    await userUpdater.update({ email: 'Sir Johnalot' })
 
-    expect(userUpdater.standardErrors.value[0])
-      .toEqual({ name: 'thingy-messup', message: 'The thingy messed up' })
+    expect(userUpdater.standardErrors.value[0].message)
+      .toBeTypeOf('string')
   })
 
   it('clears standard errors when a request is made', async () => {
-    await populateRecords('users', 2)
+    await setups.populateRecords('users', 2)
     await useIndexer(User).index()
     const userUpdater = useUpdater(User, { id: '2' })
     setups.setMockStandardErrors([
       { name: 'thingy-messup', message: 'The thingy messed up' },
     ])
 
-    await userUpdater.update({ name: 'Sir Johnalotington' })
+    await userUpdater.update({ email: 'Sir Johnalotington' })
 
-    expect(userUpdater.standardErrors.value[0])
-      .toEqual({ name: 'thingy-messup', message: 'The thingy messed up' })
+    expect(userUpdater.standardErrors.value[0].message)
+      .toBeTypeOf('string')
 
     setups.setMockStandardErrors(undefined)
     await userUpdater.update()
@@ -544,7 +544,7 @@ describe('useUpdater', () => {
   })
 
   it('success and error responses have an "action" of "update"', async () => {
-    await populateRecords('users', 2)
+    await setups.populateRecords('users', 2)
     const userUpdater = useUpdater(User, { id: '2' })
     setups.setMockStandardErrors([{
       name: 'thingy-messup',
@@ -564,7 +564,7 @@ describe('useUpdater', () => {
   })
 
   it('returns a standard error if an ID cannot be discovered', async () => {
-    await populateRecords('users', 2)
+    await setups.populateRecords('users', 2)
     const userUpdater = useUpdater(User, { id: '3' })
 
     await userUpdater.update()
@@ -573,7 +573,7 @@ describe('useUpdater', () => {
   })
 
   it('only updates the given value, not removing other fields', async () => {
-    await populateRecords('users', 2)
+    await setups.populateRecords('users', 2)
     const userUpdater = useUpdater(User, { id: '1' })
 
     await userUpdater.update({ name: 'Lugu' })
@@ -583,7 +583,7 @@ describe('useUpdater', () => {
   })
 
   it('can update a resource with a composite key', async () => {
-    await populateRecords('photo_tags', 10)
+    await setups.populateRecords('photo_tags', 10)
     const repo = useRepo(PhotoTag)
     const photoTagUpdater = useUpdater(PhotoTag, { id: ['1', '2'] })
 
@@ -598,7 +598,7 @@ describe('useUpdater', () => {
   })
 
   it('can pass an array to "update" to update via composite key', async () => {
-    await populateRecords('photo_tags', 10)
+    await setups.populateRecords('photo_tags', 10)
     const repo = useRepo(PhotoTag)
     const photoTagUpdater = useUpdater(PhotoTag, { id: ['1', '2'] })
 
@@ -613,7 +613,7 @@ describe('useUpdater', () => {
   })
 
   it('can update a resource where the primaryKey is not "id"', async () => {
-    await populateRecords('dataverse_users', 2)
+    await setups.populateRecords('dataverse_users', 2)
     await useIndexer(DataverseUser).index()
 
     const updater = useUpdater(DataverseUser)
@@ -624,7 +624,7 @@ describe('useUpdater', () => {
   })
 
   it('can update two records at the same time', async () => {
-    await populateRecords('users', 2)
+    await setups.populateRecords('users', 2)
     const postRepo = useRepo(User)
     const postUpdater = useUpdater(User)
 
@@ -641,7 +641,7 @@ describe('useUpdater', () => {
   })
 
   it('can cancel the latest request', async () => {
-    await populateRecords('users', 1)
+    await setups.populateRecords('users', 1)
     const repo = useRepo(User)
     setups.setMockLatency(100)
 

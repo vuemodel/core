@@ -12,6 +12,7 @@ import { create } from './implementations/create/create'
 import { find } from './implementations/find/find'
 import { destroy } from './implementations/destroy/destroy'
 import { update } from './implementations/update/update'
+import features from './features.json'
 
 export const piniaLocalVueModelDriver: VueModelDriver['implementation'] = {
   index,
@@ -28,6 +29,8 @@ export const piniaLocalVueModelDriver: VueModelDriver['implementation'] = {
 
   destroy,
   useDestroyer: useDestroyerImplementation,
+
+  features,
 }
 
 export {

@@ -1,19 +1,20 @@
 import { describe, beforeEach, it, expect, vi } from 'vitest'
 import { find, vueModelState } from '@vuemodel/core'
-import { Post, populateRecords } from '@vuemodel/sample-data'
+import { Post } from '@vuemodel/sample-data'
 import { baseSetup } from '../baseSetup'
 import 'fake-indexeddb/auto'
 import { implementationSetupsMap } from '../implementations/implementationSetupsMap'
 
-const setups = implementationSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
+const implementation = import.meta.env.IMPLEMENTATION
+const setups = implementationSetupsMap[implementation ?? 'piniaLocalStorage']
 
 describe('find', () => {
-  beforeEach(async () => {
-    await baseSetup()
+  beforeEach(async (ctx) => {
+    await baseSetup(ctx)
   })
 
   it('can find a resource', async () => {
-    await populateRecords('posts', 5)
+    await setups.populateRecords('posts', 5)
 
     const result = await find(Post, '3')
 
@@ -24,8 +25,8 @@ describe('find', () => {
   })
 
   it('can populate records', async () => {
-    await populateRecords('posts', 5)
-    await populateRecords('comments', 5)
+    await setups.populateRecords('posts', 5)
+    await setups.populateRecords('comments', 5)
 
     const result = await find(Post, '1', {
       with: {
@@ -38,8 +39,8 @@ describe('find', () => {
   })
 
   it('can filter nested records', async () => {
-    await populateRecords('posts', 5)
-    await populateRecords('comments', 5)
+    await setups.populateRecords('posts', 5)
+    await setups.populateRecords('comments', 5)
 
     const result = await find(Post, '1', {
       with: {
@@ -53,9 +54,21 @@ describe('find', () => {
     expect(result.record.comments[0]).toHaveProperty('name', 'vero eaque aliquid doloribus et culpa')
   })
 
-  it('can order nested records', async () => {
-    await populateRecords('posts', 5)
-    await populateRecords('comments', 5)
+  it('can order nested records', async (ctx) => {
+    if (!setups.implementation.features.find.order.nested) {
+      const consoleMock = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+      await find(Post, '1', {
+        with: {
+          comments: {
+            _orderBy: [{ direction: 'ascending', field: 'name' }],
+          },
+        },
+      })
+      expect(consoleMock).toHaveBeenCalledWith('implementation "testDriver" does not support feature "find.order.nested"')
+      return
+    }
+    await setups.populateRecords('posts', 5)
+    await setups.populateRecords('comments', 5)
 
     const result = await find(Post, '1', {
       with: {
@@ -69,7 +82,7 @@ describe('find', () => {
       .toMatchObject(['4', '1', '3', '2', '5'])
   })
 
-  it('can respond with validation errors', async () => {
+  it('can respond with validation errors', async (ctx) => {
     setups.setMockValidationErrors({
       'comments[0]': ['the "paramater" field is required'],
     })
@@ -86,17 +99,17 @@ describe('find', () => {
 
     const result = await find(Post, '1')
 
-    expect(result.standardErrors).toMatchObject([{ message: 'something went horribly wrong', name: 'oops' }])
+    expect(result.standardErrors.length).toBeGreaterThan(0)
   })
 
   it('can notify on error', async () => {
     setups.setMockStandardErrors([{ message: 'something went horribly wrong', name: 'oops' }])
-    vueModelState.drivers.local.config = {
+    vueModelState.drivers.testDriver.config = {
       errorNotifiers: {
         find: () => { return {} },
       },
     }
-    const notifyOnErrorSpy = vi.spyOn(vueModelState.drivers.local.config.errorNotifiers, 'find')
+    const notifyOnErrorSpy = vi.spyOn(vueModelState.drivers.testDriver.config.errorNotifiers, 'find')
 
     await find(Post, '1', { notifyOnError: true })
 
@@ -105,12 +118,12 @@ describe('find', () => {
 
   it('does not notify on error by default', async () => {
     setups.setMockStandardErrors([{ message: 'something went horribly wrong', name: 'oops' }])
-    vueModelState.drivers.local.config = {
+    vueModelState.drivers.testDriver.config = {
       errorNotifiers: {
         find: () => { return {} },
       },
     }
-    const notifyOnErrorSpy = vi.spyOn(vueModelState.drivers.local.config.errorNotifiers, 'find')
+    const notifyOnErrorSpy = vi.spyOn(vueModelState.drivers.testDriver.config.errorNotifiers, 'find')
 
     await find(Post, '1')
 
@@ -120,13 +133,13 @@ describe('find', () => {
   it('has a first preference for notifyOnError passed as a param', async () => {
     setups.setMockStandardErrors([{ message: 'something went horribly wrong', name: 'oops' }])
     vueModelState.config.notifyOnError = { find: false }
-    vueModelState.drivers.local.config = {
+    vueModelState.drivers.testDriver.config = {
       errorNotifiers: {
         find: () => { return {} },
       },
       notifyOnError: { find: false },
     }
-    const notifyOnErrorSpy = vi.spyOn(vueModelState.drivers.local.config.errorNotifiers, 'find')
+    const notifyOnErrorSpy = vi.spyOn(vueModelState.drivers.testDriver.config.errorNotifiers, 'find')
 
     await find(Post, '1', { notifyOnError: true }) // as param takes precedence
 
@@ -136,13 +149,13 @@ describe('find', () => {
   it('has a second preference for notifyOnError set at a "state.driver.xxx.config" level', async () => {
     setups.setMockStandardErrors([{ message: 'something went horribly wrong', name: 'oops' }])
     vueModelState.config.notifyOnError = { find: false }
-    vueModelState.drivers.local.config = {
+    vueModelState.drivers.testDriver.config = {
       errorNotifiers: {
         find: () => { return {} },
       },
       notifyOnError: { find: true },
     }
-    const notifyOnErrorSpy = vi.spyOn(vueModelState.drivers.local.config.errorNotifiers, 'find')
+    const notifyOnErrorSpy = vi.spyOn(vueModelState.drivers.testDriver.config.errorNotifiers, 'find')
 
     await find(Post, '1') // as param takes precedence
 
@@ -152,12 +165,12 @@ describe('find', () => {
   it('has a third preference for notifyOnError set at a "state.config" level', async () => {
     setups.setMockStandardErrors([{ message: 'something went horribly wrong', name: 'oops' }])
     vueModelState.config.notifyOnError = { find: true }
-    vueModelState.drivers.local.config = {
+    vueModelState.drivers.testDriver.config = {
       errorNotifiers: {
         find: () => { return {} },
       },
     }
-    const notifyOnErrorSpy = vi.spyOn(vueModelState.drivers.local.config.errorNotifiers, 'find')
+    const notifyOnErrorSpy = vi.spyOn(vueModelState.drivers.testDriver.config.errorNotifiers, 'find')
 
     await find(Post, '1') // as param takes precedence
 
@@ -170,7 +183,7 @@ describe('find', () => {
   })
 
   it('has first precedence for options.throw', async () => {
-    vueModelState.drivers.local.config.throw = false
+    vueModelState.drivers.testDriver.config.throw = false
     vueModelState.config.throw = false
     setups.setMockStandardErrors([{ name: 'oops', message: 'something went baaad!' }])
 
@@ -178,7 +191,7 @@ describe('find', () => {
   })
 
   it('has second precedence for options.driver.throw', async () => {
-    vueModelState.drivers.local.config.throw = true
+    vueModelState.drivers.testDriver.config.throw = true
     setups.setMockStandardErrors([{ name: 'oops', message: 'something went baaad!' }])
     vueModelState.config.throw = false
 

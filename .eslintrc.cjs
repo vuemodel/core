@@ -120,9 +120,7 @@ module.exports = {
     quotes: ['warn', 'single', { avoidEscape: true }],
 
     'no-empty-function': 'off',
-    '@typescript-eslint/no-empty-function': ['error', {
-      allow: ['decoratedFunctions'],
-    }],
+    '@typescript-eslint/no-empty-function': 'off',
 
     'no-use-before-define': 'off',
 

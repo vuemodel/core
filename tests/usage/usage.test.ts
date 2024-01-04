@@ -3,18 +3,21 @@ import { useCreator, useDestroyer, useFinder, useIndexer, useUpdater } from '@vu
 import { User } from '@vuemodel/sample-data'
 import { baseSetup } from '../baseSetup'
 import 'fake-indexeddb/auto'
+import { implementationSetupsMap } from '../implementations/implementationSetupsMap'
+
+const setups = implementationSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
 
 describe('find', () => {
-  beforeEach(async () => {
-    await baseSetup()
+  beforeEach(async (ctx) => {
+    await baseSetup(ctx)
   })
 
   it('can pass the driver as the first param when using any of the CRUD composables', async () => {
-    const userCreator = useCreator('local', User, { persist: false, form: { id: '1' } })
-    const userFinder = useFinder('local', User, { persist: true })
-    const userUpdater = useUpdater('local', User)
-    const userDestroyer = useDestroyer('local', User)
-    const userIndexer = useIndexer('local', User, {})
+    const userCreator = useCreator('testDriver', User, { persist: false, form: { id: '1', email: 'lugu@engatoo.com' } })
+    const userFinder = useFinder('testDriver', User, { persist: true })
+    const userUpdater = useUpdater('testDriver', User)
+    const userDestroyer = useDestroyer('testDriver', User)
+    const userIndexer = useIndexer('testDriver', User, {})
 
     await userCreator.create({ name: 'lugu' })
     expect(userCreator.record.value).toEqual(null)

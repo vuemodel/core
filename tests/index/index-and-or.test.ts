@@ -2,14 +2,17 @@ import { describe, beforeEach, it, expect } from 'vitest'
 import { index } from '@vuemodel/core'
 import { Post, populateRecords } from '@vuemodel/sample-data'
 import { baseSetup } from '../baseSetup'
+import { implementationSetupsMap } from '../implementations/implementationSetupsMap'
+
+const setups = implementationSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
 
 describe('index', () => {
-  beforeEach(async () => {
-    await baseSetup()
+  beforeEach(async (ctx) => {
+    await baseSetup(ctx)
   })
 
   it('can filter resources with an "or" grouping', async () => {
-    await populateRecords('posts', 15)
+    await setups.populateRecords('posts', 15)
 
     const response = await index(Post, {
       filters: {
@@ -37,7 +40,7 @@ describe('index', () => {
   })
 
   it('can filter resources with an "and" grouping', async () => {
-    await populateRecords('posts', 15)
+    await setups.populateRecords('posts', 15)
 
     const response = await index(Post, {
       filters: {

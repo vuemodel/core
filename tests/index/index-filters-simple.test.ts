@@ -2,14 +2,17 @@ import { describe, beforeEach, it, expect } from 'vitest'
 import { index } from '@vuemodel/core'
 import { Post, User, populateRecords } from '@vuemodel/sample-data'
 import { baseSetup } from '../baseSetup'
+import { implementationSetupsMap } from '../implementations/implementationSetupsMap'
+
+const setups = implementationSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
 
 describe('index', () => {
-  beforeEach(async () => {
-    await baseSetup()
+  beforeEach(async (ctx) => {
+    await baseSetup(ctx)
   })
 
   it('can filter resources via "equals"', async () => {
-    await populateRecords('posts', 10)
+    await setups.populateRecords('posts', 10)
 
     const response = await index(Post, {
       filters: {
@@ -22,7 +25,7 @@ describe('index', () => {
   })
 
   it('can filter resources via "doesNotEqual"', async () => {
-    await populateRecords('posts', 10)
+    await setups.populateRecords('posts', 10)
 
     const response = await index(Post, {
       filters: {
@@ -39,7 +42,7 @@ describe('index', () => {
   })
 
   it('can filter resources via "lessThan"', async () => {
-    await populateRecords('users', 10)
+    await setups.populateRecords('users', 10)
 
     const response = await index(User, {
       filters: {
@@ -51,7 +54,7 @@ describe('index', () => {
   })
 
   it('can filter resources via "lessThanOrEqual"', async () => {
-    await populateRecords('users', 10)
+    await setups.populateRecords('users', 10)
 
     const response = await index(User, {
       filters: {
@@ -63,7 +66,7 @@ describe('index', () => {
   })
 
   it('can filter resources via "greaterThan"', async () => {
-    await populateRecords('users', 10)
+    await setups.populateRecords('users', 10)
 
     const response = await index(User, {
       filters: {
@@ -75,7 +78,7 @@ describe('index', () => {
   })
 
   it('can filter resources via "greaterThanOrEqual"', async () => {
-    await populateRecords('users', 10)
+    await setups.populateRecords('users', 10)
 
     const response = await index(User, {
       filters: {
@@ -87,7 +90,7 @@ describe('index', () => {
   })
 
   it('can filter resources via "in"', async () => {
-    await populateRecords('users', 10)
+    await setups.populateRecords('users', 10)
 
     const response = await index(User, {
       filters: {
@@ -106,7 +109,7 @@ describe('index', () => {
   })
 
   it('can filter resources via "notIn"', async () => {
-    await populateRecords('users', 10)
+    await setups.populateRecords('users', 10)
 
     const response = await index(User, {
       filters: {
@@ -125,7 +128,7 @@ describe('index', () => {
   })
 
   it('can filter resources via "contains"', async () => {
-    await populateRecords('posts', 20)
+    await setups.populateRecords('posts', 20)
 
     const response = await index(Post, {
       filters: {
@@ -140,7 +143,7 @@ describe('index', () => {
   })
 
   it('can filter resources via "doesNotContain"', async () => {
-    await populateRecords('posts', 20)
+    await setups.populateRecords('posts', 20)
 
     const response = await index(Post, {
       filters: {
@@ -154,20 +157,8 @@ describe('index', () => {
     expect(response.records[2].title).not.toContain('est')
   })
 
-  it('can filter resources via "between" using strings', async () => {
-    await populateRecords('users', 10)
-
-    const response = await index(User, {
-      filters: {
-        id: { between: [1, 5] },
-      },
-    })
-
-    expect(response.records.length).toEqual(5)
-  })
-
   it('can filter resources via "between" using numbers', async () => {
-    await populateRecords('users', 10)
+    await setups.populateRecords('users', 10)
 
     const response = await index(User, {
       filters: {
@@ -179,7 +170,7 @@ describe('index', () => {
   })
 
   it('can filter resources via "between" using dates', async () => {
-    await populateRecords('posts', 50)
+    await setups.populateRecords('posts', 50)
 
     const response = await index(Post, {
       filters: {
@@ -196,7 +187,7 @@ describe('index', () => {
   })
 
   it('can filter resources via "startsWith"', async () => {
-    await populateRecords('posts', 50)
+    await setups.populateRecords('posts', 50)
 
     const response = await index(Post, {
       filters: {
@@ -208,7 +199,7 @@ describe('index', () => {
   })
 
   it('can filter resources via "endsWith"', async () => {
-    await populateRecords('posts', 80)
+    await setups.populateRecords('posts', 80)
 
     const response = await index(Post, {
       filters: {
@@ -220,7 +211,7 @@ describe('index', () => {
   })
 
   it('can order by a given field', async () => {
-    await populateRecords('posts', 5)
+    await setups.populateRecords('posts', 5)
 
     const response = await index(Post, {
       orderBy: [

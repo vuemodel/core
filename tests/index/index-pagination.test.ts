@@ -2,14 +2,17 @@ import { describe, beforeEach, it, expect } from 'vitest'
 import { index } from '@vuemodel/core'
 import { Post, populateRecords } from '@vuemodel/sample-data'
 import { baseSetup } from '../baseSetup'
+import { implementationSetupsMap } from '../implementations/implementationSetupsMap'
+
+const setups = implementationSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
 
 describe('index', () => {
-  beforeEach(async () => {
-    await baseSetup()
+  beforeEach(async (ctx) => {
+    await baseSetup(ctx)
   })
 
   it('can limit number or resources returned', async () => {
-    await populateRecords('posts', 10)
+    await setups.populateRecords('posts', 10)
 
     const response = await index(Post, {
       pagination: {
@@ -22,7 +25,7 @@ describe('index', () => {
   })
 
   it('can paginate', async () => {
-    await populateRecords('posts', 10)
+    await setups.populateRecords('posts', 10)
 
     const response = await index(Post, {
       pagination: {
@@ -42,7 +45,7 @@ describe('index', () => {
   })
 
   it('has the correct record count when paginating with filters', async () => {
-    await populateRecords('posts', 20)
+    await setups.populateRecords('posts', 20)
 
     const response = await index(Post, {
       filters: {

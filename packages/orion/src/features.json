@@ -1,0 +1,67 @@
+{
+  "find": {
+    "available": true,
+    "order": {
+      "shallow": true,
+      "nested": false
+    },
+    "validationErrors": true,
+    "filter": {
+      "shallow": true,
+      "nested": true,
+      "operators": [
+        "equals",
+        "doesNotEqual",
+        "lessThan",
+        "lessThanOrEqual",
+        "greaterThan",
+        "greaterThanOrEqual",
+        "in",
+        "notIn",
+        "contains",
+        "doesNotContain",
+        "between",
+        "startsWith",
+        "endsWith"
+      ]
+    }
+  },
+  "index": {
+    "available": true,
+    "order": {
+      "shallow": true,
+      "nested": false
+    },
+    "validationErrors": true,
+    "filter": {
+      "shallow": true,
+      "nested": true,
+      "operators": [
+        "equals",
+        "doesNotEqual",
+        "lessThan",
+        "lessThanOrEqual",
+        "greaterThan",
+        "greaterThanOrEqual",
+        "in",
+        "notIn",
+        "contains",
+        "doesNotContain",
+        "between",
+        "startsWith",
+        "endsWith"
+      ]
+    }
+  },
+  "create": {
+    "available": true,
+    "validationErrors": true
+  },
+  "destroy": {
+    "available": true
+  },
+  "update": {
+    "available": true,
+    "validationErrors": true
+  }
+}

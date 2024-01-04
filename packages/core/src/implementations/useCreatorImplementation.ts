@@ -96,9 +96,11 @@ export function useCreatorImplementation<T extends typeof Model> (
       persist
 
     let requestId = getRecordId(mergedForm)
+    const primaryKey = ModelClass.primaryKey
     if (!requestId) {
       requestId = uuidV4()
-      mergedForm.id = requestId
+      // @ts-expect-error we know primaryKey is a property on mergedForm
+      mergedForm[primaryKey] = requestId
     }
 
     let thisOptimisticRecord: InstanceType<T> | undefined

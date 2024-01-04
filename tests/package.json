@@ -5,13 +5,15 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "IMPLEMENTATION=piniaLocalStorage vitest"
+    "test": "IMPLEMENTATION=piniaLocalStorage vitest",
+    "test:orion": "IMPLEMENTATION=orion vitest --poolOptions.threads.singleThread=true"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@vuemodel/core": "workspace:^",
+    "@vuemodel/orion": "workspace:^",
     "@vuemodel/pinia-local-storage": "workspace:^",
     "@vuemodel/sample-data": "workspace:^",
     "fake-indexeddb": "^5.0.1",
@@ -20,7 +22,8 @@
     "pinia-orm": "^1.7.2",
     "pinia-orm-helpers": "^0.0.10",
     "vitest": "^1.0.0-beta.3",
-    "vue": "^3.3.4"
+    "vue": "^3.3.4",
+    "wretch": "^2.8.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.3.4",

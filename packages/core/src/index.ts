@@ -6,6 +6,9 @@ export * from './plugin/createVueModel'
 export * from './plugin/state'
 export * from './getImplementation'
 
+// Features
+export * from './contracts/VueModelDriverFeatures'
+
 // Indexer
 export * from './contracts/crud/index/Index'
 export * from './contracts/crud/index/UseIndexer'

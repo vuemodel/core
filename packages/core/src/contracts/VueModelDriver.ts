@@ -10,8 +10,9 @@ import { UseUpdater } from './crud/update/UseUpdater'
 import { UseFinder } from './crud/find/UseFinder'
 import { UseDestroyer } from './crud/destroy/UseDestroyer'
 import { VueModelConfig } from '../plugin/state'
+import { VueModelDriverFeatures } from './VueModelDriverFeatures'
 
-export interface VueModelDriverImplementation<T extends typeof Model> {
+export interface VueModelDriverImplementation<T extends typeof Model = typeof Model> {
   create: Create<T>
   useCreator: UseCreator<T>
 
@@ -26,6 +27,8 @@ export interface VueModelDriverImplementation<T extends typeof Model> {
 
   destroy: Destroy<T>
   useDestroyer: UseDestroyer<T>
+
+  features: VueModelDriverFeatures
 }
 
 /**
