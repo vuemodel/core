@@ -1,6 +1,6 @@
 {
   "name": "@vuemodel/orion",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "scripts": {
     "jiti-fix": "find ./dist -type f -exec sed -i 's|file://||g' {} \\;",
     "build": "unbuild",
@@ -63,5 +63,8 @@
     "tslib": "^2.6.2",
     "typescript": "^5.3.2",
     "unbuild": "^2.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
