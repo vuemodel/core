@@ -113,7 +113,7 @@ export interface UseUpdaterReturn<T extends typeof Model> {
    * The id order of precedence is `updater.form.id -> updater.id -> updater('some-id')`
    *
    * @example
-   * // When no paramaters are provided, the `updater.form` ref is used.
+   * // When no parameters are provided, the `updater.form` ref is used.
    * // It will attempt to discover the id with `updater.form.value.id`
    * await update()
    *

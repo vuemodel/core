@@ -22,7 +22,7 @@ const VueModel = createVueModel({
 
 Notice we set the `default` driver to **local**? This means all of VueModel's composables and actions will use **local** by default.
 
-To use a different driver, pass the name of that driver as the first paramater!
+To use a different driver, pass the name of that driver as the first parameter!
 ```ts
 const dataversePostsIndexer = useIndexer('dataverse', Post, { immediate: true })
 const orionPostsIndexer = useIndexer('orion', Post, { immediate: true })

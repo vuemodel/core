@@ -66,7 +66,7 @@ export async function index<T extends typeof Model> (
     if (options?.orderBy) applyOrderBys<InstanceType<T>>(postQuery, options.orderBy)
     if (options?.pagination) applyPagination(searchQuery, options.pagination)
 
-    const wretch = driverOptions.createWretch()
+    const wretch = await driverOptions.createWretch()
 
     try {
       const response = await wretch.url(`/${ModelClass.entity}/search?${qs.stringify(searchQuery)}`)

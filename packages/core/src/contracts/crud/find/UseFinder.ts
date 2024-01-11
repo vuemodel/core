@@ -150,7 +150,7 @@ export interface UseFinderReturn<T extends typeof Model> {
    * Make a PiniaORM query using the id of the last fetched
    * record, and any with passed to `options.with`.
    *
-   * By default, the `id` paramater will be discovered for you based on
+   * By default, the `id` parameter will be discovered for you based on
    * the latest request.
    *
    * NOTE: Under the hood the query is made with `query.whereId('some-id')` **NOT** `query.find('some-id')`.

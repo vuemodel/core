@@ -17,7 +17,7 @@ export type NotifyErrorsWithValidation = {
 export type ErrorNotifier = (options: { model: typeof Model, errors: ErrorNotifyErrors }) => void
 export type ErrorNotifierWithValidation = (options: { model: typeof Model, errors: NotifyErrorsWithValidation }) => void
 
-export type PluginScope = string | { name: string, paramaters: Record<string, any> | (() => Record<string, any>) }
+export type PluginScope = string | { name: string, parameters: Record<string, any> | (() => Record<string, any>) }
 export type PluginScopeConfig = ObjectQueryScope |
 ((
   context?: { entity: string, driver: string },

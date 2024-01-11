@@ -60,7 +60,7 @@ export async function create<T extends typeof Model> (
       })
     }
 
-    const wretch = driverOptions.createWretch({ data, primaryKey })
+    const wretch = await driverOptions.createWretch({ data, primaryKey })
 
     try {
       const response = await wretch.url('/' + ModelClass.entity)

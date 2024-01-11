@@ -63,7 +63,7 @@ export async function find<T extends typeof Model> (
     }
     applyWiths(ModelClass, query, options.with ?? {}, driverKey)
 
-    const wretch = driverOptions.createWretch({ primaryKey: String(idResolved) })
+    const wretch = await driverOptions.createWretch({ primaryKey: String(idResolved) })
 
     try {
       const response = await wretch.url(`/${ModelClass.entity}/${idResolved}?${qs.stringify(query)}`)

@@ -1,5 +1,5 @@
-import { Model, useRepo } from 'pinia-orm'
-import { Ref, computed, ref, toValue, watch } from 'vue'
+import { Item, Model, useRepo } from 'pinia-orm'
+import { Ref, computed, nextTick, ref, toValue, watch } from 'vue'
 import { DeclassifyPiniaOrmModel, PiniaOrmForm } from 'pinia-orm-helpers'
 import { UseUpdaterOptions, UseUpdaterReturn } from '../contracts/crud/update/UseUpdater'
 import { getImplementation } from '../getImplementation'
@@ -7,12 +7,13 @@ import { UpdateErrorResponse, UpdateResponse } from '../types/Response'
 import { FormValidationErrors } from '../contracts/errors/FormValidationErrors'
 import { StandardErrors } from '../contracts/errors/StandardErrors'
 import { Constructor } from '../types/Constructor'
-import { populateFormWithRecord } from '../utils/populateFormWithRecord'
+import { populateFormWithRecord as populateFormWithRecordUtil } from '../utils/populateFormWithRecord'
 import { getMergedDriverConfig } from '../utils/getMergedDriverConfig'
 import debounce from 'debounce'
 import { getRecordPrimaryKey } from '../utils/getRecordPrimaryKey'
 import { getFirstDefined } from '../utils/getFirstDefined'
 import clone from 'just-clone'
+import { watchPausable } from '@vueuse/core'
 
 const defaultOptions = {
   persist: true,
@@ -117,7 +118,9 @@ export function useUpdaterImplementation<T extends typeof Model> (
   async function makeForm (targetId?: string | number | string[] | number[]) {
     let id = targetId ?? toValue(options?.id)
     if (Array.isArray(id)) id = JSON.stringify(id)
-    if (!id) return {}
+    if (!id) {
+      return {}
+    }
     const foundRecord = repo.find(id)
     if (!foundRecord) {
       makingForm.value = id
@@ -261,12 +264,6 @@ export function useUpdaterImplementation<T extends typeof Model> (
     return thisResponse
   }
 
-  watch(() => toValue(options?.id), () => {
-    if (typeof options?.id !== 'undefined' && options.immediatelyMakeForm) {
-      makeForm()
-    }
-  }, { immediate: true })
-
   const debounceMs = computed(() => {
     return toValue(options?.autoUpdateDebounce) ?? toValue(driverConfig.autoUpdateDebounce) ?? 150
   })
@@ -275,11 +272,29 @@ export function useUpdaterImplementation<T extends typeof Model> (
     return debounce(update, toValue(debounceMs))
   })
 
-  watch(form, (newForm) => {
+  const {
+    pause: pauseAutoUpdater,
+    resume: resumeAutoUpdater,
+  } = watchPausable(form, (newForm) => {
     if (toValue(options?.autoUpdate) && Object.keys(newForm).length) {
       updateDebounced.value()
     }
   }, { deep: true })
+
+  watch(() => toValue(options?.id), () => {
+    if (typeof options?.id !== 'undefined' && options.immediatelyMakeForm) {
+      makeForm()
+    }
+  }, { immediate: true })
+
+  function populateFormWithRecord (
+    record: Item<Model>,
+    form: Ref<Record<string, any>>,
+  ) {
+    pauseAutoUpdater()
+    populateFormWithRecordUtil(record, form)
+    nextTick(() => resumeAutoUpdater())
+  }
 
   return {
     response,

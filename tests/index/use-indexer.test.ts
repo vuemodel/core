@@ -665,7 +665,7 @@ describe('useIndexer', () => {
     }
 
     const usersIndexer = useIndexer(User, {
-      scopes: [{ name: 'whereTenantId', paramaters: { tenantId: '1' } }],
+      scopes: [{ name: 'whereTenantId', parameters: { tenantId: '1' } }],
     })
     await usersIndexer.index()
 
@@ -801,7 +801,7 @@ describe('useIndexer', () => {
       },
     }
     const tenantId = ref('1')
-    vueModelState.config.globallyAppliedScopes = [{ name: 'tenant', paramaters () { return { tenantId: tenantId.value } } }]
+    vueModelState.config.globallyAppliedScopes = [{ name: 'tenant', parameters () { return { tenantId: tenantId.value } } }]
 
     const usersIndexer = useIndexer(User)
     await usersIndexer.index()
@@ -852,7 +852,7 @@ describe('useIndexer', () => {
     }
     const tenantId = ref('1')
     vueModelState.config.globallyAppliedEntityScopes = {
-      users: [{ name: 'tenant', paramaters: () => ({ tenantId: tenantId.value }) }],
+      users: [{ name: 'tenant', parameters: () => ({ tenantId: tenantId.value }) }],
     }
 
     const usersIndexer = useIndexer(User)

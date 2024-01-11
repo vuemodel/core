@@ -6,6 +6,7 @@ import { pick } from '../../utils/pick'
 import { piniaLocalStorageState } from '../../plugin/state'
 import { makeMockErrorResponse } from '../../utils/makeMockErrorResponse'
 import { wait } from '../../utils/wait'
+import { deepToRaw } from '../../utils/deepToRaw'
 
 export async function create<T extends typeof Model> (
   ModelClass: T,
@@ -89,7 +90,7 @@ export async function create<T extends typeof Model> (
 
     records[primaryKey as any] = data
 
-    await setItem(recordsKey, records)
+    await setItem(recordsKey, deepToRaw(records))
 
     const result: CreateResponse<T> = {
       record: data,

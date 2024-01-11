@@ -7,17 +7,17 @@ import { toValue } from 'vue'
 import { difference } from '../utils/difference'
 
 export function resolveScope (
-  scope: [name: string, paramaters: any] | string | { name: string, paramaters: any },
+  scope: [name: string, parameters: any] | string | { name: string, parameters: any },
 ): PluginScope {
   if (typeof scope === 'string') {
     return {
       name: scope,
-      paramaters: {},
+      parameters: {},
     }
   } else if (Array.isArray(scope)) {
     return {
       name: scope[0],
-      paramaters: scope[1],
+      parameters: scope[1],
     }
   } else if (typeof scope === 'object') {
     return scope
@@ -90,8 +90,8 @@ export function resolveScopes (
     } else if (typeof scope === 'object') {
       const configuredScope = configuredScopes[scope.name]
       if (typeof configuredScope === 'function') {
-        const paramatersResolved = typeof scope.paramaters === 'function' ? scope.paramaters() : scope.paramaters
-        return configuredScope({ entity, driver: driverResolved }, paramatersResolved ?? undefined)
+        const parametersResolved = typeof scope.parameters === 'function' ? scope.parameters() : scope.parameters
+        return configuredScope({ entity, driver: driverResolved }, parametersResolved ?? undefined)
       } else {
         return configuredScope
       }

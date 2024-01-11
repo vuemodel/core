@@ -16,7 +16,7 @@ export interface OrionDriverOptions {
   createWretch: (context?: {
     data?: Record<string, any>
     primaryKey?: PrimaryKey
-  }) => Wretch
+  }) => Wretch | Promise<Wretch>
 }
 
 export type OrionState = Record<string, OrionDriverOptions>

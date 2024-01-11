@@ -8,6 +8,7 @@ import { wait } from '../../utils/wait'
 import { makeMockErrorResponse } from '../../utils/makeMockErrorResponse'
 import { LoosePrimaryKey } from '@vuemodel/core/src/types/LoosePrimaryKey'
 import clone from 'just-clone'
+import { deepToRaw } from '../../utils/deepToRaw'
 
 export async function update<T extends typeof Model> (
   ModelClass: T,
@@ -83,7 +84,7 @@ export async function update<T extends typeof Model> (
 
     records[idResolved] = updatedRecord
 
-    await setItem(`${ModelClass.entity}.records`, records)
+    await setItem(`${ModelClass.entity}.records`, deepToRaw(records))
     await wait(piniaLocalStorageState.mockLatencyMs ?? 0)
 
     const result: UpdateResponse<T> = {

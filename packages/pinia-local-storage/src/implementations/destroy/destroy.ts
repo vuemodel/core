@@ -6,6 +6,7 @@ import { piniaLocalStorageState } from '../../plugin/state'
 import { wait } from '../../utils/wait'
 import { makeMockErrorResponse } from '../../utils/makeMockErrorResponse'
 import { LoosePrimaryKey } from '@vuemodel/core/src/types/LoosePrimaryKey'
+import { deepToRaw } from '../../utils/deepToRaw'
 
 export async function destroy<T extends typeof Model> (
   ModelClass: T,
@@ -89,7 +90,7 @@ export async function destroy<T extends typeof Model> (
     delete items?.[idResolved]
 
     await wait(piniaLocalStorageState.mockLatencyMs ?? 0)
-    await setItem(recordsKey, items)
+    await setItem(recordsKey, deepToRaw(items))
 
     const result: DestroyResponse<T> = {
       record,

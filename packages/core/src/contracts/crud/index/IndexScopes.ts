@@ -1,1 +1,1 @@
-export type IndexScopes = Record<string, any> | (string | { name: string, paramaters: any })[]
+export type IndexScopes = Record<string, any> | (string | { name: string, parameters: any })[]

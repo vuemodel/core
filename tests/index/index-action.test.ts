@@ -23,12 +23,12 @@ describe('index', () => {
 
   it('can respond with validation errors', async () => {
     setups.setMockValidationErrors({
-      'comments[0]': ['the "paramater" field is required'],
+      'comments[0]': ['the "parameter" field is required'],
     })
 
     const result = await index(Post)
 
-    expect(result.validationErrors['comments[0]']).toEqual(expect.arrayContaining(['the "paramater" field is required']))
+    expect(result.validationErrors['comments[0]']).toEqual(expect.arrayContaining(['the "parameter" field is required']))
   })
 
   it('can respond with standard errors', async () => {

@@ -60,7 +60,7 @@ export async function destroy<T extends typeof Model> (
 
     const idResolved = Array.isArray(id) ? JSON.stringify(id) : id
 
-    const wretch = driverOptions.createWretch({ primaryKey: String(idResolved) })
+    const wretch = await driverOptions.createWretch({ primaryKey: String(idResolved) })
 
     try {
       const response = await wretch.url(`/${ModelClass.entity}/${idResolved}`)
