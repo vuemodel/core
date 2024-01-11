@@ -135,10 +135,6 @@ export default class User extends Model {
       email: this.string('')
     }
   }
-  // For typescript support of the field include also the next lines
-  declare id: string
-  declare name: string
-  declare email: string
 }
 ```
 
@@ -186,13 +182,6 @@ export default class Post extends Model {
       author: this.belongsTo(User, 'userId')
     }
   }
-  
-  declare id: string
-  declare userId: string | null
-  declare title: string
-  declare body: string
-  declare published: boolean
-  declare author: User | null
 }
 ```
 
