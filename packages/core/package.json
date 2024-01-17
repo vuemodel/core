@@ -1,6 +1,6 @@
 {
   "name": "@vuemodel/core",
-  "version": "0.0.29",
+  "version": "0.0.30",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "jiti-fix": "find ./dist -type f -exec sed -i 's|file://||g' {} \\;",
@@ -47,6 +47,7 @@
   "dependencies": {
     "@vueuse/core": "^10.6.0",
     "debounce": "^1.2.1",
+    "deep-equal": "^2.2.3",
     "deepmerge-ts": "^5.1.0",
     "just-clone": "^6.2.0",
     "pinia-orm-helpers": "^0.0.11",
@@ -60,6 +61,7 @@
   },
   "devDependencies": {
     "@types/debounce": "^1.2.3",
+    "@types/deep-equal": "^1.0.4",
     "@types/uuid": "^9.0.6",
     "@typescript-eslint/eslint-plugin": "^6.7.5",
     "@typescript-eslint/parser": "^6.7.5",
