@@ -13,8 +13,9 @@ function toComparable (value: RangeValue, targetType?: 'string' | 'number' | 'da
   }
 
   if (value instanceof Date) {
-    if (targetType === 'string') return value.toISOString()
-    return value.getTime()
+    const utcDate = new Date(value.getTime() + value.getTimezoneOffset() * 60000)
+    if (targetType === 'string') return utcDate.toISOString()
+    return utcDate.getTime()
   }
 
   if (typeof value === 'string') {

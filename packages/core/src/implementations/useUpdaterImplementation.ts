@@ -14,6 +14,7 @@ import { getRecordPrimaryKey } from '../utils/getRecordPrimaryKey'
 import { getFirstDefined } from '../utils/getFirstDefined'
 import clone from 'just-clone'
 import { watchPausable } from '@vueuse/core'
+import deepEqual from 'deep-equal'
 
 const defaultOptions = {
   persist: true,
@@ -144,6 +145,36 @@ export function useUpdaterImplementation<T extends typeof Model> (
     return form.value
   }
 
+  function getFormsChangedValues (
+    targetId: string | number | string[] | number[],
+    newValues: any,
+  ) {
+    let id = targetId ?? toValue(options?.id)
+    if (Array.isArray(id)) id = JSON.stringify(id)
+
+    if (!id) {
+      return {}
+    }
+
+    const oldResource: any = repo.find(id)
+    const resourceChangedValuesOnly: Record<string, any> = {}
+
+    if (!oldResource) return {}
+
+    Object.entries(newValues).forEach(([key, value]) => {
+      if (typeof oldResource[key] === 'object') {
+        if (!deepEqual(oldResource[key], newValues[key])) {
+          resourceChangedValuesOnly[key] = value
+        }
+      } else {
+        if (oldResource[key] !== newValues[key]) {
+          resourceChangedValuesOnly[key] = value
+        }
+      }
+    })
+    return resourceChangedValuesOnly as PiniaOrmForm<InstanceType<T>>
+  }
+
   async function update (
     idOrFormParam?: PiniaOrmForm<InstanceType<T>> | string | number | (string | number)[],
     formParam?: PiniaOrmForm<InstanceType<T>>,
@@ -189,6 +220,8 @@ export function useUpdaterImplementation<T extends typeof Model> (
 
     const originalRecord = clone(repo.find(resolvedId) ?? {})
 
+    const changedValues = getFormsChangedValues(String(resolvedId), mergedForm)
+
     let thisOptimisticRecord: InstanceType<T> | undefined
     if (optimistic && persist) {
       repo.destroy(resolvedId)
@@ -205,7 +238,7 @@ export function useUpdaterImplementation<T extends typeof Model> (
     const request = updateResource(
       ModelClass,
       String(resolvedId),
-      mergedForm,
+      changedValues,
       {
         driver: options?.driver,
         notifyOnError: options?.notifyOnError,
@@ -227,7 +260,8 @@ export function useUpdaterImplementation<T extends typeof Model> (
     response.value = thisResponse
 
     // Persisting to the store
-    if (persist && thisResponse?.record) {
+    if (persist && thisResponse?.record && !optimistic) {
+      // TODO: Is it still necessary to destroy the record first?
       repo.destroy(resolvedId)
       repo.insert(thisResponse?.record)
     }
