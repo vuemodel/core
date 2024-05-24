@@ -1,6 +1,6 @@
 {
   "name": "@vuemodel/orion",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "scripts": {
     "jiti-fix": "find ./dist -type f -exec sed -i 's|file://||g' {} \\;",
     "build": "unbuild",
