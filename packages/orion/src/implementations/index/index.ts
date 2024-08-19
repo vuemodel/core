@@ -7,6 +7,8 @@ import { applyPagination } from './applyPagination'
 import qs from 'qs'
 import { applyFilters } from './applyFilters'
 import { applyOrderBys } from './applyOrderBys'
+import { applyScopes } from './applyScopes'
+import { toValue } from 'vue'
 
 export async function index<T extends typeof Model> (
   ModelClass: T,
@@ -61,10 +63,13 @@ export async function index<T extends typeof Model> (
 
     const searchQuery = {}
 
+    const orionScopes = toValue(options?._useIndexerOptions?.orionScopes)
+
     if (options?.filters) applyFilters(ModelClass, postQuery, options.filters)
     if (options?.with) applyWiths(ModelClass, postQuery, options.with, driverKey)
     if (options?.orderBy) applyOrderBys<InstanceType<T>>(postQuery, options.orderBy)
     if (options?.pagination) applyPagination(searchQuery, options.pagination)
+    if (orionScopes) applyScopes(postQuery, orionScopes)
 
     const wretch = await driverOptions.createWretch()
 
@@ -80,10 +85,10 @@ export async function index<T extends typeof Model> (
         validationErrors: undefined,
         success: true,
         pagination: {
-          page: response.meta.current_page,
-          pagesCount: response.meta.last_page,
-          recordsCount: response.meta.total,
-          recordsPerPage: response.meta.per_page,
+          page: response.meta?.current_page,
+          pagesCount: response.meta?.last_page,
+          recordsCount: response.meta?.total,
+          recordsPerPage: response.meta?.per_page,
         },
       }
 

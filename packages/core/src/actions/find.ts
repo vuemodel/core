@@ -3,7 +3,7 @@ import { Find, FindOptions } from '../contracts/crud/find/Find'
 import { Model } from 'pinia-orm'
 import { FindResponse } from '../types/Response'
 import { LoosePrimaryKey } from '../types/LoosePrimaryKey'
-import { resolveParams } from './resolveParams'
+import { resolveFindParams } from './resolveFindParams'
 
 /**
  * Find a record on the "backend".
@@ -23,10 +23,31 @@ export function find<T extends typeof Model> (
   options?: FindOptions<T> | LoosePrimaryKey,
   hasDriverOptions?: FindOptions<T>,
 ): Promise<FindResponse<T>> {
-  const params = resolveParams(ModelClass, id, options, hasDriverOptions)
+  const params = resolveFindParams<T>(ModelClass, id, options, hasDriverOptions)
   const driver = typeof ModelClass === 'string' ? ModelClass : (options as FindOptions<T>)?.driver
+
+  const entity = params.ModelClass.entity
+
+  const findingChannel = new BroadcastChannel(`vuemodel.${driver}.finding`)
+  const foundChannel = new BroadcastChannel(`vuemodel.${driver}.found`)
+  const findingEntityChannel = new BroadcastChannel(`vuemodel.${driver}.${entity}.finding`)
+  const foundEntityChannel = new BroadcastChannel(`vuemodel.${driver}.${entity}.found`)
+
+  const findingPostMessage = { entity, with: params.options.with ?? {} }
+
+  findingChannel.postMessage(findingPostMessage)
+  findingEntityChannel.postMessage(findingPostMessage)
 
   const implementation = getImplementation('find', driver) as Find<T>
 
-  return implementation(...(params as [T, LoosePrimaryKey, FindOptions<T>]))
+  return implementation(
+    params.ModelClass,
+    params.id,
+    params.options,
+  ).then(response => {
+    const foundPostMessage = { entity, response, with: params.options.with ?? {} }
+    foundChannel.postMessage(foundPostMessage)
+    foundEntityChannel.postMessage(foundPostMessage)
+    return response
+  })
 }

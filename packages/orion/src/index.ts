@@ -43,3 +43,4 @@ export {
 
 export { createOrion } from './plugin/createOrion'
 export * from './plugin/state'
+export * from './extensions/AddScopeTypes'

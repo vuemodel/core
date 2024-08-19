@@ -34,6 +34,8 @@ export function applyFilters (query: Query, filters: IndexFilters<InstanceType<t
   const relationships = getClassRelationships(query.model.constructor)
 
   Object.entries(filters).forEach(([field, actions]) => {
+    if (!actions) return
+
     // Handle or
     if (field === 'or') {
       query.where((record: Model) => {

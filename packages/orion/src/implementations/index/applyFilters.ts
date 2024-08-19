@@ -19,11 +19,14 @@ export function applyFilters<T extends Model> (
   const relationships = getClassRelationships(ModelClass)
 
   Object.entries(filters).forEach(([field, actions]) => {
+    if (!actions) return
+
     const fieldWithPath = options.path ? (options.path + '.' + field) : field
     // Handle or
     if (field === 'or') {
       const nestedQuery = { filters: [] }
       for (const action of actions) {
+        if (!action) continue
         applyFilters(ModelClass, nestedQuery, action, { isOrBlock: true })
       }
       query.filters.push({

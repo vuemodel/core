@@ -3,7 +3,7 @@ import { Destroy, DestroyOptions } from '../contracts/crud/destroy/Destroy'
 import { Model } from 'pinia-orm'
 import { DestroyResponse } from '../types/Response'
 import { LoosePrimaryKey } from '../types/LoosePrimaryKey'
-import { resolveParams } from './resolveParams'
+import { resolveDestroyParams } from './resolveDestroyParams'
 
 /**
  * Destroy (delete) a record on the "backend".
@@ -23,10 +23,31 @@ export function destroy<T extends typeof Model> (
   options?: DestroyOptions<T> | LoosePrimaryKey,
   hasDriverOptions?: DestroyOptions<T>,
 ): Promise<DestroyResponse<T>> {
-  const params = resolveParams(ModelClass, id, options, hasDriverOptions)
+  const params = resolveDestroyParams<T>(ModelClass, id, options, hasDriverOptions)
   const driver = typeof ModelClass === 'string' ? ModelClass : (options as DestroyOptions<T>)?.driver
 
   const implementation = getImplementation('destroy', driver) as Destroy<T>
 
-  return implementation(...(params as [T, LoosePrimaryKey, DestroyOptions<T>]))
+  const entity = params.ModelClass.entity
+
+  const destroyingChannel = new BroadcastChannel(`vuemodel.${driver}.destroying`)
+  const destroyedChannel = new BroadcastChannel(`vuemodel.${driver}.destroyed`)
+  const destroyingEntityChannel = new BroadcastChannel(`vuemodel.${driver}.${entity}.destroying`)
+  const destroyedEntityChannel = new BroadcastChannel(`vuemodel.${driver}.${entity}.destroyed`)
+
+  const destroyingPostMessage = { entity }
+
+  destroyingChannel.postMessage(destroyingPostMessage)
+  destroyingEntityChannel.postMessage(destroyingPostMessage)
+
+  return implementation(
+    params.ModelClass,
+    params.id,
+    params.options,
+  ).then(response => {
+    const destroyedPostMessage = { entity, response }
+    destroyedChannel.postMessage(destroyedPostMessage)
+    destroyedEntityChannel.postMessage(destroyedPostMessage)
+    return response
+  })
 }

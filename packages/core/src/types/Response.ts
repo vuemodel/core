@@ -31,6 +31,14 @@ export type FormValidationErrorResponse<T extends typeof Model> = BaseErrorRespo
   validationErrors: FormValidationErrors<T>
 }
 
+export type BatchFormValidationSuccessResponse = BaseErrorResponse & {
+  validationErrors: undefined
+}
+
+export type BatchFormValidationErrorResponse<T extends typeof Model> = BaseErrorResponse & {
+  validationErrors: Record<string, FormValidationErrors<T>>
+}
+
 export type SingleRecordResponse<T extends typeof Model> = {
   record: DeclassifyPiniaOrmModel<InstanceType<T>> | undefined
 }
@@ -64,5 +72,9 @@ export type DestroyResponse<T extends typeof Model> = DestroySuccessResponse<T> 
 export type IndexSuccessResponse<T extends typeof Model> = { action: 'index' } & QueryValidationSuccessResponse & MultipleRecordsResponse<T> & PaginationResponse
 export type IndexErrorResponse<T extends typeof Model> = { action: 'index' } & QueryValidationErrorResponse & MultipleRecordsResponse<T>
 export type IndexResponse<T extends typeof Model> = IndexSuccessResponse<T> | IndexErrorResponse<T>
+
+export type BatchUpdateSuccessResponse<T extends typeof Model> = { action: 'batch-update' } & BatchFormValidationSuccessResponse & MultipleRecordsResponse<T>
+export type BatchUpdateErrorResponse<T extends typeof Model> = { action: 'batch-update' } & BatchFormValidationErrorResponse<T> & MultipleRecordsResponse<T>
+export type BatchUpdateResponse<T extends typeof Model> = BatchUpdateSuccessResponse<T> | BatchUpdateErrorResponse<T>
 
 export type Response<T extends typeof Model> = CreateResponse<T> | FindResponse<T> | UpdateResponse<T> | DestroyResponse<T> | IndexResponse<T>

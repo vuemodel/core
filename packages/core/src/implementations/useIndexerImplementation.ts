@@ -215,6 +215,7 @@ export function useIndexerImplementation<T extends typeof Model> (
         },
         signal,
         throw: false,
+        _useIndexerOptions: { ...options, ...resolvedParams.options },
       },
     )
 

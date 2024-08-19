@@ -4,6 +4,7 @@ import { OrderBy } from './IndexOrders'
 import { IndexWiths } from './IndexWiths'
 import { IndexPagination } from './IndexPagination'
 import { IndexResponse } from '../../../types/Response'
+import { UseIndexerOptions } from './UseIndexer'
 
 export interface IndexOptions<T extends typeof Model> {
   driver?: string
@@ -14,6 +15,7 @@ export interface IndexOptions<T extends typeof Model> {
   notifyOnError?: boolean | undefined
   signal?: AbortController['signal']
   throw?: boolean | ((response?: IndexResponse<T>) => boolean)
+  _useIndexerOptions?: UseIndexerOptions<T>
 }
 
 export type Index<T extends typeof Model> = (

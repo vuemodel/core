@@ -4,7 +4,7 @@ import { Model } from 'pinia-orm'
 import { PiniaOrmForm } from 'pinia-orm-helpers'
 import { UpdateResponse } from '../types/Response'
 import { LoosePrimaryKey } from '../types/LoosePrimaryKey'
-import { resolveParams } from './resolveParams'
+import { resolveUpdateParams } from './resolveUpdateParams'
 
 /**
  * Update a record on the "backend".
@@ -28,11 +28,34 @@ export function update<T extends typeof Model> (
   id: LoosePrimaryKey | T,
   form: PiniaOrmForm<InstanceType<T>> | LoosePrimaryKey,
   options?: UpdateOptions<T> | PiniaOrmForm<InstanceType<T>>,
+  hasDriverOptions?: UpdateOptions<T>,
 ): Promise<UpdateResponse<T>> {
-  const params = resolveParams(ModelClass, id, form, options)
+  const params = resolveUpdateParams<T>(ModelClass, id, form, options, hasDriverOptions)
   const driver = typeof ModelClass === 'string' ? ModelClass : (options as UpdateOptions<T>)?.driver
 
   const implementation = getImplementation('update', driver) as Update<T>
 
-  return implementation(...(params as [T, LoosePrimaryKey, PiniaOrmForm<InstanceType<T>>, UpdateOptions<T>]))
+  const entity = params.ModelClass.entity
+
+  const updatingChannel = new BroadcastChannel(`vuemodel.${driver}.updating`)
+  const updatedChannel = new BroadcastChannel(`vuemodel.${driver}.updated`)
+  const updatingEntityChannel = new BroadcastChannel(`vuemodel.${driver}.${entity}.updating`)
+  const updatedEntityChannel = new BroadcastChannel(`vuemodel.${driver}.${entity}.updated`)
+
+  const updatingPostMessage = { entity, form }
+
+  updatingChannel.postMessage(updatingPostMessage)
+  updatingEntityChannel.postMessage(updatingPostMessage)
+
+  return implementation(
+    params.ModelClass,
+    params.id,
+    params.form,
+    params.options,
+  ).then(response => {
+    const updatedPostMessage = { entity, response }
+    updatedChannel.postMessage(updatedPostMessage)
+    updatedEntityChannel.postMessage(updatedPostMessage)
+    return response
+  })
 }

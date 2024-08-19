@@ -25,6 +25,8 @@ export function applyFilters (query: Query, filters: IndexFilters<Model>) {
     const field = entry[0]
     const actions = entry[1]
 
+    if (!actions) return
+
     // Handle or
     if (field === 'or') {
       query.where((record: Model) => {

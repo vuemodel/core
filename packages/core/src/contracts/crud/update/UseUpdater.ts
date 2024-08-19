@@ -54,12 +54,12 @@ export interface UseUpdaterOptions<T extends typeof Model> {
   /**
    * Callback called when a validation error occurs. Note, you
    * likely won't need to use this callback as all validation
-   * errors exist within the "validationErrors" computed ref
+   * errors exist within the `validationErrors` computed ref
    */
   onValidationError?: (response: UpdateErrorResponse<T>) => void
 
   /**
-   * Should the retrieved data be persisted to the store?
+   * Should the updated records be persisted to the store?
    */
   persist?: MaybeRefOrGetter<boolean>
 
