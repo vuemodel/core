@@ -10,7 +10,7 @@ export interface CreateOptions<T extends typeof Model> {
 }
 
 export type Create<T extends typeof Model> = (
-  model: T,
+  ModelClass: T,
   form: PiniaOrmForm<InstanceType<T>>,
   options?: CreateOptions<T>
 ) => Promise<CreateResponse<T>>

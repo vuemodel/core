@@ -31,7 +31,7 @@ export type FormValidationErrorResponse<T extends typeof Model> = BaseErrorRespo
   validationErrors: FormValidationErrors<T>
 }
 
-export type BatchFormValidationSuccessResponse = BaseErrorResponse & {
+export type BatchFormValidationSuccessResponse = BaseSuccessResponse & {
   validationErrors: undefined
 }
 
@@ -77,4 +77,10 @@ export type BatchUpdateSuccessResponse<T extends typeof Model> = { action: 'batc
 export type BatchUpdateErrorResponse<T extends typeof Model> = { action: 'batch-update' } & BatchFormValidationErrorResponse<T> & MultipleRecordsResponse<T>
 export type BatchUpdateResponse<T extends typeof Model> = BatchUpdateSuccessResponse<T> | BatchUpdateErrorResponse<T>
 
-export type Response<T extends typeof Model> = CreateResponse<T> | FindResponse<T> | UpdateResponse<T> | DestroyResponse<T> | IndexResponse<T>
+export type Response<T extends typeof Model> =
+  CreateResponse<T> |
+  FindResponse<T> |
+  UpdateResponse<T> |
+  DestroyResponse<T> |
+  IndexResponse<T> |
+  BatchUpdateResponse<T>

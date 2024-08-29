@@ -9,6 +9,7 @@ import { IndexErrorResponse, IndexResponse, IndexSuccessResponse } from '../../.
 import { PaginationDetails } from './PaginationDetails'
 import { IndexScopes } from './IndexScopes'
 import { LoosePrimaryKey } from '../../../types/LoosePrimaryKey'
+import { IndexOptionsParam } from '../../../types/UseIndexerParams'
 
 export interface UseIndexerOptions<T extends typeof Model> {
   /**
@@ -169,19 +170,11 @@ export interface UseIndexerReturn<T extends typeof Model> {
    * Perform the `index` request.
    */
   index(
-    options?: {
-      page?: number,
-      recordsPerPage?: number,
-      filters?: IndexFilters<InstanceType<T>>
-    }
+    options?: IndexOptionsParam<T>
   ): Promise<IndexResponse<T>>
   index(
     ids?: LoosePrimaryKey[],
-    options?: {
-      page?: number,
-      recordsPerPage?: number,
-      filters?: IndexFilters<InstanceType<T>>
-    }
+    options?: IndexOptionsParam<T>
   ): Promise<IndexResponse<T>>
 
   /**
@@ -311,6 +304,17 @@ export interface UseIndexerReturn<T extends typeof Model> {
    * The PiniaORM repo
    */
   repo: Repository<InstanceType<T>>
+
+  /**
+   * Every composable gets an id. Used internally
+   * when working with events.
+   */
+  composableId: string
+
+  /**
+   * The PiniaORM model used to create this composable
+   */
+  ModelClass: T,
 }
 
 export type UseIndexer<T extends typeof Model> = (

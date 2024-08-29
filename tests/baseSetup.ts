@@ -3,9 +3,9 @@ import { createPinia } from 'pinia'
 import { createApp } from 'vue'
 import { Album, Comment, Photo, Post, User } from '@vuemodel/sample-data'
 import { createORM, useRepo } from 'pinia-orm'
-import { implementationSetupsMap } from './implementations/implementationSetupsMap'
+import { driverSetupsMap } from './drivers/driverSetupsMap'
 
-const setups = implementationSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
+const setups = driverSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
 
 export async function baseSetup (ctx) {
   const piniaOrm = createORM()
@@ -22,7 +22,7 @@ export async function baseSetup (ctx) {
     default: 'testDriver',
     drivers: {
       testDriver: {
-        implementation: setups.implementation,
+        driver: setups.driver,
         config: { pinia: piniaFront },
       },
     },

@@ -172,12 +172,18 @@ export interface UseCreatorReturn<T extends typeof Model> {
   /**
    * The PiniaORM model used to create this composable
    */
-  // ModelClass: T
+  ModelClass: T,
 
   /**
    * The PiniaORM repo
    */
   repo: Repository<InstanceType<T>>
+
+  /**
+   * Every composable gets an id. Used internally
+   * when working with events.
+   */
+  composableId: string
 }
 
 export type UseCreator<T extends typeof Model> = (

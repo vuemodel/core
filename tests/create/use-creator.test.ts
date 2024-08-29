@@ -5,9 +5,9 @@ import { ref } from 'vue'
 import { useRepo } from 'pinia-orm'
 import { wait } from '../helpers/wait'
 import { baseSetup } from '../baseSetup'
-import { implementationSetupsMap } from '../implementations/implementationSetupsMap'
+import { driverSetupsMap } from '../drivers/driverSetupsMap'
 
-const setups = implementationSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
+const setups = driverSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
 
 describe('useCreator', () => {
   beforeEach(async (ctx) => {

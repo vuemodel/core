@@ -22,6 +22,6 @@ features:
     details: Opinionated and predictable. You could be using two totally different backends yet in Vue, it'll all feel the same.
   - title: Prototype Without A Backend
     icon: 🍀
-    details: The "Local Storage" implementation is fully featured! That means you can prototype an entire application without building a backend. Clients can see what you'll build them before you write a single line of backend code AND they can play with it!
+    details: The "Local Storage" driver is fully featured! That means you can prototype an entire application without building a backend. Clients can see what you'll build them before you write a single line of backend code AND they can play with it!
 ---
 

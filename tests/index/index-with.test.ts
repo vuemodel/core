@@ -2,9 +2,9 @@ import { describe, beforeEach, it, expect, vi } from 'vitest'
 import { index } from '@vuemodel/core'
 import { User, populateRecords } from '@vuemodel/sample-data'
 import { baseSetup } from '../baseSetup'
-import { implementationSetupsMap } from '../implementations/implementationSetupsMap'
+import { driverSetupsMap } from '../drivers/driverSetupsMap'
 
-const setups = implementationSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
+const setups = driverSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
 
 describe('index', () => {
   beforeEach(async (ctx) => {
@@ -90,8 +90,8 @@ describe('index', () => {
   })
 
   it('can order nested records', async () => {
-    if (!setups.implementation.features.find.order.nested) {
-      const consoleMock = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    if (!setups.driver.features.find.order.nested) {
+      const consoleMock = vi.spyOn(console, 'warn').mockDriver(() => undefined)
       await index(User, {
         with: {
           posts: {
@@ -101,7 +101,7 @@ describe('index', () => {
           },
         },
       })
-      expect(consoleMock).toHaveBeenCalledWith('implementation "testDriver" does not support feature "find.order.nested"')
+      expect(consoleMock).toHaveBeenCalledWith('driver "testDriver" does not support feature "find.order.nested"')
       return
     }
 

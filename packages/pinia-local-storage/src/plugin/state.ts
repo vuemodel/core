@@ -48,7 +48,9 @@ export interface PiniaLocalStorageState {
    * When this value is set, all requests will fail with these validation errors.
    * Only intended to be used for testing/development.
    */
-  mockValidationErrors?: FormValidationErrors<typeof Model> | QueryValidationErrors
+  mockValidationErrors?: FormValidationErrors<typeof Model> |
+    QueryValidationErrors |
+    Record<string, FormValidationErrors<typeof Model>>
 }
 
 export const piniaLocalStorageState: PiniaLocalStorageState = {

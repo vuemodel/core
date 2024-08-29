@@ -8,10 +8,11 @@ export function getRecordPrimaryKey<T extends typeof Model> (
   const primaryKeyField = ModelClass.primaryKey
 
   if (Array.isArray(primaryKeyField)) {
+    /* @ts-expect-error this is hard to type */
     const key = primaryKeyField.map(field => rawRecord[field as keyof typeof rawRecord])
     return key ? JSON.stringify(key) : undefined
   }
 
-  const key = rawRecord?.[primaryKeyField as (keyof typeof rawRecord)]
+  const key = rawRecord?.[primaryKeyField as unknown as (keyof typeof rawRecord)]
   return key ? String(key) : undefined
 }

@@ -121,6 +121,17 @@ export interface UseDestroyerReturn<T extends typeof Model> {
    * The PiniaORM repo
    */
   repo: Repository<InstanceType<T>>
+
+  /**
+   * Every composable gets an id. Used internally
+   * when working with events.
+   */
+  composableId: string
+
+  /**
+   * The PiniaORM model used to create this composable
+   */
+  ModelClass: T,
 }
 
 export type UseDestroyer<T extends typeof Model> = (

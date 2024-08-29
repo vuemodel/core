@@ -7,14 +7,14 @@ const VueModel = createVueModel({
   default: 'local',
   drivers: {
     local: {
-      implementation: piniaLocalVueModelDriver,
+      driver: piniaLocalVueModelDriver,
       config: { pinia },
     },
     orion: {
-      implementation: orionDriver,
+      driver: orionDriver,
     },
     dataverse: {
-      implementation: dataverseDriver,
+      driver: dataverseDriver,
     },
   },
 })

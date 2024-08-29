@@ -6,7 +6,7 @@ import { ref } from 'vue'
 const id = ref('')
 const result = ref<FindResponse<typeof Post>>()
 
-async function find () {
+async function runFind () {
   result.value = await find(Post, id.value)
 }
 </script>
@@ -19,7 +19,7 @@ async function find () {
       v-model="id"
     >
 
-    <button @click="find()">
+    <button @click="runFind()">
       Find
     </button>
 

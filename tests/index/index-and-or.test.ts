@@ -2,9 +2,9 @@ import { describe, beforeEach, it, expect } from 'vitest'
 import { index } from '@vuemodel/core'
 import { Post, populateRecords } from '@vuemodel/sample-data'
 import { baseSetup } from '../baseSetup'
-import { implementationSetupsMap } from '../implementations/implementationSetupsMap'
+import { driverSetupsMap } from '../drivers/driverSetupsMap'
 
-const setups = implementationSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
+const setups = driverSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
 
 describe('index', () => {
   beforeEach(async (ctx) => {

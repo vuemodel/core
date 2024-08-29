@@ -6,10 +6,10 @@ import { ref } from 'vue'
 
 const result = ref<DeclassifyPiniaOrmModel<Post>[]>([])
 
-async function index () {
+async function runIndex () {
   result.value = (await index(Post, {
     filters: filters.value,
-  })).data
+  })).records
 }
 
 const filters = ref<IndexFilters<Post>>({
@@ -23,7 +23,7 @@ const filters = ref<IndexFilters<Post>>({
   <div>
     <input v-model="filters.title.equals">
 
-    <button @click="index()">
+    <button @click="runIndex()">
       Index!
     </button>
 

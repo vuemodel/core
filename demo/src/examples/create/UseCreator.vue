@@ -1,8 +1,13 @@
 <script lang="ts" setup>
-import { useCreator } from '@vuemodel/core'
+import { onModel, useCreator } from '@vuemodel/core'
 import { Post } from '@vuemodel/sample-data'
 
 const creator = useCreator(Post)
+
+onModel('created', ({ response, entity }) => {
+  console.log('response', response.record)
+  console.log('entity', entity)
+})
 </script>
 
 <template>

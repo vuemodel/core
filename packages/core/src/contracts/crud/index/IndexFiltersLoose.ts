@@ -1,11 +1,12 @@
 import { FilterPiniaOrmModelToRelationshipTypes } from 'pinia-orm-helpers'
 import { Model } from 'pinia-orm'
 
-type ExcludeNullable<T> = T extends null | undefined ? never : T;
-type UnwrapType<T> =
-  T extends Array<infer U> ? U :
-  T extends (infer U) | null ? U :
+type UnwrapModelType<T> = 
+  T extends Array<infer U> ? (U extends Model ? U : never) :
+  T extends Model | null ? T :
   never;
+
+type ExcludeNullable<T> = T extends null | undefined ? never : T;
 
 type FilterTypeParamType = [
   ['equals', string | number],
@@ -45,9 +46,9 @@ type _RelationshipFilter<
   T extends typeof Model
 > = Record<
   // "comments" relationships
-  keyof FilterPiniaOrmModelToRelationshipTypes<ExcludeNullable<UnwrapType<InstanceType<T>[relationshipKey]>>>,
+  keyof FilterPiniaOrmModelToRelationshipTypes<ExcludeNullable<UnwrapModelType<InstanceType<T>[relationshipKey]>>>,
   // the "Comment" class
-  ExcludeNullable<UnwrapType<InstanceType<T>[relationshipKey]>>
+  ExcludeNullable<UnwrapModelType<InstanceType<T>[relationshipKey]>>
 >
 
 // Define IndexFiltersLoose after FilterTypeToValue so that it can reference it

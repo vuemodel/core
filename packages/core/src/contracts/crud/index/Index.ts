@@ -15,7 +15,7 @@ export interface IndexOptions<T extends typeof Model> {
   notifyOnError?: boolean | undefined
   signal?: AbortController['signal']
   throw?: boolean | ((response?: IndexResponse<T>) => boolean)
-  _useIndexerOptions?: UseIndexerOptions<T>
+  _useIndexerOptions?: UseIndexerOptions<T> & { composableId?: string }
 }
 
 export type Index<T extends typeof Model> = (

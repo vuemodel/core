@@ -11,7 +11,7 @@ export interface UpdateOptions<T extends typeof Model> {
 }
 
 export type Update<T extends typeof Model> = (
-  model: T,
+  ModelClass: T,
   id: LoosePrimaryKey,
   form: PiniaOrmForm<InstanceType<T>>,
   options?: UpdateOptions<T>

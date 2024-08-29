@@ -15,6 +15,6 @@ export function resolveIndexParams<T extends typeof Model> (...params: any[]): {
 
   return {
     ModelClass: params[0],
-    options: params?.[1],
+    options: params?.[1] ?? {},
   }
 }

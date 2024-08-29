@@ -3,7 +3,7 @@ import { getClassAttributes, getClassRelationships } from 'pinia-orm-helpers'
 import { applyFilters } from './applyFilters'
 import { applyOrderBys } from './applyOrderBys'
 import { pick } from './pick'
-import { resolveScopes } from '../implementations/resolveScopes'
+import { resolveScopes } from '../drivers/resolveScopes'
 import { deepmerge } from 'deepmerge-ts'
 import { Constructor } from '../types/Constructor'
 import { IndexWiths } from '../contracts/crud/index/IndexWiths'
@@ -29,7 +29,6 @@ export function applyWiths<T extends Model> (
         undefined,
       )
 
-      // console.log(related)
       const relatedsFilters = deepmerge(
         pick(relatedOptions, [...Object.keys(fields), 'and', 'or']),
         resolvedScopes.filters ?? {},

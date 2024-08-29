@@ -2,9 +2,8 @@
   "name": "@vuemodel/pinia-local-storage",
   "version": "0.0.25",
   "scripts": {
-    "jiti-fix": "find ./dist -type f -exec sed -i 's|file://||g' {} \\;",
     "build": "unbuild",
-    "dev": "unbuild --stub && pnpm jiti-fix",
+    "stub": "unbuild --stub",
     "watch": "nodemon --ext ts,js --exec unbuild",
     "release": "pnpm build && bumpp --tag '@vuemodel/pinia-local-storage@v%s' && pnpm publish"
   },
@@ -32,7 +31,7 @@
   ],
   "author": "Luke Diebold",
   "license": "MIT",
-  "description": "Core repository for contracts and implementations of VueModel",
+  "description": "Core repository for contracts and drivers of VueModel",
   "bugs": {
     "url": "https://github.com/vuemodel/core/issues"
   },
@@ -50,7 +49,7 @@
   "peerDependencies": {
     "@vuemodel/core": "^0.0.x",
     "pinia": "^2.x",
-    "pinia-orm": "^1.x",
+    "pinia-orm": "1.7.x",
     "vue": "^3.x"
   },
   "devDependencies": {
@@ -60,7 +59,7 @@
     "eslint": "^8.51.0",
     "nodemon": "^3.0.1",
     "tslib": "^2.6.2",
-    "typescript": "^5.3.2",
-    "unbuild": "^2.0.0"
+    "typescript": "~5.5.4",
+    "unbuild": "^3.0.0-rc.7"
   }
 }

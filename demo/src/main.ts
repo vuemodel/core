@@ -15,9 +15,18 @@ const vueModel = createVueModel({
   },
   drivers: {
     local: {
-      implementation: piniaLocalVueModelDriver,
+      driver: piniaLocalVueModelDriver,
       config: {
         optimistic: true,
+        pinia,
+        notifyOnError: {
+          batchUpdate: true,
+        },
+        errorNotifiers: {
+          batchUpdate () {
+            console.log('batch update error notifier!')
+          },
+        },
       },
     },
   },
@@ -25,6 +34,10 @@ const vueModel = createVueModel({
 
 const piniaLocalStorage = createPiniaLocalStorage({
   frontStore: pinia,
+  // mockStandardErrors: [{
+  //   message: 'sdfg',
+  //   name: 'sgfsf'
+  // }],
 })
 
 const app = createApp(App)

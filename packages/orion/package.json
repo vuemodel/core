@@ -32,7 +32,7 @@
   ],
   "author": "Luke Diebold",
   "license": "MIT",
-  "description": "VueModel, Orion implementation",
+  "description": "VueModel, Orion driver",
   "bugs": {
     "url": "https://github.com/vuemodel/core/issues"
   },
@@ -50,7 +50,7 @@
   "peerDependencies": {
     "@vuemodel/core": "^0.0.x",
     "pinia": "^2.x",
-    "pinia-orm": "^1.x",
+    "pinia-orm": "1.7.x",
     "vue": "^3.x"
   },
   "devDependencies": {
@@ -61,8 +61,8 @@
     "eslint": "^8.51.0",
     "nodemon": "^3.0.1",
     "tslib": "^2.6.2",
-    "typescript": "^5.3.2",
-    "unbuild": "^2.0.0"
+    "typescript": "~5.5.4",
+    "unbuild": "^3.0.0-rc.7"
   },
   "publishConfig": {
     "access": "public"

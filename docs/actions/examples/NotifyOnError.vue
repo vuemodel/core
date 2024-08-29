@@ -21,7 +21,7 @@ const form = ref<Form<Post>>({ title: '' })
 const response = ref<CreateResponse<typeof Post>>()
 
 async function createPost () {
-  // the "pinia-local-storage" implementation makes it easy
+  // the "pinia-local-storage" driver makes it easy
   // to create a mock error for testing!
   piniaLocalStorageState.mockStandardErrors = [{
     name: 'oops',

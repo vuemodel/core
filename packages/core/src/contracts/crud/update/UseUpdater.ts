@@ -37,6 +37,11 @@ export interface UseUpdaterOptions<T extends typeof Model> {
   immediatelyMakeForm?: MaybeRefOrGetter<boolean>,
 
   /**
+   * Fields that should not be included when making the form
+   */
+  excludeFields?: string[],
+
+  /**
    * Callback called after a successful request
    */
   onSuccess?: (response: UpdateSuccessResponse<T>) => void
@@ -270,6 +275,17 @@ export interface UseUpdaterReturn<T extends typeof Model> {
    * The PiniaORM repo
    */
   repo: Repository<InstanceType<T>>
+
+  /**
+   * Every composable gets an id. Used internally
+   * when working with events.
+   */
+  composableId: string
+
+  /**
+   * The PiniaORM model used to create this composable
+   */
+  ModelClass: T,
 }
 
 export type UseUpdater<T extends typeof Model> = (

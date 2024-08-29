@@ -1,6 +1,6 @@
 import { UseIndexer, UseIndexerOptions, UseIndexerReturn } from '../contracts/crud/index/UseIndexer'
 import { Model } from 'pinia-orm'
-import { getImplementation } from '../getImplementation'
+import { getDriverFunction } from '../getDriverFunction'
 import { resolveParams } from './resolveParams'
 
 export function useIndexer<T extends typeof Model> (
@@ -9,7 +9,7 @@ export function useIndexer<T extends typeof Model> (
   driverOptions?: UseIndexerOptions<T>,
 ): UseIndexerReturn<T> {
   const params = resolveParams<T, UseIndexerOptions<T>>(ModelClass, options, driverOptions)
-  const implementation = getImplementation('useIndexer', params.driver) as UseIndexer<T>
+  const driver = getDriverFunction('useIndexer', params.driver) as unknown as UseIndexer<T>
 
-  return implementation(params.ModelClass, params.options)
+  return driver(params.ModelClass, params.options)
 }

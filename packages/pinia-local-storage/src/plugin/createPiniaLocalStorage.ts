@@ -11,6 +11,8 @@ export const createPiniaLocalStorage = (options: CreatePiniaLocalStorageOptions)
       piniaLocalStorageState.store = options?.backStore ?? createPinia()
       piniaLocalStorageState.database = new Database()
       piniaLocalStorageState.mockLatencyMs = options?.mockLatencyMs ?? 0
+      piniaLocalStorageState.mockStandardErrors = options?.mockStandardErrors
+      piniaLocalStorageState.mockValidationErrors = options?.mockValidationErrors
     },
   }
 }

@@ -3,10 +3,10 @@ import { find, vueModelState } from '@vuemodel/core'
 import { Post } from '@vuemodel/sample-data'
 import { baseSetup } from '../baseSetup'
 import 'fake-indexeddb/auto'
-import { implementationSetupsMap } from '../implementations/implementationSetupsMap'
+import { driverSetupsMap } from '../drivers/driverSetupsMap'
 
-const implementation = import.meta.env.IMPLEMENTATION
-const setups = implementationSetupsMap[implementation ?? 'piniaLocalStorage']
+const driver = import.meta.env.IMPLEMENTATION
+const setups = driverSetupsMap[driver ?? 'piniaLocalStorage']
 
 describe('find', () => {
   beforeEach(async (ctx) => {
@@ -55,8 +55,8 @@ describe('find', () => {
   })
 
   it('can order nested records', async (ctx) => {
-    if (!setups.implementation.features.find.order.nested) {
-      const consoleMock = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    if (!setups.driver.features.find.order.nested) {
+      const consoleMock = vi.spyOn(console, 'warn').mockDriver(() => undefined)
       await find(Post, '1', {
         with: {
           comments: {
@@ -64,7 +64,7 @@ describe('find', () => {
           },
         },
       })
-      expect(consoleMock).toHaveBeenCalledWith('implementation "testDriver" does not support feature "find.order.nested"')
+      expect(consoleMock).toHaveBeenCalledWith('driver "testDriver" does not support feature "find.order.nested"')
       return
     }
     await setups.populateRecords('posts', 5)

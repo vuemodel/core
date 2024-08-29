@@ -11,7 +11,7 @@ export function setupVueModel () {
     default: 'local',
     drivers: {
       local: {
-        implementation: piniaLocalVueModelDriver,
+        driver: piniaLocalVueModelDriver,
         config: { pinia },
       },
     },

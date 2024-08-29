@@ -5,9 +5,9 @@ import { DataverseUser, PhotoTag, Post, User, populateRecords } from '@vuemodel/
 import { useRepo } from 'pinia-orm'
 import { ref } from 'vue'
 import { wait } from '../helpers/wait'
-import { implementationSetupsMap } from '../implementations/implementationSetupsMap'
+import { driverSetupsMap } from '../drivers/driverSetupsMap'
 
-const setups = implementationSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
+const setups = driverSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
 
 describe('useDestroyer', () => {
   beforeEach(async (ctx) => {

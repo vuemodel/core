@@ -1,9 +1,11 @@
-import { getImplementation } from '../getImplementation'
+import { getDriverFunction } from '../getDriverFunction'
 import { Destroy, DestroyOptions } from '../contracts/crud/destroy/Destroy'
 import { Model } from 'pinia-orm'
 import { DestroyResponse } from '../types/Response'
 import { LoosePrimaryKey } from '../types/LoosePrimaryKey'
 import { resolveDestroyParams } from './resolveDestroyParams'
+import clone from 'just-clone'
+import { OnDestroyingMessage, OnDestroyedMessage } from '../types/BroadcastMessages'
 
 /**
  * Destroy (delete) a record on the "backend".
@@ -24,28 +26,28 @@ export function destroy<T extends typeof Model> (
   hasDriverOptions?: DestroyOptions<T>,
 ): Promise<DestroyResponse<T>> {
   const params = resolveDestroyParams<T>(ModelClass, id, options, hasDriverOptions)
-  const driver = typeof ModelClass === 'string' ? ModelClass : (options as DestroyOptions<T>)?.driver
+  const driverKey = typeof ModelClass === 'string' ? ModelClass : (options as DestroyOptions<T>)?.driver
 
-  const implementation = getImplementation('destroy', driver) as Destroy<T>
+  const driver = getDriverFunction('destroy', driverKey) as Destroy<T>
 
   const entity = params.ModelClass.entity
 
-  const destroyingChannel = new BroadcastChannel(`vuemodel.${driver}.destroying`)
-  const destroyedChannel = new BroadcastChannel(`vuemodel.${driver}.destroyed`)
-  const destroyingEntityChannel = new BroadcastChannel(`vuemodel.${driver}.${entity}.destroying`)
-  const destroyedEntityChannel = new BroadcastChannel(`vuemodel.${driver}.${entity}.destroyed`)
+  const destroyingChannel = new BroadcastChannel(`vuemodel.${driverKey}.destroying`)
+  const destroyedChannel = new BroadcastChannel(`vuemodel.${driverKey}.destroyed`)
+  const destroyingEntityChannel = new BroadcastChannel(`vuemodel.${driverKey}.${entity}.destroying`)
+  const destroyedEntityChannel = new BroadcastChannel(`vuemodel.${driverKey}.${entity}.destroyed`)
 
-  const destroyingPostMessage = { entity }
+  const destroyingPostMessage: OnDestroyingMessage = clone({ entity, id: params.id })
 
   destroyingChannel.postMessage(destroyingPostMessage)
   destroyingEntityChannel.postMessage(destroyingPostMessage)
 
-  return implementation(
+  return driver(
     params.ModelClass,
     params.id,
     params.options,
   ).then(response => {
-    const destroyedPostMessage = { entity, response }
+    const destroyedPostMessage: OnDestroyedMessage<T> = clone({ entity, response })
     destroyedChannel.postMessage(destroyedPostMessage)
     destroyedEntityChannel.postMessage(destroyedPostMessage)
     return response

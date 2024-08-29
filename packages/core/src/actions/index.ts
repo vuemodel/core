@@ -1,8 +1,11 @@
-import { getImplementation } from '../getImplementation'
+import { getDriverFunction } from '../getDriverFunction'
 import { Index, IndexOptions } from '../contracts/crud/index/Index'
 import { Model } from 'pinia-orm'
 import { IndexResponse } from '../types/Response'
 import { resolveIndexParams } from './resolveIndexParams'
+import clone from 'just-clone'
+import { OnIndexedMessage, OnIndexingMessage } from '../types/BroadcastMessages'
+import { removeFunctions } from '../utils/removeFunctions'
 
 /**
  * List records from the backend
@@ -31,42 +34,44 @@ export function index<T extends typeof Model> (
   hasDriverOptions?: IndexOptions<T>,
 ): Promise<IndexResponse<T>> {
   const params = resolveIndexParams<T>(ModelClass, options, hasDriverOptions)
-  const driver = typeof ModelClass === 'string' ? ModelClass : (options as IndexOptions<T>)?.driver
+  const driverKey = typeof ModelClass === 'string' ? ModelClass : (options as IndexOptions<T>)?.driver
 
-  const implementation = getImplementation('index', driver) as Index<T>
+  const driver = getDriverFunction('index', driverKey) as Index<T>
 
   const entity = params.ModelClass.entity
 
-  const indexingChannel = new BroadcastChannel(`vuemodel.${driver}.indexing`)
-  const indexedChannel = new BroadcastChannel(`vuemodel.${driver}.indexed`)
-  const indexingEntityChannel = new BroadcastChannel(`vuemodel.${driver}.${entity}.indexing`)
-  const indexedEntityChannel = new BroadcastChannel(`vuemodel.${driver}.${entity}.indexed`)
+  const indexingChannel = new BroadcastChannel(`vuemodel.${driverKey}.indexing`)
+  const indexedChannel = new BroadcastChannel(`vuemodel.${driverKey}.indexed`)
+  const indexingEntityChannel = new BroadcastChannel(`vuemodel.${driverKey}.${entity}.indexing`)
+  const indexedEntityChannel = new BroadcastChannel(`vuemodel.${driverKey}.${entity}.indexed`)
 
-  const indexingPostMessage = {
+  const useIndexerOptionsWithoutFunction = params.options._useIndexerOptions ? removeFunctions(params.options._useIndexerOptions) : {}
+
+  const indexingPostMessage: OnIndexingMessage<T> = clone({
     entity,
     with: params.options.with ?? {},
     filters: params.options.filters ?? {},
     orderBy: params.options.orderBy ?? [],
     pagination: params.options.pagination ?? {},
-    _useIndexerOptions: params.options._useIndexerOptions ?? {},
-  }
+    _useIndexerOptions: useIndexerOptionsWithoutFunction,
+  })
 
   indexingChannel.postMessage(indexingPostMessage)
   indexingEntityChannel.postMessage(indexingPostMessage)
 
-  return implementation(
+  return driver(
     params.ModelClass,
     params.options,
   ).then(response => {
-    const indexedPostMessage = {
+    const indexedPostMessage: OnIndexedMessage<T> = clone({
       entity,
       response,
       with: params.options.with ?? {},
       filters: params.options.filters ?? {},
       orderBy: params.options.orderBy ?? [],
       pagination: params.options.pagination ?? {},
-      _useIndexerOptions: params.options._useIndexerOptions ?? {},
-    }
+      _useIndexerOptions: useIndexerOptionsWithoutFunction,
+    })
     indexedChannel.postMessage(indexedPostMessage)
     indexedEntityChannel.postMessage(indexedPostMessage)
     return response

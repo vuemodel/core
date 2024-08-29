@@ -1,6 +1,6 @@
 import { UseFinder, UseFinderOptions, UseFinderReturn } from '../contracts/crud/find/UseFinder'
 import { Model } from 'pinia-orm'
-import { getImplementation } from '../getImplementation'
+import { getDriverFunction } from '../getDriverFunction'
 import { resolveParams } from './resolveParams'
 
 export function useFinder<T extends typeof Model> (
@@ -9,7 +9,7 @@ export function useFinder<T extends typeof Model> (
   driverOptions?: UseFinderOptions<T>,
 ): UseFinderReturn<T> {
   const params = resolveParams<T, UseFinderOptions<T>>(ModelClass, options, driverOptions)
-  const implementation = getImplementation('useFinder', params.driver) as UseFinder<T>
+  const driver = getDriverFunction('useFinder', params.driver) as unknown as UseFinder<T>
 
-  return implementation(params.ModelClass, params.options)
+  return driver(params.ModelClass, params.options)
 }

@@ -57,7 +57,7 @@ const vueModel = createVueModel({
   default: 'local',
   drivers: {
     local: {
-      implementation: piniaLocalVueModelDriver,
+      driver: piniaLocalVueModelDriver,
       config: { pinia }
     }
   },
@@ -85,7 +85,7 @@ export default boot(({ app, store }) => {
     default: 'local',
     drivers: {
       local: {
-        implementation: piniaLocalVueModelDriver,
+        driver: piniaLocalVueModelDriver,
         config: { pinia: store }
       }
     },

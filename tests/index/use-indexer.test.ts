@@ -6,9 +6,9 @@ import { baseSetup } from '../baseSetup'
 import { nextTick, ref } from 'vue'
 import { promiseState } from '../helpers/promiseState'
 import { wait } from '../helpers/wait'
-import { implementationSetupsMap } from '../implementations/implementationSetupsMap'
+import { driverSetupsMap } from '../drivers/driverSetupsMap'
 
-const setups = implementationSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
+const setups = driverSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
 
 describe('useIndexer', () => {
   beforeEach(async (ctx) => {
@@ -206,8 +206,8 @@ describe('useIndexer', () => {
   })
 
   it('can order nested records and get an ordered response', async () => {
-    if (!setups.implementation.features.index.order.nested) {
-      const consoleMock = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    if (!setups.driver.features.index.order.nested) {
+      const consoleMock = vi.spyOn(console, 'warn').mockDriver(() => undefined)
       const usersIndexer = useIndexer(User, {
         with: {
           posts: {
@@ -218,7 +218,7 @@ describe('useIndexer', () => {
         },
       })
       await usersIndexer.index()
-      expect(consoleMock).toHaveBeenCalledWith('implementation "testDriver" does not support feature "find.order.nested"')
+      expect(consoleMock).toHaveBeenCalledWith('driver "testDriver" does not support feature "find.order.nested"')
       return
     }
 
@@ -246,8 +246,8 @@ describe('useIndexer', () => {
   })
 
   it('can order nested records get ordered records', async () => {
-    if (!setups.implementation.features.index.order.nested) {
-      const consoleMock = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    if (!setups.driver.features.index.order.nested) {
+      const consoleMock = vi.spyOn(console, 'warn').mockDriver(() => undefined)
       const usersIndexer = useIndexer(User, {
         with: {
           posts: {
@@ -258,7 +258,7 @@ describe('useIndexer', () => {
         },
       })
       await usersIndexer.index()
-      expect(consoleMock).toHaveBeenCalledWith('implementation "testDriver" does not support feature "find.order.nested"')
+      expect(consoleMock).toHaveBeenCalledWith('driver "testDriver" does not support feature "find.order.nested"')
       return
     }
 
@@ -523,7 +523,7 @@ describe('useIndexer', () => {
 
     expect(indexer.records.value[1].title).toEqual('qui est esse')
     await indexer.index()
-    // Consider testing writing a test similar to this for your implementation
+    // Consider testing writing a test similar to this for your driver
     // and change the record below on the backend.
     expect(indexer.records.value[1].title).toEqual('qui est esse')
   })

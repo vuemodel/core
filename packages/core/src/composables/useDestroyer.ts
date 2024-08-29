@@ -1,6 +1,6 @@
 import { UseDestroyer, UseDestroyerOptions, UseDestroyerReturn } from '../contracts/crud/destroy/UseDestroyer'
 import { Model } from 'pinia-orm'
-import { getImplementation } from '../getImplementation'
+import { getDriverFunction } from '../getDriverFunction'
 import { resolveParams } from './resolveParams'
 
 export function useDestroyer<T extends typeof Model> (
@@ -9,7 +9,7 @@ export function useDestroyer<T extends typeof Model> (
   driverOptions?: UseDestroyerOptions<T>,
 ): UseDestroyerReturn<T> {
   const params = resolveParams<T, UseDestroyerOptions<T>>(ModelClass, options, driverOptions)
-  const implementation = getImplementation('useDestroyer', params.driver) as UseDestroyer<T>
+  const driver = getDriverFunction('useDestroyer', params.driver) as unknown as UseDestroyer<T>
 
-  return implementation(params.ModelClass, params.options)
+  return driver(params.ModelClass, params.options)
 }

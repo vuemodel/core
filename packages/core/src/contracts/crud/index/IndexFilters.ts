@@ -1,11 +1,12 @@
 import { FilterPiniaOrmModelToRelationshipTypes, FilterPiniaOrmModelToFieldTypes } from 'pinia-orm-helpers'
 import { Model } from 'pinia-orm'
 
-type ExcludeNullable<T> = T extends null | undefined ? never : T;
-type UnwrapType<T> =
-  T extends Array<infer U> ? U :
-  T extends (infer U) | null ? U :
+type UnwrapModelType<T> = 
+  T extends Array<infer U> ? (U extends Model ? U : never) :
+  T extends Model | null ? T :
   never;
+
+type ExcludeNullable<T> = T extends null | undefined ? never : T;
 
 export type FilterTypeParamType = [
   ['equals', string | number | boolean | null],
@@ -30,7 +31,7 @@ export type FilterTypeToValueBase = {
 };
 
 export type FilterTypeToValue<T extends Model> = {
-  [K in keyof FilterPiniaOrmModelToRelationshipTypes<T>]?: IndexFilters<ExcludeNullable<UnwrapType<T[K]>>>
+  [K in keyof FilterPiniaOrmModelToRelationshipTypes<T>]?: IndexFilters<ExcludeNullable<UnwrapModelType<T[K]>>>
 } & {
     [K in keyof FilterPiniaOrmModelToFieldTypes<T>]?: FilterTypeToValueBase
   } & LogicalOperatorFilters<T>
@@ -47,9 +48,9 @@ export type _RelationshipFilter<
   T extends Model
 > = Record<
   // "comments" relationships
-  keyof FilterPiniaOrmModelToRelationshipTypes<ExcludeNullable<UnwrapType<T[relationshipKey]>>>,
+  keyof FilterPiniaOrmModelToRelationshipTypes<ExcludeNullable<UnwrapModelType<T[relationshipKey]>>>,
   // the "Comment" class
-  ExcludeNullable<UnwrapType<T[relationshipKey]>>
+  ExcludeNullable<UnwrapModelType<T[relationshipKey]>>
 >
 
 export type RelationshipFilter<
@@ -59,8 +60,8 @@ export type RelationshipFilter<
   T extends Model
 > = {
     [
-    key in keyof FilterPiniaOrmModelToRelationshipTypes<ExcludeNullable<UnwrapType<T[relationshipKey]>>>
-    ]: _RelationshipFilter<key, ExcludeNullable<UnwrapType<T[relationshipKey]>>>
+    key in keyof FilterPiniaOrmModelToRelationshipTypes<ExcludeNullable<UnwrapModelType<T[relationshipKey]>>>
+    ]: _RelationshipFilter<key, ExcludeNullable<UnwrapModelType<T[relationshipKey]>>>
   }
 
 // Define IndexFilters after FilterTypeToValue so that it can reference it

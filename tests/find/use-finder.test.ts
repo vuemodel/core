@@ -5,9 +5,9 @@ import { useRepo } from 'pinia-orm'
 import { baseSetup } from '../baseSetup'
 import { wait } from '../helpers/wait'
 import { promiseState } from '../helpers/promiseState'
-import { implementationSetupsMap } from '../implementations/implementationSetupsMap'
+import { driverSetupsMap } from '../drivers/driverSetupsMap'
 
-const setups = implementationSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
+const setups = driverSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
 
 describe('useFinder', () => {
   beforeEach(async (ctx) => {
@@ -249,8 +249,8 @@ describe('useFinder', () => {
   })
 
   it('can order nested records and get a ordered response', async () => {
-    if (!setups.implementation.features.find.order.nested) {
-      const consoleMock = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    if (!setups.driver.features.find.order.nested) {
+      const consoleMock = vi.spyOn(console, 'warn').mockDriver(() => undefined)
       const userFinder = useFinder(User, {
         with: {
           posts: {
@@ -261,7 +261,7 @@ describe('useFinder', () => {
         },
       })
       await userFinder.find('1')
-      expect(consoleMock).toHaveBeenCalledWith('implementation "testDriver" does not support feature "find.order.nested"')
+      expect(consoleMock).toHaveBeenCalledWith('driver "testDriver" does not support feature "find.order.nested"')
       return
     }
 
@@ -289,8 +289,8 @@ describe('useFinder', () => {
   })
 
   it('can order nested records, and get ordered records from the store', async () => {
-    if (!setups.implementation.features.find.order.nested) {
-      const consoleMock = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    if (!setups.driver.features.find.order.nested) {
+      const consoleMock = vi.spyOn(console, 'warn').mockDriver(() => undefined)
       const userFinder = useFinder(User, {
         with: {
           posts: {
@@ -301,7 +301,7 @@ describe('useFinder', () => {
         },
       })
       await userFinder.find('1')
-      expect(consoleMock).toHaveBeenCalledWith('implementation "testDriver" does not support feature "find.order.nested"')
+      expect(consoleMock).toHaveBeenCalledWith('driver "testDriver" does not support feature "find.order.nested"')
       return
     }
 

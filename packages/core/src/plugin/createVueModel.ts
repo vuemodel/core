@@ -3,6 +3,7 @@ import { VueModelState, vueModelState } from './state'
 
 export function createVueModel (options: VueModelState): Plugin {
   vueModelState.default = options?.default ?? 'default'
+  vueModelState.config = options.config
   Object.assign(vueModelState.drivers, options?.drivers ?? {})
 
   /**

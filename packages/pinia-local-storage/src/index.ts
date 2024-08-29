@@ -1,34 +1,39 @@
 import {
-  VueModelDriver,
-  useCreatorImplementation,
-  useUpdaterImplementation,
-  useIndexerImplementation,
-  useFinderImplementation,
-  useDestroyerImplementation,
+  VueModelDriverConfig,
+  useCreatorDriver,
+  useUpdaterDriver,
+  useIndexerDriver,
+  useFinderDriver,
+  useDestroyerDriver,
+  useBatchUpdaterDriver,
 } from '@vuemodel/core'
 
-import { index } from './implementations/index/index'
-import { create } from './implementations/create/create'
-import { find } from './implementations/find/find'
-import { destroy } from './implementations/destroy/destroy'
-import { update } from './implementations/update/update'
+import { index } from './drivers/index/index'
+import { create } from './drivers/create/create'
+import { find } from './drivers/find/find'
+import { destroy } from './drivers/destroy/destroy'
+import { update } from './drivers/update/update'
+import { batchUpdate } from './drivers/batch-update/batchUpdate'
 import features from './features.json'
 
-export const piniaLocalVueModelDriver: VueModelDriver['implementation'] = {
+export const piniaLocalVueModelDriver: VueModelDriverConfig['driver'] = {
   index,
-  useIndexer: useIndexerImplementation,
+  useIndexer: useIndexerDriver,
 
   create,
-  useCreator: useCreatorImplementation,
+  useCreator: useCreatorDriver,
 
   update,
-  useUpdater: useUpdaterImplementation,
+  useUpdater: useUpdaterDriver,
 
   find,
-  useFinder: useFinderImplementation,
+  useFinder: useFinderDriver,
 
   destroy,
-  useDestroyer: useDestroyerImplementation,
+  useDestroyer: useDestroyerDriver,
+
+  batchUpdate,
+  useBatchUpdater: useBatchUpdaterDriver,
 
   features,
 }

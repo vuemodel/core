@@ -1,10 +1,10 @@
 # core
-Core repository for contracts and implementations of VueModel
+Core repository for contracts and drivers of VueModel
 
 # WIP
 VueModel aims to abstract the "play" between vue and the backend.
 
-To start, it will be solely focused on using the composition API and aim to have implementations for:
+To start, it will be solely focused on using the composition API and aim to have drivers for:
 - Strapi
 - Laravel (Using [Laravel Orion](https://github.com/tailflow/laravel-orion))
 - Supabase (Which already contains a [Proof of Concept](https://github.com/vuemodel/supabase))

@@ -1,9 +1,12 @@
-import { getImplementation } from '../getImplementation'
+import { getDriverFunction } from '../getDriverFunction'
 import { Create, CreateOptions } from '../contracts/crud/create/Create'
 import { Model } from 'pinia-orm'
 import { PiniaOrmForm } from 'pinia-orm-helpers'
 import { CreateResponse } from '../types/Response'
 import { resolveCreateParams } from './resolveCreateParams'
+import clone from 'just-clone'
+import { OnCreatedMessage, OnCreatingMessage } from '../types/BroadcastMessages'
+import { getDriverKey } from '../utils/getDriverKey'
 
 /**
  * Create a record on the "backend".
@@ -26,25 +29,26 @@ export function create<T extends typeof Model> (
   hasDriverOptions?: CreateOptions<T>,
 ): Promise<CreateResponse<T>> {
   const params = resolveCreateParams<T>(ModelClass, form, options, hasDriverOptions)
-  const driver = typeof ModelClass === 'string' ? ModelClass : (options as CreateOptions<T>)?.driver
+  const driverKey = getDriverKey(params.options.driver)
 
-  const implementation = getImplementation('create', driver) as Create<T>
+  const driver = getDriverFunction('create', driverKey) as Create<T>
 
   const entity = params.ModelClass.entity
 
-  const creatingChannel = new BroadcastChannel(`vuemodel.${driver}.creating`)
-  const createdChannel = new BroadcastChannel(`vuemodel.${driver}.created`)
-  const creatingEntityChannel = new BroadcastChannel(`vuemodel.${driver}.${entity}.creating`)
-  const createdEntityChannel = new BroadcastChannel(`vuemodel.${driver}.${entity}.created`)
+  const creatingChannel = new BroadcastChannel(`vuemodel.${driverKey}.creating`)
+  const createdChannel = new BroadcastChannel(`vuemodel.${driverKey}.created`)
 
-  const creatingPostMessage = { entity, form }
+  const creatingEntityChannel = new BroadcastChannel(`vuemodel.${driverKey}.${entity}.creating`)
+  const createdEntityChannel = new BroadcastChannel(`vuemodel.${driverKey}.${entity}.created`)
+
+  const creatingPostMessage: OnCreatingMessage<T> = clone({ entity, form: params.form })
 
   creatingChannel.postMessage(creatingPostMessage)
   creatingEntityChannel.postMessage(creatingPostMessage)
 
-  return implementation(params.ModelClass, params.form, params.options)
+  return driver(params.ModelClass, params.form, params.options)
     .then(response => {
-      const createdPostMessage = { entity, response }
+      const createdPostMessage: OnCreatedMessage<T> = clone({ entity, response })
       createdChannel.postMessage(createdPostMessage)
       createdEntityChannel.postMessage(createdPostMessage)
       return response

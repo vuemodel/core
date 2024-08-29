@@ -1,6 +1,6 @@
 import { Model, Query } from 'pinia-orm'
-import { IndexFilters, FilterTypeToValueBase } from '@vuemodel/core'
 import { whereFunctions } from './whereFunctions'
+import { FilterTypeToValueBase, IndexFilters } from '../contracts/crud/index/IndexFilters'
 
 function executeFilterBlock (record: Model, filterGroups: Partial<Record<keyof Model, FilterTypeToValueBase>>[]) {
   const result: boolean[] = []

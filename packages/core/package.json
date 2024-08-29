@@ -3,10 +3,9 @@
   "version": "0.0.38",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "jiti-fix": "find ./dist -type f -exec sed -i 's|file://||g' {} \\;",
+    "stub": "unbuild --stub",
     "build": "unbuild",
     "watch": "nodemon --ext ts,js --exec unbuild",
-    "dev": "unbuild --stub && pnpm jiti-fix",
     "release": "pnpm build && bumpp --tag '@vuemodel/core@v%s' && pnpm publish"
   },
   "type": "module",
@@ -16,14 +15,9 @@
   },
   "exports": {
     ".": {
-      "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
-      },
-      "import": {
-        "types": "./dist/index.d.mts",
-        "default": "./dist/index.mjs"
-      }
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
     }
   },
   "main": "./dist/index.cjs",
@@ -34,7 +28,7 @@
   ],
   "author": "Luke Diebold",
   "license": "MIT",
-  "description": "Core repository for contracts and implementations of VueModel",
+  "description": "Core repository for contracts and drivers of VueModel",
   "bugs": {
     "url": "https://github.com/vuemodel/core/issues"
   },
@@ -45,6 +39,7 @@
     "model"
   ],
   "dependencies": {
+    "@vuemodel/core": "^0.0.38",
     "@vueuse/core": "^10.6.0",
     "debounce": "^1.2.1",
     "deep-equal": "^2.2.3",
@@ -52,12 +47,12 @@
     "just-clone": "^6.2.0",
     "pinia-orm-helpers": "^0.0.11",
     "uuid": "^9.0.1",
-    "vue": "^3.2.31",
     "vue-demi": "^0.12.5"
   },
   "peerDependencies": {
+    "vue": "^3.x",
     "pinia": "^2.x",
-    "pinia-orm": "^1.x"
+    "pinia-orm": "1.7.x"
   },
   "devDependencies": {
     "@types/debounce": "^1.2.3",
@@ -67,9 +62,10 @@
     "@typescript-eslint/parser": "^6.7.5",
     "bumpp": "^9.2.0",
     "eslint": "^8.51.0",
+    "jiti": "^2.0.0-beta.3",
     "nodemon": "^3.0.1",
     "tslib": "^2.6.2",
-    "typescript": "^5.3.2",
-    "unbuild": "^2.0.0"
+    "typescript": "~5.5.4",
+    "unbuild": "^3.0.0-rc.7"
   }
 }

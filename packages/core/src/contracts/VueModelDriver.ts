@@ -11,8 +11,10 @@ import { UseFinder } from './crud/find/UseFinder'
 import { UseDestroyer } from './crud/destroy/UseDestroyer'
 import { VueModelConfig } from '../plugin/state'
 import { VueModelDriverFeatures } from './VueModelDriverFeatures'
+import { UseBatchUpdater } from './batch-update/UseBatchUpdater'
+import { BatchUpdate } from './batch-update/BatchUpdate'
 
-export interface VueModelDriverImplementation<T extends typeof Model = typeof Model> {
+export interface VueModelDriver<T extends typeof Model = typeof Model> {
   create: Create<T>
   useCreator: UseCreator<T>
 
@@ -28,13 +30,16 @@ export interface VueModelDriverImplementation<T extends typeof Model = typeof Mo
   destroy: Destroy<T>
   useDestroyer: UseDestroyer<T>
 
+  batchUpdate?: BatchUpdate<T>
+  useBatchUpdater?: UseBatchUpdater<T>
+
   features: VueModelDriverFeatures
 }
 
 /**
  * Interface/Contract for a VueModel driver
  */
-export type VueModelDriver<T extends typeof Model = typeof Model> = {
+export type VueModelDriverConfig<T extends typeof Model = typeof Model> = {
   config?: VueModelConfig
-  implementation: VueModelDriverImplementation<T>
+  driver: VueModelDriver<T>
 }

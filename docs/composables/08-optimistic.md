@@ -28,7 +28,7 @@ const vueModel = createVueModel({
   },
   drivers: {
     local: {
-      implementation: piniaLocalVueModelDriver,
+      driver: piniaLocalVueModelDriver,
       config: {
         optimistic: true, // only applied to the "local" driver
       },

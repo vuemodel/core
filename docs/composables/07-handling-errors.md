@@ -71,7 +71,7 @@ All of these examples utilize backend validation. If you'd like to do frontend v
 ]
 ```
 
-Only the "name" and "message" are required in standard errors however, depending on your implementation `httpStatus` and `details` might also be included.
+Only the "name" and "message" are required in standard errors however, depending on your driver `httpStatus` and `details` might also be included.
 ```ts
 [
   {

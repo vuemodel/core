@@ -10,7 +10,7 @@ export interface DestroyOptions<T extends typeof Model> {
 }
 
 export type Destroy<T extends typeof Model> = (
-  model: T,
+  ModelClass: T,
   id: LoosePrimaryKey,
   options?: DestroyOptions<T>
 ) => Promise<DestroyResponse<T>>

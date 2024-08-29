@@ -19,6 +19,6 @@ export function resolveCreateParams<T extends typeof Model> (...params: any[]): 
   return {
     ModelClass: params[0],
     form: params[1],
-    options: params?.[2],
+    options: params?.[2] ?? {},
   }
 }

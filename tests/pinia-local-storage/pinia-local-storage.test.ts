@@ -3,9 +3,9 @@ import { baseSetup } from '../baseSetup'
 import { useIndexer } from '@vuemodel/core'
 import { User, populateRecords } from '@vuemodel/sample-data'
 import { useRepo } from 'pinia-orm'
-import { implementationSetupsMap } from '../implementations/implementationSetupsMap'
+import { driverSetupsMap } from '../drivers/driverSetupsMap'
 
-const setups = implementationSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
+const setups = driverSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
 
 describe('useUpdater', () => {
   beforeEach(async (ctx) => {

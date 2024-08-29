@@ -1,6 +1,6 @@
 import { UseCreator, UseCreatorOptions, UseCreatorReturn } from '../contracts/crud/create/UseCreator'
 import { Model } from 'pinia-orm'
-import { getImplementation } from '../getImplementation'
+import { getDriverFunction } from '../getDriverFunction'
 import { resolveParams } from './resolveParams'
 
 export function useCreator<T extends typeof Model> (
@@ -9,7 +9,7 @@ export function useCreator<T extends typeof Model> (
   driverOptions?: UseCreatorOptions<T>,
 ): UseCreatorReturn<T> {
   const params = resolveParams<T, UseCreatorOptions<T>>(ModelClass, options, driverOptions)
-  const implementation = getImplementation('useCreator', params.driver) as UseCreator<T>
+  const driver = getDriverFunction('useCreator', params.driver) as unknown as UseCreator<T>
 
-  return implementation(params.ModelClass, params.options)
+  return driver(params.ModelClass, params.options)
 }

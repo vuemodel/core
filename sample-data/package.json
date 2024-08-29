@@ -27,7 +27,7 @@
     "dist"
   ],
   "dependencies": {
-    "pinia-orm": "^1.7.2",
+    "pinia-orm": "1.7.x",
     "pinia-orm-helpers": "^0.0.10"
   },
   "devDependencies": {
@@ -35,6 +35,6 @@
     "tsup": "^8.0.0"
   },
   "peerDependencies": {
-    "@vuemodel/core": "^0.0.14"
+    "@vuemodel/core": "0.0.x"
   }
 }

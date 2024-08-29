@@ -1,4 +1,4 @@
-import { examples } from '@/examples/examples'
+import { examples } from '../examples/examples'
 import { createRouter, createWebHistory } from 'vue-router'
 
 export const routes = Object.entries(examples).map(entry => {
@@ -7,13 +7,13 @@ export const routes = Object.entries(examples).map(entry => {
 
   return {
     path: '/' + entryName,
-    component: entry[1]
+    component: entry[1],
   }
 })
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes
+  routes,
 })
 
 export default router
