@@ -1,5 +1,5 @@
 {
-  "version": "0.0.6",
+  "version": "0.0.7",
   "name": "@vuemodel/sample-data",
   "author": "luke@ldiebold.com",
   "license": "ISC",
@@ -28,7 +28,7 @@
   ],
   "dependencies": {
     "pinia-orm": "1.7.x",
-    "pinia-orm-helpers": "^0.0.10"
+    "pinia-orm-helpers": "^0.0.16"
   },
   "devDependencies": {
     "bumpp": "^9.2.0",
