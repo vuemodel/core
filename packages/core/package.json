@@ -45,14 +45,18 @@
     "deep-equal": "^2.2.3",
     "deepmerge-ts": "^5.1.0",
     "just-clone": "^6.2.0",
-    "pinia-orm-helpers": "^0.0.11",
+    "just-diff": "^6.0.2",
+    "just-index": "^4.2.0",
+    "just-omit": "^2.2.0",
+    "just-safe-set": "^4.2.1",
+    "pinia-orm-helpers": "^0.0.16",
     "uuid": "^9.0.1",
     "vue-demi": "^0.12.5"
   },
   "peerDependencies": {
-    "vue": "^3.x",
     "pinia": "^2.x",
-    "pinia-orm": "1.7.x"
+    "pinia-orm": "1.7.x",
+    "vue": "^3.x"
   },
   "devDependencies": {
     "@types/debounce": "^1.2.3",
@@ -60,6 +64,7 @@
     "@types/uuid": "^9.0.6",
     "@typescript-eslint/eslint-plugin": "^6.7.5",
     "@typescript-eslint/parser": "^6.7.5",
+    "@vuemodel/sample-data": "workspace:^",
     "bumpp": "^9.2.0",
     "eslint": "^8.51.0",
     "jiti": "^2.0.0-beta.3",

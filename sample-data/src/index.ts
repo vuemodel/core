@@ -1,10 +1,11 @@
-// Sample data from https://jsonplaceholder.typicode.com/
+// Most sample data from https://jsonplaceholder.typicode.com/
 import { users, User } from './users'
 import { albums, Album } from './albums'
 import { comments, Comment } from './comments'
 import { photos, Photo } from './photos'
 import { posts, Post } from './posts'
 import { PhotoTag, photoTags } from './photoTags'
+import { Tag, tags } from './tags'
 import { DataverseUser, dataverseUsers } from './dataverseUsers'
 import { populateRecords } from '../helpers/populateRecords'
 
@@ -21,6 +22,8 @@ export {
   Post,
   PhotoTag,
   photoTags,
+  Tag,
+  tags,
   DataverseUser,
   dataverseUsers,
   // helpers
@@ -43,6 +46,10 @@ export const exampleDataMap = {
   posts: {
     modelClass: Post,
     records: posts,
+  },
+  tags: {
+    modelClass: Tag,
+    records: tags,
   },
   users: {
     modelClass: User,

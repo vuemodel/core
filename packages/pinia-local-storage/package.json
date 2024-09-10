@@ -44,7 +44,7 @@
   "dependencies": {
     "idb-keyval": "^6.2.1",
     "just-clone": "^6.2.0",
-    "pinia-orm-helpers": "^0.0.11"
+    "pinia-orm-helpers": "^0.0.16"
   },
   "peerDependencies": {
     "@vuemodel/core": "^0.0.x",

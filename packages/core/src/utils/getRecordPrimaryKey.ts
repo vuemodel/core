@@ -2,10 +2,10 @@ import { Model } from 'pinia-orm'
 import { DeclassifyPiniaOrmModel, PiniaOrmForm } from 'pinia-orm-helpers'
 
 export function getRecordPrimaryKey<T extends typeof Model> (
-  ModelClass: T,
+  ModelClass: T | InstanceType<T>,
   rawRecord: PiniaOrmForm<InstanceType<T>> | DeclassifyPiniaOrmModel<InstanceType<T>> | InstanceType<T>,
 ) {
-  const primaryKeyField = ModelClass.primaryKey
+  const primaryKeyField = ModelClass instanceof Model ? ModelClass.$primaryKey() : ModelClass.primaryKey
 
   if (Array.isArray(primaryKeyField)) {
     /* @ts-expect-error this is hard to type */

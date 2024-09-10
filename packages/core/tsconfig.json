@@ -3,6 +3,7 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "target": "ESNext",
+    "experimentalDecorators": true,
     "module": "ESNext",
     "moduleResolution": "Node",
     "esModuleInterop": true,

@@ -1,17 +1,22 @@
 import clone from 'just-clone'
 import { Collection, Model } from 'pinia-orm'
-import { FilterPiniaOrmModelToFieldTypes, PiniaOrmForm } from 'pinia-orm-helpers'
+import { FilterPiniaOrmModelToFieldTypes, FilterPiniaOrmModelToRelationshipTypes, getClassRelationships, PiniaOrmForm } from 'pinia-orm-helpers'
 import { nextTick, watch, WatchStopHandle } from 'vue'
 import { BatchUpdateMeta, UseBatchUpdaterReturn } from '../../contracts/batch-update/UseBatchUpdater'
 import { getFormsChangedValues } from './getFormsChangedValues'
 import deepEqual from 'deep-equal'
 import { IndexFilters } from '../../contracts/crud/index/IndexFilters'
+import { getRecordPrimaryKey } from '../../utils/getRecordPrimaryKey'
+import { FilterPiniaOrmModelToManyRelationshipTypes } from '../../types/FilterPiniaOrmModelToManyRelationshipTypes'
+import { getPivotModelIdField } from '../../utils/getPivotModelIdField'
 
 export function useFormMaker<
   T extends typeof Model,
   R extends UseBatchUpdaterReturn<T>
 > (
   options: {
+    belongsToManyRelationshipKeys: (keyof FilterPiniaOrmModelToRelationshipTypes<InstanceType<T>>)[],
+    piniaOrmRelationships: ReturnType<typeof getClassRelationships>,
     repo: R['repo']
     changes: R['changes']
     pauseAutoUpdater: () => void
@@ -22,10 +27,15 @@ export function useFormMaker<
     meta: R['meta']
     formWatchers: Record<string, WatchStopHandle>
     indexer: R['indexer']
+    pivotClasses: Record<string, Model>
+    driver: string
   },
 ) {
   const {
     forms,
+    pivotClasses,
+    belongsToManyRelationshipKeys,
+    piniaOrmRelationships,
     pauseAutoUpdater,
     primaryKeyField,
     fieldKeys,
@@ -35,7 +45,10 @@ export function useFormMaker<
     changes,
     repo,
     indexer,
+    driver,
   } = options
+
+  // belongsToManyRelationshipKeys
 
   const defaultFieldMetas = Object.fromEntries<{
     changed: boolean,
@@ -50,9 +63,22 @@ export function useFormMaker<
     }),
   )
 
+  const defaultBelongsToManyMetas = Object.fromEntries<{
+    changed: boolean,
+    updating: boolean,
+    initialValue: any
+  }>(
+    belongsToManyRelationshipKeys.map(field => {
+      return [
+        field,
+        { changed: false, updating: false, initialValue: null },
+      ]
+    }),
+  )
+
   const defaultMeta: BatchUpdateMeta<InstanceType<T>> = {
     changed: false,
-    fields: defaultFieldMetas,
+    fields: { ...defaultFieldMetas, ...defaultBelongsToManyMetas },
     initialValues: {},
     makingForm: false,
     updating: false,
@@ -92,9 +118,39 @@ export function useFormMaker<
         }
       })
 
+      belongsToManyRelationshipKeys.forEach((field: keyof FilterPiniaOrmModelToManyRelationshipTypes<InstanceType<T>>) => {
+        if (pivotClasses[field]) return
+        const RelatedModel = piniaOrmRelationships[field].related
+
+        const relatedsIds: string[] = []
+        model[field]?.forEach((relatedRecord: Model) => {
+          const relatedId = pivotClasses[field]
+            ? relatedRecord[getPivotModelIdField(pivotClasses[field], { driver })]
+            : getRecordPrimaryKey(RelatedModel, relatedRecord)
+          if (relatedId) relatedsIds.push(relatedId)
+        })
+
+        const initialFieldValue = relatedsIds
+        forms.value[id][field] = initialFieldValue as any
+
+        meta.value[id].fields[field] = {
+          changed: false,
+          updating: false,
+          initialValue: initialFieldValue as any,
+        }
+      })
+
       if (!formWatchers[id]) {
         formWatchers[id] = watch(() => forms.value[id], (newValues) => {
-          const changedValues = getFormsChangedValues({ id, newValues, repo })
+          const changedValues = getFormsChangedValues({
+            piniaOrmRelationships,
+            id,
+            newValues,
+            repo,
+            belongsToManyRelationshipKeys,
+            pivotClasses,
+            driver: options.driver,
+          })
           const hasChanges = !!Object.values(changedValues).length
           if (hasChanges) {
             changes.value[id] = changedValues
@@ -134,7 +190,7 @@ export function useFormMaker<
         meta.value[targetId] = structuredClone(defaultMeta)
       }
 
-      const foundModel = repo.find(targetId)
+      const foundModel = indexer.makeQuery().find(targetId)
       if (!foundModel) {
         missingModelIds.push(targetId)
       } else {
@@ -152,9 +208,11 @@ export function useFormMaker<
       indexFilters[primaryKeyField] = { in: missingModelIds }
 
       await indexer.index({ filters: indexFilters })
+      console.log(indexer.response.value)
+      console.log(indexer.makeQuery().whereId(missingModelIds).get())
 
       makeFromModels(
-        indexer.repo.query().whereId(missingModelIds).get(),
+        indexer.makeQuery().whereId(missingModelIds).get(),
       )
       missingModelIds.forEach(id => {
         meta.value[id].makingForm = false

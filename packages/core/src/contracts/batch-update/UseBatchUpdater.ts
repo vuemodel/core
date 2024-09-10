@@ -1,19 +1,22 @@
 import { Collection, Model, Repository } from 'pinia-orm'
 import { ComputedRef, MaybeRefOrGetter, Ref } from 'vue'
-import { FilterPiniaOrmModelToFieldTypes, PiniaOrmForm } from 'pinia-orm-helpers'
-import { BatchUpdateErrorResponse, BatchUpdateResponse, BatchUpdateSuccessResponse } from '../../types/Response'
+import { FilterPiniaOrmModelToFieldTypes, FilterPiniaOrmModelToRelationshipTypes, PiniaOrmForm } from 'pinia-orm-helpers'
+import { BatchUpdateErrorResponse, BatchUpdateResponse, BatchUpdateSuccessResponse, SyncResponse } from '../../types/Response'
 import { FormValidationErrors } from '../errors/FormValidationErrors'
 import { StandardErrors } from '../errors/StandardErrors'
 import { UseIndexerOptions, UseIndexerReturn } from '../crud/index/UseIndexer'
+import { PiniaOrmManyRelationsForm } from '../../types/PiniaOrmManyRelationsForm'
 
 type UnwrapType<T> =
   T extends Array<infer U> ? U :
   T extends (infer U) | null ? U :
   never;
 
+export type BatchUpdateForm<T extends Model> = PiniaOrmForm<T> & PiniaOrmManyRelationsForm<T>
+
 export interface BatchUpdateMeta<T extends Model> {
   changed: boolean
-  initialValues: PiniaOrmForm<T>
+  initialValues: BatchUpdateForm<T>
   makingForm: boolean
   updating: boolean
   fields: {
@@ -27,14 +30,16 @@ export interface BatchUpdateMeta<T extends Model> {
 
 export type FormWithMeta<T extends Model> = {
   id: string
-  form: PiniaOrmForm<T>
+  form: BatchUpdateForm<T>
 } & BatchUpdateMeta<T>
 
 export interface UseBatchUpdateUpdateOptions<T extends typeof Model> {
-  forms?: Record<string, PiniaOrmForm<InstanceType<T>>>
+  forms?: Record<string, BatchUpdateForm<InstanceType<T>>>
 }
 
-export interface UseBatchUpdaterOptions<T extends typeof Model> {
+export interface UseBatchUpdaterOptions<
+  T extends typeof Model,
+> {
   /**
    * Here you may prefill the update forms. Use an object
    * where the key is the "id" of the resource, and
@@ -44,7 +49,7 @@ export interface UseBatchUpdaterOptions<T extends typeof Model> {
    * composable can make the forms for us
    * with `makeForms()`
    */
-  forms?: Record<string, PiniaOrmForm<InstanceType<T>>>
+  forms?: Record<string, BatchUpdateForm<InstanceType<T>>>
 
   /**
    * Make forms with all the records that currently
@@ -148,15 +153,23 @@ export interface UseBatchUpdaterOptions<T extends typeof Model> {
   pagination?: UseIndexerOptions<T>['pagination']
 }
 
-export interface UseBatchUpdaterReturn<T extends typeof Model> {
+export interface UseBatchUpdaterReturn<
+  T extends typeof Model,
+  RelationshipTypes = FilterPiniaOrmModelToRelationshipTypes<InstanceType<T>>,
+  Request = Promise<BatchUpdateResponse<T>> & { cancel(): void },
+  SyncRequests = Record<
+    keyof RelationshipTypes,
+    (Promise<SyncResponse<T>> & { cancel(): void })
+  >
+> {
   update(options?: UseBatchUpdateUpdateOptions<T>): Promise<BatchUpdateResponse<T>>
 
-  forms: Ref<Record<string, PiniaOrmForm<InstanceType<T>>>>
+  forms: Ref<Record<string, BatchUpdateForm<InstanceType<T>>>>
 
   /**
    * All changes since the last batch update
    */
-  changes: Ref<Record<string, PiniaOrmForm<InstanceType<T>>>>
+  changes: Ref<Record<string, BatchUpdateForm<InstanceType<T>>>>
 
   /**
    * Make a form for every record in the store
@@ -169,7 +182,7 @@ export interface UseBatchUpdaterReturn<T extends typeof Model> {
    */
   makeForms: (
     targetIds?: string[]
-  ) => Promise<Record<string, PiniaOrmForm<InstanceType<T>>>>
+  ) => Promise<Record<string, BatchUpdateForm<InstanceType<T>>>>
 
   /**
    * Remove form with the given id.
@@ -188,11 +201,6 @@ export interface UseBatchUpdaterReturn<T extends typeof Model> {
    * `true` if **any** forms are updating
    */
   updating: Ref<boolean>
-
-  /**
-   * Response of the latest batch update
-   */
-  response: Ref<BatchUpdateResponse<T> | undefined>
 
   /**
    * Validation errors, keyed by the records id
@@ -218,18 +226,42 @@ export interface UseBatchUpdaterReturn<T extends typeof Model> {
    * All active requests
    */
   activeRequests: Ref<Record<string | number, {
-    request: Promise<BatchUpdateResponse<T>> & { cancel(): void }
-    forms: Record<string, PiniaOrmForm<InstanceType<T>>>
+    request: Request
+    forms: Record<string, BatchUpdateForm<InstanceType<T>>>
   }>>
 
   /**
    * Latest active request
    */
   activeRequest: Ref<{
-    request: Promise<BatchUpdateResponse<T>> & { cancel(): void }
-    forms: Record<string, PiniaOrmForm<InstanceType<T>>>
+    request: Request
+    forms: Record<string, BatchUpdateForm<InstanceType<T>>>
   } | undefined>
 
+  /**
+   * Response of the latest batch update
+   */
+  response: Ref<BatchUpdateResponse<T> | undefined>
+
+  /**
+   * All active belongsToMany (sync) requests
+   */
+  activeBelongsToManyRequests: Ref<SyncRequests>
+
+  /**
+   * Latest belongsToMany (sync) responses
+   */
+  belongsToManyResponses: Ref<
+    Record<keyof RelationshipTypes, SyncResponse<T>> |
+    undefined
+  >
+
+  /**
+   * An array of the current pages forms. Use `formsWithMeta`
+   * to easily model your forms on the frontend, while
+   * having access to everything you need to
+   * communicate the state of the form
+   */
   formsWithMeta: ComputedRef<FormWithMeta<InstanceType<T>>[]>
 
   /**

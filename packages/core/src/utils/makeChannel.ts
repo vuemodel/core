@@ -2,13 +2,7 @@ import { Model } from 'pinia-orm'
 import { getDriverKey } from './getDriverKey'
 import { BroadcastMap } from '../types/BroadcastMessages'
 
-export type VueModelChannel =
-  'creating' | 'created' |
-  'updating' | 'updated' |
-  'indexing' | 'indexed' |
-  'finding' | 'found' |
-  'destroying' | 'destroyed' |
-  'batchUpdating' | 'batchUpdated'
+export type VueModelChannel = keyof BroadcastMap
 
 // (`vuemodel.${driverKey}.creating`)
 // (`vuemodel.${driverKey}.created`)

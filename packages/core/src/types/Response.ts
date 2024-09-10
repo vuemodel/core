@@ -77,10 +77,25 @@ export type BatchUpdateSuccessResponse<T extends typeof Model> = { action: 'batc
 export type BatchUpdateErrorResponse<T extends typeof Model> = { action: 'batch-update' } & BatchFormValidationErrorResponse<T> & MultipleRecordsResponse<T>
 export type BatchUpdateResponse<T extends typeof Model> = BatchUpdateSuccessResponse<T> | BatchUpdateErrorResponse<T>
 
+export type SyncSuccessResponse = {
+  action: 'sync'
+  attached: Record<string, any>[] | undefined
+  detached: Record<string, any>[] | undefined
+  updated: Record<string, any>[] | undefined
+} & BaseSuccessResponse
+export type SyncErrorResponse<T extends typeof Model> = BatchFormValidationErrorResponse<T> & {
+  action: 'sync'
+  attached: undefined
+  detached: undefined
+  updated: undefined
+}
+export type SyncResponse<T extends typeof Model> = SyncSuccessResponse | SyncErrorResponse<T>
+
 export type Response<T extends typeof Model> =
   CreateResponse<T> |
   FindResponse<T> |
   UpdateResponse<T> |
   DestroyResponse<T> |
   IndexResponse<T> |
-  BatchUpdateResponse<T>
+  BatchUpdateResponse<T> |
+  SyncResponse<T>

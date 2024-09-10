@@ -43,7 +43,7 @@
     "model"
   ],
   "dependencies": {
-    "pinia-orm-helpers": "^0.0.11",
+    "pinia-orm-helpers": "^0.0.16",
     "qs": "^6.11.2",
     "wretch": "^2.8.0"
   },

@@ -1,8 +1,8 @@
 import { Collection, Model, Relation, useRepo } from 'pinia-orm'
-import { BatchUpdateMeta, UseBatchUpdaterOptions, UseBatchUpdaterReturn, UseBatchUpdateUpdateOptions } from '../../contracts/batch-update/UseBatchUpdater'
-import { DeclassifyPiniaOrmModel, FilterPiniaOrmModelToFieldTypes, PiniaOrmForm } from 'pinia-orm-helpers'
+import { BatchUpdateForm, BatchUpdateMeta, UseBatchUpdaterOptions, UseBatchUpdaterReturn, UseBatchUpdateUpdateOptions } from '../../contracts/batch-update/UseBatchUpdater'
+import { DeclassifyPiniaOrmModel, FilterPiniaOrmModelToFieldTypes, FilterPiniaOrmModelToRelationshipTypes, getClassRelationships, RelationshipDefinition } from 'pinia-orm-helpers'
 import { computed, onBeforeUnmount, ref, toValue, WatchStopHandle } from 'vue'
-import { BatchUpdateResponse } from '../../types/Response'
+import { BatchUpdateResponse, SyncResponse } from '../../types/Response'
 import { getMergedDriverConfig } from '../../utils/getMergedDriverConfig'
 import { Constructor } from '../../types/Constructor'
 import { generateRandomString } from '../../utils/generateRandomString'
@@ -14,7 +14,10 @@ import { deepmerge } from 'deepmerge-ts'
 import { useFormMaker } from './useFormMaker'
 import { performUpdate } from './performUpdate'
 import { useFormSyncer } from './useFormSyncer'
-import { UseIndexerReturn } from '../../contracts/crud/index/UseIndexer'
+import { UseIndexerOptions, UseIndexerReturn } from '../../contracts/crud/index/UseIndexer'
+import omit from 'just-omit'
+import { IndexWiths } from '../../contracts/crud/index/IndexWiths'
+import { getDriverKey } from '../../utils/getDriverKey'
 
 const defaultOptions = {
   persist: true,
@@ -28,24 +31,27 @@ const defaultOptions = {
   },
 }
 
-export function useBatchUpdaterDriver<T extends typeof Model> (
+export function useBatchUpdaterDriver<
+  T extends typeof Model,
+  RelationshipTypes = FilterPiniaOrmModelToRelationshipTypes<InstanceType<T>>,
+> (
   ModelClass: T,
   options?: UseBatchUpdaterOptions<T>,
 ): UseBatchUpdaterReturn<T> {
   options = Object.assign({}, defaultOptions, options)
   const composableId = generateRandomString(8)
 
-  const forms = ref<Record<string, PiniaOrmForm<InstanceType<T>>>>(options.forms ?? {})
-  const changes = ref<Record<string, PiniaOrmForm<InstanceType<T>>>>({})
+  const forms = ref<Record<string, BatchUpdateForm<InstanceType<T>>>>(options.forms ?? {})
+  const changes = ref<Record<string, BatchUpdateForm<InstanceType<T>>>>({})
   const meta = ref<Record<string, BatchUpdateMeta<InstanceType<T>>>>({})
   const updating = ref(false)
   const activeRequests = ref<Record<string | number, {
     request: Promise<BatchUpdateResponse<T>> & { cancel(): void }
-    forms: Record<string, PiniaOrmForm<InstanceType<T>>>
+    forms: Record<string, BatchUpdateForm<InstanceType<T>>>
       }>>({})
   const activeRequest = ref<{
     request: Promise<BatchUpdateResponse<T>> & { cancel(): void }
-    forms: Record<string, PiniaOrmForm<InstanceType<T>>>
+    forms: Record<string, BatchUpdateForm<InstanceType<T>>>
   }>()
 
   const excludeFieldsResolved = options.excludeFields
@@ -58,13 +64,51 @@ export function useBatchUpdaterDriver<T extends typeof Model> (
     driverConfig.pinia,
   )
 
+  const piniaOrmRelationships = getClassRelationships(ModelClass)
+  const pivotClasses: Record<string, Model> = {}
+  const belongsToManyRelationshipKeys: (keyof FilterPiniaOrmModelToRelationshipTypes<InstanceType<T>>)[] = Object.entries(piniaOrmRelationships)
+    .filter(entry => {
+      const relatedInfo = entry[1] as RelationshipDefinition & { pivot?: Model }
+      const PivotModel = relatedInfo.pivot
+      if (PivotModel) {
+        pivotClasses[PivotModel.$entity()] = PivotModel
+      }
+      return relatedInfo.kind === 'BelongsToMany'
+    })
+    .map(entry => {
+      return entry[0] as keyof DeclassifyPiniaOrmModel<InstanceType<T>>
+    })
+
+  const indexerWith = () => {
+    const optionsWithsResolved: UseIndexerOptions<T>['with'] = toValue(options.indexer?.with ?? {})
+    const result: Record<string, any> = {}
+
+    Object.entries(piniaOrmRelationships).forEach((entry) => {
+      const relatedInfo = entry[1] as RelationshipDefinition
+      const relatedKey = entry[0] as keyof DeclassifyPiniaOrmModel<InstanceType<T>>
+      if (
+        relatedInfo.kind === 'BelongsToMany' &&
+        !optionsWithsResolved?.[relatedKey]
+      ) {
+        result[relatedKey] = {}
+      }
+    })
+    return result as IndexWiths<InstanceType<T>>
+  }
+
   const indexer = useIndexer(
     ModelClass,
-    deepmerge({
-      persist: true,
-      driver: options.driver,
-      pagination: options.pagination,
-    }, options.indexer ?? {}),
+    {
+      ...deepmerge(
+        {
+          persist: true,
+          driver: options.driver,
+          pagination: options.pagination,
+        },
+        omit(options.indexer ?? {}, ['with']),
+      ),
+      with: indexerWith,
+    },
   )
 
   const fields = (new ModelClass()).$fields()
@@ -86,6 +130,9 @@ export function useBatchUpdaterDriver<T extends typeof Model> (
   }, { deep: true })
 
   const formMaker = useFormMaker({
+    belongsToManyRelationshipKeys,
+    pivotClasses,
+    piniaOrmRelationships,
     changes,
     fieldKeys,
     forms,
@@ -96,6 +143,7 @@ export function useBatchUpdaterDriver<T extends typeof Model> (
     repo,
     resumeAutoUpdater,
     indexer,
+    driver: getDriverKey(options.driver),
   })
 
   if (options.forms) formMaker.addRawForms(options.forms)
@@ -119,6 +167,18 @@ export function useBatchUpdaterDriver<T extends typeof Model> (
 
   const response = ref<BatchUpdateResponse<T>>()
 
+  const belongsToManyResponses = ref<
+    Record<keyof RelationshipTypes, SyncResponse<T>> |
+    undefined
+  >()
+  const activeBelongsToManyRequests = ref<Record<
+  keyof RelationshipTypes,
+  (Promise<SyncResponse<T>> & { cancel(): void })
+    >>({} as Record<
+  keyof RelationshipTypes,
+  (Promise<SyncResponse<T>> & { cancel(): void })
+>)
+
   const validationErrors = computed(() => {
     return response.value?.validationErrors ?? {}
   })
@@ -137,7 +197,7 @@ export function useBatchUpdaterDriver<T extends typeof Model> (
   // }
 
   const formsWithMeta = computed(() => {
-    const currentPageForms: Record<string, PiniaOrmForm<InstanceType<T>>> = {}
+    const currentPageForms: Record<string, BatchUpdateForm<InstanceType<T>>> = {}
     indexer.records.value.forEach(record => {
       const recordPrimaryKey = getRecordPrimaryKey(ModelClass, record)
       if (forms.value[recordPrimaryKey ?? '']) {
@@ -199,6 +259,10 @@ export function useBatchUpdaterDriver<T extends typeof Model> (
       response,
       updating,
       formMaker,
+      belongsToManyRelationshipKeys,
+      piniaOrmRelationships,
+      pivotClasses,
+      belongsToManyResponses,
     })
   }
 
@@ -259,6 +323,8 @@ export function useBatchUpdaterDriver<T extends typeof Model> (
     repo,
     activeRequest,
     activeRequests,
+    belongsToManyResponses,
+    activeBelongsToManyRequests,
     formsWithMeta,
     composableId,
     ModelClass,

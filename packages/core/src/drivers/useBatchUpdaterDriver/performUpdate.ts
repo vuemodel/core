@@ -1,6 +1,6 @@
 import { toValue } from 'vue'
 import { UseBatchUpdaterOptions, UseBatchUpdaterReturn, UseBatchUpdateUpdateOptions } from '../../contracts/batch-update/UseBatchUpdater'
-import { BatchUpdateResponse, BatchUpdateErrorResponse } from '../../types/Response'
+import { BatchUpdateResponse, BatchUpdateErrorResponse, SyncResponse } from '../../types/Response'
 import { getDriverKey } from '../../utils/getDriverKey'
 import { batchUpdate as batchUpdateRecords } from '../../actions/batchUpdate'
 import { Model } from 'pinia-orm'
@@ -8,10 +8,14 @@ import { generateRandomString } from '../../utils/generateRandomString'
 import { useFormMaker } from './useFormMaker'
 import { getFormsChangedValues } from './getFormsChangedValues'
 import clone from 'just-clone'
+import { sync } from '../../actions/sync'
+import { FilterPiniaOrmModelToRelationshipTypes, RelationshipDefinition } from 'pinia-orm-helpers'
+// (Promise<SyncResponse<T>> & { cancel(): void })
 
 export async function performUpdate<
   T extends typeof Model,
-  R extends UseBatchUpdaterReturn<T>
+  R extends UseBatchUpdaterReturn<T>,
+  RelationshipTypes = FilterPiniaOrmModelToRelationshipTypes<InstanceType<T>>
 > (
   optionsParam: UseBatchUpdateUpdateOptions<T>,
   composableOptions: {
@@ -26,8 +30,18 @@ export async function performUpdate<
     repo: R['repo']
     forms: R['forms']
     formMaker: ReturnType<typeof useFormMaker>
+    belongsToManyRelationshipKeys: (keyof RelationshipTypes)[]
+    piniaOrmRelationships: Record<string, RelationshipDefinition>
+    pivotClasses: Record<string, Model>
+    belongsToManyResponses: R['belongsToManyResponses']
   },
 ): Promise<BatchUpdateResponse<T>> {
+  type SyncRequests = Record<
+    keyof RelationshipTypes,
+    (Promise<SyncResponse<T>> & { cancel(): void })
+  >
+  type Request = Promise<BatchUpdateResponse<T>> & { cancel(): void }
+
   const {
     response,
     options,
@@ -40,7 +54,11 @@ export async function performUpdate<
     forms,
     repo,
     formMaker,
+    belongsToManyRelationshipKeys,
+    belongsToManyResponses,
   } = composableOptions
+
+  const driverKey = getDriverKey(options?.driver)
 
   const missingPremadeFormIds: string[] = []
   if (optionsParam.forms) {
@@ -57,7 +75,14 @@ export async function performUpdate<
 
   if (optionsParam.forms) {
     Object.entries(optionsParam.forms).forEach(([formId, form]) => {
-      const changedValues = getFormsChangedValues({ id: formId, newValues: form, repo })
+      const changedValues = getFormsChangedValues({
+        id: formId,
+        newValues: form,
+        repo,
+        driver: driverKey,
+        piniaOrmRelationships: composableOptions.piniaOrmRelationships,
+        pivotClasses: composableOptions.pivotClasses,
+      })
       if (!changes.value[formId]) { changes.value[formId] = {} }
       Object.assign(changes.value[formId], changedValues)
       Object.assign(forms.value[formId], form)
@@ -65,6 +90,7 @@ export async function performUpdate<
   }
 
   response.value = undefined
+  belongsToManyResponses.value = {}
 
   const persist = !!toValue(options?.persist)
 
@@ -75,12 +101,37 @@ export async function performUpdate<
     ModelClass,
     clone(changes.value),
     {
-      driver: getDriverKey(options?.driver),
+      driver: driverKey,
       notifyOnError: !!options?.notifyOnError,
       signal,
       throw: false,
     },
-  ) as Promise<BatchUpdateResponse<T>> & { cancel(): void }
+  ) as Request
+
+  const syncRequests: SyncRequests = {} as SyncRequests
+
+  for (const entry of Object.entries(changes.value)) {
+    const parentPrimaryKey = entry[0] as keyof RelationshipTypes
+    const recordChanges = entry[1]
+    for (const relatedKey of belongsToManyRelationshipKeys) {
+      console.log('relatedKey', relatedKey)
+      console.log('recordChanges', recordChanges)
+      console.log('relatedChange[relatedKey]', (recordChanges as any)[relatedKey])
+      const relatedChange = (recordChanges as any)[relatedKey]
+      if (relatedChange) {
+        const request = sync(ModelClass, parentPrimaryKey as string, relatedKey as any, relatedChange) as Promise<SyncResponse<T>> & { cancel(): void }
+        request.cancel = () => {
+          controller.abort()
+        }
+        syncRequests[parentPrimaryKey] = request.then(response => {
+          (belongsToManyResponses.value as any)[parentPrimaryKey] = response
+
+          return response
+        }) as any
+        // await syncRequests[parentPrimaryKey]
+      }
+    }
+  }
 
   const fieldNewValueMap = new Map()
 
@@ -115,7 +166,10 @@ export async function performUpdate<
 
   updating.value = true
 
-  const thisResponse = await request
+  const [thisResponse, ...syncResponses] = await Promise.all([
+    request,
+    ...Object.values(syncRequests),
+  ])
 
   updating.value = false
 
@@ -130,6 +184,15 @@ export async function performUpdate<
   changedRecordMetas.forEach(recordMeta => {
     recordMeta.updating = false
     recordMeta.changed = false
+  })
+
+  syncResponses.forEach(syncResponse => {
+    // Persisting to the store
+    // On Success
+    // On validation error
+    // On standard error
+    // On Error
+    console.log('syncResponse', syncResponse)
   })
 
   // Persisting to the store

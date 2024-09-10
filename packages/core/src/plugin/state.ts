@@ -54,6 +54,8 @@ export type VueModelConfig = {
   globallyAppliedScopes?: PluginScope[]
   globallyAppliedEntityScopes?: Record<string, PluginScope[]>
   throw?: boolean | ((response: Response<typeof Model> | undefined, driver: string) => boolean)
+  pivotIdField?: string | ((ModelClass: Model) => string)
+  pivotIdFieldMap?: Record<string, string>
 }
 
 export interface VueModelState {

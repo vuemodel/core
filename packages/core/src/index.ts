@@ -50,12 +50,16 @@ export * from './actions/destroy'
 export * from './composables/useDestroyer'
 export * from './drivers/useDestroyerDriver'
 
-// Batch Update
+// Batch Updater
 export * from './contracts/batch-update/BatchUpdate'
 export * from './contracts/batch-update/UseBatchUpdater'
 export * from './actions/batchUpdate'
 export * from './composables/useBatchUpdater'
 export * from './drivers/useBatchUpdaterDriver/useBatchUpdaterDriver'
+
+// Syncer
+export * from './contracts/sync/Sync'
+export * from './actions/sync'
 
 // Errors
 export * from './types/ApiError'
@@ -78,3 +82,4 @@ export * from './utils/makeChannel'
 export * from './types/LoosePrimaryKey'
 export * from './types/Forms'
 export * from './types/BroadcastMessages'
+export * from './types/FilterPiniaOrmModelToManyRelationshipTypes'

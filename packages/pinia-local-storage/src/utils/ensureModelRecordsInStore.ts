@@ -17,10 +17,14 @@ export function discoverEntities<T extends Model> (
     const relatedFields = (new ModelClass()).$fields()
     const relatedAttribute = relatedFields[related as keyof typeof relatedFields] as Relation
     const RelatedClass = relatedAttribute?.related?.constructor as typeof Model
+    const RelatedPivot = (relatedAttribute as any)?.pivot?.constructor as typeof Model
     if (!RelatedClass) return
     const relationships = getClassRelationships(RelatedClass)
     const relatedsWiths = pick(relatedOptions, Object.keys(relationships))
-    entitiesAccumulator[related as string] = RelatedClass
+    entitiesAccumulator[RelatedClass.entity] = RelatedClass
+    if (RelatedPivot) {
+      entitiesAccumulator[(RelatedPivot.entity) as string] = RelatedPivot
+    }
 
     discoverEntities(RelatedClass, relatedsWiths, entitiesAccumulator)
   })
@@ -33,6 +37,7 @@ export async function ensureModelRecordsInStore<T extends typeof Model> (
   withParam: IndexWiths<InstanceType<T>> = {},
 ) {
   const entities = discoverEntities(ModelClass, withParam)
+  console.log('entities', entities)
   entities[ModelClass.entity] = ModelClass
   for (const entry of Object.entries(entities)) {
     const repo = useRepo(entry[1] as typeof Model, piniaLocalStorageState.store)

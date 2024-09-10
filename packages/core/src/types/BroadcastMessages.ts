@@ -1,6 +1,6 @@
 import { Model } from 'pinia-orm'
 import { IndexWiths } from '../contracts/crud/index/IndexWiths'
-import { BatchUpdateResponse, CreateResponse, DestroyResponse, FindResponse, IndexResponse, UpdateResponse } from './Response'
+import { BatchUpdateResponse, CreateResponse, DestroyResponse, FindResponse, IndexResponse, SyncResponse, UpdateResponse } from './Response'
 import { PiniaOrmForm } from 'pinia-orm-helpers'
 import { LoosePrimaryKey } from './LoosePrimaryKey'
 import { UseIndexerOptions } from '../contracts/crud/index/UseIndexer'
@@ -79,6 +79,18 @@ export interface OnIndexedMessage<T extends typeof Model = typeof Model> {
   _useIndexerOptions: RemoveFunctions<UseIndexerOptions<T>> & { composableId?: string }
 }
 
+export interface OnSyncingMessage {
+  entity: string
+  related: string
+  forms: Record<string, any>
+}
+
+export interface OnSyncedMessage<T extends typeof Model = typeof Model> {
+  entity: string
+  related: string
+  response: SyncResponse<T>
+}
+
 export type BroadcastNameMessage = [
   ['creating', OnCreatingMessage],
   ['created', OnCreatedMessage],
@@ -92,6 +104,8 @@ export type BroadcastNameMessage = [
   ['destroyed', OnDestroyedMessage],
   ['batchUpdating', OnBatchUpdatingMessage],
   ['batchUpdated', OnBatchUpdatedMessage],
+  ['syncing', OnSyncingMessage],
+  ['synced', OnSyncedMessage],
 ]
 
 export type BroadcastMap = {
@@ -110,4 +124,6 @@ export type BroadcastMessage<T extends typeof Model = typeof Model> =
   OnDestroyingMessage |
   OnDestroyedMessage<T> |
   OnIndexingMessage<T> |
-  OnIndexedMessage<T>
+  OnIndexedMessage<T> |
+  OnSyncingMessage |
+  OnSyncedMessage<T>

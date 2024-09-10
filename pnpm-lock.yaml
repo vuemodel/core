@@ -23,8 +23,8 @@ importers:
         specifier: 1.7.x
         version: 1.7.2(pinia@2.2.2(typescript@5.5.4)(vue@3.4.38(typescript@5.5.4)))
       pinia-orm-helpers:
-        specifier: ^0.0.10
-        version: 0.0.10(pinia-orm@1.7.2(pinia@2.2.2(typescript@5.5.4)(vue@3.4.38(typescript@5.5.4))))(vue@3.4.38(typescript@5.5.4))
+        specifier: ^0.0.16
+        version: 0.0.16(pinia-orm@1.7.2(pinia@2.2.2(typescript@5.5.4)(vue@3.4.38(typescript@5.5.4))))(vue@3.4.38(typescript@5.5.4))
       vue:
         specifier: ^3.3.4
         version: 3.4.38(typescript@5.5.4)
@@ -217,6 +217,18 @@ importers:
       just-clone:
         specifier: ^6.2.0
         version: 6.2.0
+      just-diff:
+        specifier: ^6.0.2
+        version: 6.0.2
+      just-index:
+        specifier: ^4.2.0
+        version: 4.2.0
+      just-omit:
+        specifier: ^2.2.0
+        version: 2.2.0
+      just-safe-set:
+        specifier: ^4.2.1
+        version: 4.2.1
       pinia:
         specifier: ^2.x
         version: 2.2.2(typescript@5.5.4)(vue@3.4.38(typescript@5.5.4))
@@ -224,8 +236,8 @@ importers:
         specifier: 1.7.x
         version: 1.7.2(pinia@2.2.2(typescript@5.5.4)(vue@3.4.38(typescript@5.5.4)))
       pinia-orm-helpers:
-        specifier: ^0.0.11
-        version: 0.0.11(pinia-orm@1.7.2(pinia@2.2.2(typescript@5.5.4)(vue@3.4.38(typescript@5.5.4))))(vue@3.4.38(typescript@5.5.4))
+        specifier: ^0.0.16
+        version: 0.0.16(pinia-orm@1.7.2(pinia@2.2.2(typescript@5.5.4)(vue@3.4.38(typescript@5.5.4))))(vue@3.4.38(typescript@5.5.4))
       uuid:
         specifier: ^9.0.1
         version: 9.0.1
@@ -251,6 +263,9 @@ importers:
       '@typescript-eslint/parser':
         specifier: ^6.7.5
         version: 6.21.0(eslint@8.57.0)(typescript@5.5.4)
+      '@vuemodel/sample-data':
+        specifier: workspace:^
+        version: link:../../sample-data
       bumpp:
         specifier: ^9.2.0
         version: 9.5.1
@@ -285,8 +300,8 @@ importers:
         specifier: 1.7.x
         version: 1.7.2(pinia@2.2.2(typescript@5.5.4)(vue@3.4.38(typescript@5.5.4)))
       pinia-orm-helpers:
-        specifier: ^0.0.11
-        version: 0.0.11(pinia-orm@1.7.2(pinia@2.2.2(typescript@5.5.4)(vue@3.4.38(typescript@5.5.4))))(vue@3.4.38(typescript@5.5.4))
+        specifier: ^0.0.16
+        version: 0.0.16(pinia-orm@1.7.2(pinia@2.2.2(typescript@5.5.4)(vue@3.4.38(typescript@5.5.4))))(vue@3.4.38(typescript@5.5.4))
       qs:
         specifier: ^6.11.2
         version: 6.13.0
@@ -343,8 +358,8 @@ importers:
         specifier: 1.7.x
         version: 1.7.2(pinia@2.2.2(typescript@5.5.4)(vue@3.4.38(typescript@5.5.4)))
       pinia-orm-helpers:
-        specifier: ^0.0.11
-        version: 0.0.11(pinia-orm@1.7.2(pinia@2.2.2(typescript@5.5.4)(vue@3.4.38(typescript@5.5.4))))(vue@3.4.38(typescript@5.5.4))
+        specifier: ^0.0.16
+        version: 0.0.16(pinia-orm@1.7.2(pinia@2.2.2(typescript@5.5.4)(vue@3.4.38(typescript@5.5.4))))(vue@3.4.38(typescript@5.5.4))
       vue:
         specifier: ^3.x
         version: 3.4.38(typescript@5.5.4)
@@ -383,8 +398,8 @@ importers:
         specifier: 1.7.x
         version: 1.7.2(pinia@2.2.2(typescript@5.5.4)(vue@3.4.38(typescript@5.5.4)))
       pinia-orm-helpers:
-        specifier: ^0.0.10
-        version: 0.0.10(pinia-orm@1.7.2(pinia@2.2.2(typescript@5.5.4)(vue@3.4.38(typescript@5.5.4))))(vue@3.4.38(typescript@5.5.4))
+        specifier: ^0.0.16
+        version: 0.0.16(pinia-orm@1.7.2(pinia@2.2.2(typescript@5.5.4)(vue@3.4.38(typescript@5.5.4))))(vue@3.4.38(typescript@5.5.4))
     devDependencies:
       bumpp:
         specifier: ^9.2.0
@@ -420,8 +435,8 @@ importers:
         specifier: 1.7.x
         version: 1.7.2(pinia@2.2.2(typescript@5.5.4)(vue@3.4.38(typescript@5.5.4)))
       pinia-orm-helpers:
-        specifier: ^0.0.10
-        version: 0.0.10(pinia-orm@1.7.2(pinia@2.2.2(typescript@5.5.4)(vue@3.4.38(typescript@5.5.4))))(vue@3.4.38(typescript@5.5.4))
+        specifier: ^0.0.16
+        version: 0.0.16(pinia-orm@1.7.2(pinia@2.2.2(typescript@5.5.4)(vue@3.4.38(typescript@5.5.4))))(vue@3.4.38(typescript@5.5.4))
       vitest:
         specifier: ^1.0.0-beta.3
         version: 1.6.0(@types/node@18.19.45)(happy-dom@12.10.3)(jsdom@22.1.0)
@@ -2712,6 +2727,18 @@ packages:
   just-clone@6.2.0:
     resolution: {integrity: sha512-1IynUYEc/HAwxhi3WDpIpxJbZpMCvvrrmZVqvj9EhpvbH8lls7HhdhiByjL7DkAaWlLIzpC0Xc/VPvy/UxLNjA==}
 
+  just-diff@6.0.2:
+    resolution: {integrity: sha512-S59eriX5u3/QhMNq3v/gm8Kd0w8OS6Tz2FS1NG4blv+z0MuQcBRJyFWjdovM0Rad4/P4aUPFtnkNjMjyMlMSYA==}
+
+  just-index@4.2.0:
+    resolution: {integrity: sha512-9XhfeX7FDpV+OQWf6OV40IylqbFFWZ2vDGo9rcrK2gTVtXQsuWpgiwtF+A6tS5nyqx+rv9XPZViZBDFLNCaUhQ==}
+
+  just-omit@2.2.0:
+    resolution: {integrity: sha512-Js7+HxDOGcB3RhI38Mird/RgyMf3t0DAJFda1QWqqlAKTa36NeSYIufJXxrZUbysFTRcTOFcoMCiFK5FwCoI7Q==}
+
+  just-safe-set@4.2.1:
+    resolution: {integrity: sha512-La5CP41Ycv52+E4g7w1sRV8XXk7Sp8a/TwWQAYQKn6RsQz1FD4Z/rDRRmqV3wJznS1MDF3YxK7BCudX1J8FxLg==}
+
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
 
@@ -3110,8 +3137,8 @@ packages:
       pinia-orm: ^1.6.0
       vue: ^3.0.0
 
-  pinia-orm-helpers@0.0.11:
-    resolution: {integrity: sha512-4w3E/gHQSXMcEna24J9vj14hy0161hz7aw2O76TVNeOzTV32joUeBGcXbeIZdSaMv2dSpH134dCMSdpvf2Wo8g==}
+  pinia-orm-helpers@0.0.16:
+    resolution: {integrity: sha512-qoeqm/vRL0BHf45ypvVQ71C2/ClK5yETsMBM3bzWsurmGd4M4cpl3tmmaHgh8nQ5UOhbPh5OyRFSvn1bJxwtTA==}
     peerDependencies:
       pinia-orm: ^1.6.0
       vue: ^3.0.0
@@ -6678,6 +6705,14 @@ snapshots:
 
   just-clone@6.2.0: {}
 
+  just-diff@6.0.2: {}
+
+  just-index@4.2.0: {}
+
+  just-omit@2.2.0: {}
+
+  just-safe-set@4.2.1: {}
+
   keyv@4.5.4:
     dependencies:
       json-buffer: 3.0.1
@@ -7056,7 +7091,7 @@ snapshots:
       pinia-orm: 1.7.2(pinia@2.2.2(typescript@5.5.4)(vue@3.4.38(typescript@5.5.4)))
       vue: 3.4.38(typescript@5.5.4)
 
-  pinia-orm-helpers@0.0.11(pinia-orm@1.7.2(pinia@2.2.2(typescript@5.5.4)(vue@3.4.38(typescript@5.5.4))))(vue@3.4.38(typescript@5.5.4)):
+  pinia-orm-helpers@0.0.16(pinia-orm@1.7.2(pinia@2.2.2(typescript@5.5.4)(vue@3.4.38(typescript@5.5.4))))(vue@3.4.38(typescript@5.5.4)):
     dependencies:
       pinia-orm: 1.7.2(pinia@2.2.2(typescript@5.5.4)(vue@3.4.38(typescript@5.5.4)))
       vue: 3.4.38(typescript@5.5.4)

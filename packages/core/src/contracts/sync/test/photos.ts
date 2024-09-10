@@ -1,9 +1,7 @@
 import { Model } from 'pinia-orm'
 import { Attr, BelongsTo, BelongsToMany, HasMany, Uid } from 'pinia-orm/dist/decorators'
 import { Album } from './albums'
-import { PiniaOrmForm } from 'pinia-orm-helpers'
 import { PhotoTag } from './photoTags'
-import photosJson from './json/photos.json'
 import { Tag } from './tags'
 
 export class Photo extends Model {
@@ -17,8 +15,6 @@ export class Photo extends Model {
 
   @Attr() declare album_id: string
   @BelongsTo(() => Album, 'album_id') declare album: Album | null
-  @HasMany(() => PhotoTag, 'photo_id') declare photo_tags: PhotoTag[] | null
-  @BelongsToMany(() => Tag, () => PhotoTag, 'photo_id', 'tag_id') declare tags: Photo[]
+  @HasMany(() => PhotoTag, 'photo_id') declare photo_tags: PhotoTag | null
+  @BelongsToMany(() => Tag, () => PhotoTag, 'photo_id', 'tag_id') declare photos: Photo[]
 }
-
-export const photos: PiniaOrmForm<Photo>[] = photosJson

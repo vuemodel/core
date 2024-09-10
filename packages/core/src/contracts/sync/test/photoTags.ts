@@ -1,9 +1,6 @@
 import { Model } from 'pinia-orm'
 import { Attr, BelongsTo } from 'pinia-orm/dist/decorators'
-import { PiniaOrmForm } from 'pinia-orm-helpers'
 import { Photo } from './photos'
-import photoTagsJson from './json/photoTags.json'
-import { Tag } from './tags'
 
 export class PhotoTag extends Model {
   static entity = 'photo_tags'
@@ -15,7 +12,4 @@ export class PhotoTag extends Model {
   @Attr() declare tag_id: string
 
   @BelongsTo(() => Photo, 'photo_id') declare photo: Photo | null
-  @BelongsTo(() => Tag, 'tag_id') declare tag: Tag | null
 }
-
-export const photoTags: PiniaOrmForm<PhotoTag>[] = photoTagsJson

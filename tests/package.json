@@ -20,7 +20,7 @@
     "idb-keyval": "^6.2.1",
     "pinia": "^2.1.6",
     "pinia-orm": "1.7.x",
-    "pinia-orm-helpers": "^0.0.10",
+    "pinia-orm-helpers": "^0.0.16",
     "vitest": "^1.0.0-beta.3",
     "vue": "^3.3.4",
     "wretch": "^2.8.0"

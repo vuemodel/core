@@ -14,6 +14,7 @@ import { find } from './drivers/find/find'
 import { destroy } from './drivers/destroy/destroy'
 import { update } from './drivers/update/update'
 import { batchUpdate } from './drivers/batch-update/batchUpdate'
+import { sync } from './drivers/sync/sync'
 import features from './features.json'
 
 export const piniaLocalVueModelDriver: VueModelDriverConfig['driver'] = {
@@ -34,6 +35,8 @@ export const piniaLocalVueModelDriver: VueModelDriverConfig['driver'] = {
 
   batchUpdate,
   useBatchUpdater: useBatchUpdaterDriver,
+
+  sync,
 
   features,
 }

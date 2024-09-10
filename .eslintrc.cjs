@@ -101,6 +101,7 @@ module.exports = {
     'no-eval': 'warn',
 
     'no-async-promise-executor': 'off',
+    'no-redeclare': 'off',
 
     // to prevent false positives in diffs
     'comma-dangle': ['error', 'always-multiline'],

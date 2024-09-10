@@ -13,6 +13,7 @@ import { VueModelConfig } from '../plugin/state'
 import { VueModelDriverFeatures } from './VueModelDriverFeatures'
 import { UseBatchUpdater } from './batch-update/UseBatchUpdater'
 import { BatchUpdate } from './batch-update/BatchUpdate'
+import { Sync } from './sync/Sync'
 
 export interface VueModelDriver<T extends typeof Model = typeof Model> {
   create: Create<T>
@@ -32,6 +33,8 @@ export interface VueModelDriver<T extends typeof Model = typeof Model> {
 
   batchUpdate?: BatchUpdate<T>
   useBatchUpdater?: UseBatchUpdater<T>
+
+  sync?: Sync<T>
 
   features: VueModelDriverFeatures
 }

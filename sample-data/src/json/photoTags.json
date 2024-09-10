@@ -1,73 +1,91 @@
 [
   {
+    "id": "1",
     "photo_id": "1",
     "tag_id": "1"
   },
   {
+    "id": "2",
     "photo_id": "1",
     "tag_id": "2"
   },
   {
+    "id": "3",
     "photo_id": "2",
     "tag_id": "1"
   },
   {
+    "id": "4",
     "photo_id": "4",
     "tag_id": "1"
   },
   {
+    "id": "5",
     "photo_id": "4",
     "tag_id": "3"
   },
   {
+    "id": "6",
     "photo_id": "4",
     "tag_id": "4"
   },
   {
+    "id": "7",
     "photo_id": "5",
     "tag_id": "2"
   },
   {
+    "id": "8",
     "photo_id": "6",
     "tag_id": "5"
   },
   {
+    "id": "9",
     "photo_id": "7",
     "tag_id": "1"
   },
   {
+    "id": "10",
     "photo_id": "7",
     "tag_id": "3"
   },
   {
+    "id": "11",
     "photo_id": "8",
     "tag_id": "3"
   },
   {
+    "id": "12",
     "photo_id": "10",
     "tag_id": "2"
   },
   {
+    "id": "13",
     "photo_id": "10",
     "tag_id": "5"
   },
   {
+    "id": "14",
     "photo_id": "11",
     "tag_id": "2"
   },
   {
+    "id": "15",
     "photo_id": "11",
     "tag_id": "4"
   },
   {
+    "id": "16",
     "photo_id": "12",
     "tag_id": "1"
   },
   {
+    "id": "17",
     "photo_id": "13",
     "tag_id": "1"
   },
   {
+    "id": "18",
     "photo_id": "14",
     "tag_id": "3"
   }
