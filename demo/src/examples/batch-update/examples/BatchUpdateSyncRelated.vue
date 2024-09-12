@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { useBatchUpdater, useIndexer } from '@vuemodel/core'
+import { deleteDatabases } from '@vuemodel/pinia-local-storage'
 import { Tag, populateRecords, Photo } from '@vuemodel/sample-data'
-import { clear } from 'idb-keyval'
 
 const photosIndexer = useIndexer(Photo, {
   with: 'tags',
@@ -9,7 +9,7 @@ const photosIndexer = useIndexer(Photo, {
 const tagsIndexer = useIndexer(Tag)
 
 async function resetPhotoData () {
-  await clear()
+  await deleteDatabases()
   await populateRecords('photos')
   await populateRecords('tags')
   await populateRecords('photo_tags')

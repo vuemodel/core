@@ -34,6 +34,7 @@ export async function index<T extends typeof Model> (
         success: false,
         validationErrors: {},
         records: undefined,
+        entity: ModelClass.entity,
       })
     }
 
@@ -47,6 +48,7 @@ export async function index<T extends typeof Model> (
         success: false,
         validationErrors: {},
         records: undefined,
+        entity: ModelClass.entity,
       })
     })
 
@@ -64,7 +66,11 @@ export async function index<T extends typeof Model> (
     await wait(piniaLocalStorageState.mockLatencyMs ?? 0)
     const repo = useRepo(ModelClass, piniaLocalStorageState.store)
 
-    await ensureModelRecordsInStore(ModelClass, Object.assign({}, options?.with ?? {}, options?.filters ?? {}))
+    await ensureModelRecordsInStore(
+      ModelClass,
+      Object.assign({}, options?.with ?? {}, options?.filters ?? {}),
+      options.driver,
+    )
 
     const query = repo.query()
 
@@ -90,6 +96,7 @@ export async function index<T extends typeof Model> (
         }],
         validationErrors: {},
         records: undefined,
+        entity: ModelClass.entity,
       })
     }
 
@@ -100,6 +107,7 @@ export async function index<T extends typeof Model> (
         standardErrors: [{ name: 'before first page', message: `cannot navigate before the first page: "${page}/${pagesCount}"` }],
         validationErrors: {},
         records: undefined,
+        entity: ModelClass.entity,
       })
     }
 
@@ -115,6 +123,7 @@ export async function index<T extends typeof Model> (
         recordsCount,
         pagesCount,
       },
+      entity: ModelClass.entity,
     }
 
     repo.flush()

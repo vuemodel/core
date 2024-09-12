@@ -3,13 +3,14 @@ import { UseBatchUpdaterOptions, UseBatchUpdaterReturn, UseBatchUpdateUpdateOpti
 import { BatchUpdateResponse, BatchUpdateErrorResponse, SyncResponse } from '../../types/Response'
 import { getDriverKey } from '../../utils/getDriverKey'
 import { batchUpdate as batchUpdateRecords } from '../../actions/batchUpdate'
-import { Model } from 'pinia-orm'
+import { Model, useRepo } from 'pinia-orm'
 import { generateRandomString } from '../../utils/generateRandomString'
 import { useFormMaker } from './useFormMaker'
 import { getFormsChangedValues } from './getFormsChangedValues'
 import clone from 'just-clone'
 import { sync } from '../../actions/sync'
 import { FilterPiniaOrmModelToRelationshipTypes, RelationshipDefinition } from 'pinia-orm-helpers'
+import { getRecordPrimaryKey } from '../../utils/getRecordPrimaryKey'
 // (Promise<SyncResponse<T>> & { cancel(): void })
 
 export async function performUpdate<
@@ -38,7 +39,10 @@ export async function performUpdate<
 ): Promise<BatchUpdateResponse<T>> {
   type SyncRequests = Record<
     keyof RelationshipTypes,
-    (Promise<SyncResponse<T>> & { cancel(): void })
+    {
+      request: (Promise<SyncResponse<T>> & { cancel(): void }),
+      PivotModel: Model
+    }
   >
   type Request = Promise<BatchUpdateResponse<T>> & { cancel(): void }
 
@@ -56,6 +60,8 @@ export async function performUpdate<
     formMaker,
     belongsToManyRelationshipKeys,
     belongsToManyResponses,
+    piniaOrmRelationships,
+    pivotClasses,
   } = composableOptions
 
   const driverKey = getDriverKey(options?.driver)
@@ -80,8 +86,8 @@ export async function performUpdate<
         newValues: form,
         repo,
         driver: driverKey,
-        piniaOrmRelationships: composableOptions.piniaOrmRelationships,
-        pivotClasses: composableOptions.pivotClasses,
+        piniaOrmRelationships,
+        pivotClasses,
       })
       if (!changes.value[formId]) { changes.value[formId] = {} }
       Object.assign(changes.value[formId], changedValues)
@@ -114,20 +120,20 @@ export async function performUpdate<
     const parentPrimaryKey = entry[0] as keyof RelationshipTypes
     const recordChanges = entry[1]
     for (const relatedKey of belongsToManyRelationshipKeys) {
-      console.log('relatedKey', relatedKey)
-      console.log('recordChanges', recordChanges)
-      console.log('relatedChange[relatedKey]', (recordChanges as any)[relatedKey])
       const relatedChange = (recordChanges as any)[relatedKey]
       if (relatedChange) {
         const request = sync(ModelClass, parentPrimaryKey as string, relatedKey as any, relatedChange) as Promise<SyncResponse<T>> & { cancel(): void }
         request.cancel = () => {
           controller.abort()
         }
-        syncRequests[parentPrimaryKey] = request.then(response => {
-          (belongsToManyResponses.value as any)[parentPrimaryKey] = response
+        syncRequests[parentPrimaryKey] = {
+          PivotModel: piniaOrmRelationships[relatedKey].pivot,
+          request: request.then(response => {
+            (belongsToManyResponses.value as any)[parentPrimaryKey] = response
 
-          return response
-        }) as any
+            return response
+          }) as any,
+        }
         // await syncRequests[parentPrimaryKey]
       }
     }
@@ -168,7 +174,7 @@ export async function performUpdate<
 
   const [thisResponse, ...syncResponses] = await Promise.all([
     request,
-    ...Object.values(syncRequests),
+    ...(Object.values(syncRequests).map(({ request }) => request) as SyncResponse<typeof Model>[]),
   ])
 
   updating.value = false
@@ -186,18 +192,42 @@ export async function performUpdate<
     recordMeta.changed = false
   })
 
-  syncResponses.forEach(syncResponse => {
+  const syncRequestEntries = Object.entries(syncRequests)
+
+  syncResponses.forEach((syncResponse, index) => {
+    const PivotClass = syncRequestEntries[index][1].PivotModel.constructor
+    const pivotRepo = useRepo<Model>(PivotClass)
     // Persisting to the store
     // On Success
+    if (syncResponse.success) {
+      pivotRepo.destroy(syncResponse.detached?.map(record => getRecordPrimaryKey(PivotClass, record)))
+      pivotRepo.insert(syncResponse.attached)
+      pivotRepo.insert(syncResponse.updated)
+    }
     // On validation error
-    // On standard error
-    // On Error
-    console.log('syncResponse', syncResponse)
+    {
+      tags: {
+        '1': {
+          photo_id: ['error 1', 'error 2']
+        }
+      }
+    }
+    // Use the following variable to trigger error callback further down
+    // hasManyToManyValidationErrors = true
+    // hasManyToManyError = true
+
+    // On standard error: Just add them onto the standard errors list
+
+    // Use the following variable to trigger error callback further down
+    // hasManyToManyStandardErrors = true
+    // hasManyToManyError = true
+    
+    // On Error: again, we can use this to trigger an error callback futher down
   })
 
   // Persisting to the store
   if (persist) {
-    repo.save(thisResponse?.records ?? [])
+    repo.insert(thisResponse?.records ?? [])
   }
 
   // On Success

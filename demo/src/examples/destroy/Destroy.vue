@@ -8,7 +8,7 @@ const id = ref('')
 
 <template>
   <div style="display: flex; flex-direction: column; max-width: 350px">
-    <label for="form-id">ID</label>
+    <label for="form-id">Post ID</label>
     <input
       id="form-id"
       v-model="id"

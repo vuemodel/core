@@ -1,18 +1,20 @@
-import { CreateOptions, CreateResponse, FormValidationErrors, getMergedDriverConfig, getRecordPrimaryKey } from '@vuemodel/core'
+import { CreateOptions, CreateResponse, FormValidationErrors, getMergedDriverConfig, getRecordPrimaryKey, getDriverKey } from '@vuemodel/core'
 import { Model } from 'pinia-orm'
-import { get as getItem, set as setItem } from 'idb-keyval'
 import { PiniaOrmForm, getClassAttributes } from 'pinia-orm-helpers'
 import { pick } from '../../utils/pick'
 import { piniaLocalStorageState } from '../../plugin/state'
 import { makeMockErrorResponse } from '../../utils/makeMockErrorResponse'
 import { wait } from '../../utils/wait'
-import { deepToRaw } from '../../utils/deepToRaw'
+import { createIndexedDbRepo } from '../../utils/createIndexedDbRepo'
 
 export async function create<T extends typeof Model> (
   ModelClass: T,
   form: PiniaOrmForm<InstanceType<T>>,
   options: CreateOptions<T> = {},
 ): Promise<CreateResponse<T>> {
+  const dbPrefix = getDriverKey(options.driver) + ':'
+  const dbRepo = createIndexedDbRepo(ModelClass, { prefix: dbPrefix })
+
   return new Promise(async (resolve, reject) => {
     const config = getMergedDriverConfig(options?.driver)
     const optionsMerged = Object.assign(
@@ -33,6 +35,7 @@ export async function create<T extends typeof Model> (
         success: false,
         validationErrors: {} as FormValidationErrors<T>,
         record: undefined,
+        entity: ModelClass.entity,
       })
     }
 
@@ -46,6 +49,7 @@ export async function create<T extends typeof Model> (
         success: false,
         validationErrors: {} as FormValidationErrors<T>,
         record: undefined,
+        entity: ModelClass.entity,
       })
     })
     const notifyOnError = 'notifyOnError' in options ? options.notifyOnError : config?.notifyOnError?.create
@@ -66,7 +70,6 @@ export async function create<T extends typeof Model> (
       return errorReturnFunction(mockErrorResponse)
     }
 
-    const recordsKey = `${ModelClass.entity}.records`
     const baseData = pick(new ModelClass(), Object.keys(getClassAttributes(ModelClass)))
     const data = Object.assign({}, baseData, form as InstanceType<T>)
     const primaryKey = getRecordPrimaryKey(ModelClass, data)
@@ -78,19 +81,17 @@ export async function create<T extends typeof Model> (
         standardErrors: [{ name: 'primary key unknown', message: 'could not discover the records primary key' }],
         success: false,
         validationErrors: {} as FormValidationErrors<T>,
+        entity: ModelClass.entity,
       })
     }
 
-    const records = (await getItem<Record<string, InstanceType<T>>>(recordsKey)) ?? {}
-    const existingRecord = records[primaryKey as any]
+    const existingRecord = (await dbRepo.find(primaryKey))
 
     if (existingRecord) {
       throw new Error(`record with id ${primaryKey} already exists`)
     }
 
-    records[primaryKey as any] = data
-
-    await setItem(recordsKey, deepToRaw(records))
+    await dbRepo.create(data)
 
     const result: CreateResponse<T> = {
       record: data,
@@ -98,6 +99,7 @@ export async function create<T extends typeof Model> (
       validationErrors: undefined,
       success: true,
       action: 'create',
+      entity: ModelClass.entity,
     }
 
     return resolve(result)

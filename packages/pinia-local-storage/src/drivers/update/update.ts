@@ -1,13 +1,10 @@
-import { FormValidationErrors, UpdateOptions, UpdateResponse, getMergedDriverConfig, LoosePrimaryKey } from '@vuemodel/core'
+import { FormValidationErrors, UpdateOptions, UpdateResponse, getMergedDriverConfig, LoosePrimaryKey, getDriverKey } from '@vuemodel/core'
 import { Model } from 'pinia-orm'
-import { get as getItem, set as setItem } from 'idb-keyval'
-import { PiniaOrmForm, getClassAttributes } from 'pinia-orm-helpers'
-import { pick } from '../../utils/pick'
+import { PiniaOrmForm } from 'pinia-orm-helpers'
 import { piniaLocalStorageState } from '../../plugin/state'
 import { wait } from '../../utils/wait'
 import { makeMockErrorResponse } from '../../utils/makeMockErrorResponse'
-import clone from 'just-clone'
-import { deepToRaw } from '../../utils/deepToRaw'
+import { createIndexedDbRepo } from '../../utils/createIndexedDbRepo'
 
 export async function update<T extends typeof Model> (
   ModelClass: T,
@@ -15,6 +12,9 @@ export async function update<T extends typeof Model> (
   form: PiniaOrmForm<InstanceType<T>>,
   options: UpdateOptions<T> = {},
 ): Promise<UpdateResponse<T>> {
+  const dbPrefix = getDriverKey(options.driver) + ':'
+  const dbRepo = createIndexedDbRepo(ModelClass, { prefix: dbPrefix })
+
   return new Promise(async (resolve, reject) => {
     const config = getMergedDriverConfig(options?.driver)
     const optionsMerged = Object.assign(
@@ -61,13 +61,10 @@ export async function update<T extends typeof Model> (
     })
     if (mockErrorResponse !== false) return errorReturnFunction(mockErrorResponse)
 
-    const recordsKey = `${ModelClass.entity}.records`
-    const records = (await getItem<Record<string, InstanceType<T>>>(recordsKey)) ?? {}
-
     const idResolved = Array.isArray(id) ? JSON.stringify(id) : id
-    const recordForUpdate = records?.[idResolved]
+    const originalRecord = await dbRepo.find(idResolved)
 
-    if (!recordForUpdate) {
+    if (!originalRecord) {
       return errorReturnFunction({
         record: undefined,
         standardErrors: [{ message: `record with id ${idResolved} not found`, name: 'Not Found' }],
@@ -77,13 +74,9 @@ export async function update<T extends typeof Model> (
       })
     }
 
-    const recordClone = clone(recordForUpdate)
-    const attributes = getClassAttributes(ModelClass)
-    const updatedRecord = Object.assign({}, recordClone, pick(form, Object.keys(attributes)))
+    await dbRepo.update(idResolved, form)
+    const updatedRecord = await dbRepo.find(idResolved)
 
-    records[idResolved] = updatedRecord
-
-    await setItem(`${ModelClass.entity}.records`, deepToRaw(records))
     await wait(piniaLocalStorageState.mockLatencyMs ?? 0)
 
     const result: UpdateResponse<T> = {

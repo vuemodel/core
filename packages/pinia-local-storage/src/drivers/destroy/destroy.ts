@@ -1,18 +1,21 @@
-import { DestroyOptions, DestroyResponse, getMergedDriverConfig } from '@vuemodel/core'
+import { DestroyOptions, DestroyResponse, getDriverKey, getMergedDriverConfig } from '@vuemodel/core'
 import { Model } from 'pinia-orm'
-import { get as getItem, set as setItem } from 'idb-keyval'
 import { DeclassifyPiniaOrmModel } from 'pinia-orm-helpers'
 import { piniaLocalStorageState } from '../../plugin/state'
 import { wait } from '../../utils/wait'
 import { makeMockErrorResponse } from '../../utils/makeMockErrorResponse'
 import { LoosePrimaryKey } from '@vuemodel/core/src/types/LoosePrimaryKey'
-import { deepToRaw } from '../../utils/deepToRaw'
+import { createIndexedDbRepo } from '../../utils/createIndexedDbRepo'
 
+// TODO: do we also need to ensure it's deleted from the "backend store"?
 export async function destroy<T extends typeof Model> (
   ModelClass: T,
   id: LoosePrimaryKey,
   options: DestroyOptions<T> = {},
 ): Promise<DestroyResponse<T>> {
+  const dbPrefix = getDriverKey(options.driver) + ':'
+  const dbRepo = createIndexedDbRepo(ModelClass, { prefix: dbPrefix })
+
   return new Promise(async (resolve, reject) => {
     const config = getMergedDriverConfig(options?.driver)
     const notifyOnError = 'notifyOnError' in options ? options.notifyOnError : config?.notifyOnError?.destroy
@@ -33,6 +36,7 @@ export async function destroy<T extends typeof Model> (
         action: 'destroy',
         success: false,
         record: undefined,
+        entity: ModelClass.entity,
       })
     }
 
@@ -45,6 +49,7 @@ export async function destroy<T extends typeof Model> (
         action: 'destroy',
         success: false,
         record: undefined,
+        entity: ModelClass.entity,
       })
     })
 
@@ -66,14 +71,12 @@ export async function destroy<T extends typeof Model> (
         action: 'destroy',
         record: undefined,
         success: false,
+        entity: ModelClass.entity,
       })
     }
 
-    const recordsKey = `${ModelClass.entity}.records`
-    const items = (await getItem<Record<string, DeclassifyPiniaOrmModel<InstanceType<T>>>>(recordsKey)) ?? {} as Record<string, DeclassifyPiniaOrmModel<InstanceType<T>>>
-
     const idResolved = Array.isArray(id) ? JSON.stringify(id) : id
-    const record = items?.[idResolved] as DeclassifyPiniaOrmModel<InstanceType<T>> | undefined
+    const record = (await dbRepo.find(idResolved)) as DeclassifyPiniaOrmModel<InstanceType<T>> | undefined
 
     if (!record) {
       return errorReturnFunction({
@@ -84,19 +87,19 @@ export async function destroy<T extends typeof Model> (
         action: 'destroy',
         record: undefined,
         success: false,
+        entity: ModelClass.entity,
       })
     }
 
-    delete items?.[idResolved]
-
+    dbRepo.destroy(idResolved)
     await wait(piniaLocalStorageState.mockLatencyMs ?? 0)
-    await setItem(recordsKey, deepToRaw(items))
 
     const result: DestroyResponse<T> = {
       record,
       standardErrors: undefined,
       success: true,
       action: 'destroy',
+      entity: ModelClass.entity,
     }
 
     return resolve(result)

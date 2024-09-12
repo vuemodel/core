@@ -1,19 +1,21 @@
-import { FormValidationErrors, getMergedDriverConfig, BatchUpdateOptions, BatchUpdateResponse, Form } from '@vuemodel/core'
+import { FormValidationErrors, getMergedDriverConfig, BatchUpdateOptions, BatchUpdateResponse, getDriverKey } from '@vuemodel/core'
 import { Model } from 'pinia-orm'
-import { get as getItem, set as setItem } from 'idb-keyval'
 import { DeclassifyPiniaOrmModel, PiniaOrmForm, getClassAttributes } from 'pinia-orm-helpers'
 import { pick } from '../../utils/pick'
 import { piniaLocalStorageState } from '../../plugin/state'
 import { wait } from '../../utils/wait'
 import { makeMockErrorResponse } from '../../utils/makeMockErrorResponse'
 import clone from 'just-clone'
-import { deepToRaw } from '../../utils/deepToRaw'
+import { createIndexedDbRepo } from '../../utils/createIndexedDbRepo'
 
 export async function batchUpdate<T extends typeof Model> (
   ModelClass: T,
   forms: Record<string | number, PiniaOrmForm<InstanceType<T>>>,
   options: BatchUpdateOptions<T> = {},
 ): Promise<BatchUpdateResponse<T>> {
+  const dbPrefix = getDriverKey(options.driver) + ':'
+  const dbRepo = createIndexedDbRepo(ModelClass, { prefix: dbPrefix })
+
   return new Promise(async (resolve, reject) => {
     const config = getMergedDriverConfig(options?.driver)
     const optionsMerged = Object.assign(
@@ -34,6 +36,7 @@ export async function batchUpdate<T extends typeof Model> (
         success: false,
         validationErrors: {} as Record<string, FormValidationErrors<T>>,
         records: undefined,
+        entity: ModelClass.entity,
       })
     }
 
@@ -47,6 +50,7 @@ export async function batchUpdate<T extends typeof Model> (
         success: false,
         validationErrors: {} as Record<string, FormValidationErrors<T>>,
         records: undefined,
+        entity: ModelClass.entity,
       })
     })
     const notifyOnError = 'notifyOnError' in options ? options.notifyOnError : config?.notifyOnError?.update
@@ -60,18 +64,13 @@ export async function batchUpdate<T extends typeof Model> (
     })
     if (mockErrorResponse !== false) return errorReturnFunction(mockErrorResponse)
 
-    const recordsKey = `${ModelClass.entity}.records`
-    const records = (await getItem<Record<string, Form<InstanceType<T>>>>(recordsKey)) ?? {}
-
     const updatedRecords: DeclassifyPiniaOrmModel<InstanceType<T>>[] = []
-
-    console.log('local storage', JSON.stringify(forms))
 
     for (const entry of Object.entries(forms)) {
       const id = entry[0]
       const form = entry[1]
 
-      const recordForUpdate = records?.[id]
+      const recordForUpdate = await dbRepo.find(id)
       if (!recordForUpdate) {
         return errorReturnFunction({
           records: undefined,
@@ -79,6 +78,7 @@ export async function batchUpdate<T extends typeof Model> (
           success: false,
           action: 'batch-update',
           validationErrors: {} as Record<string, FormValidationErrors<T>>,
+          entity: ModelClass.entity,
         })
       }
 
@@ -88,10 +88,8 @@ export async function batchUpdate<T extends typeof Model> (
 
       updatedRecords.push(updatedRecord)
 
-      records[id] = updatedRecord
+      await dbRepo.update(id, form)
     }
-
-    await setItem(`${ModelClass.entity}.records`, deepToRaw(records))
 
     await wait(piniaLocalStorageState.mockLatencyMs ?? 0)
 
@@ -101,6 +99,7 @@ export async function batchUpdate<T extends typeof Model> (
       standardErrors: undefined,
       validationErrors: undefined,
       success: true,
+      entity: ModelClass.entity,
     }
 
     return resolve(result)

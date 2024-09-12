@@ -8,11 +8,13 @@ import { PaginationDetails } from '../contracts/crud/index/PaginationDetails'
 export type BaseSuccessResponse = {
   standardErrors: undefined
   success: true
+  entity: string
 }
 
 export type BaseErrorResponse = {
   standardErrors: StandardErrors
   success: false
+  entity: string
 }
 
 export type QueryValidationSuccessResponse = BaseSuccessResponse & {

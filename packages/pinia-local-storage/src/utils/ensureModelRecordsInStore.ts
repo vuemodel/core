@@ -1,10 +1,10 @@
 import { Model, Relation, useRepo } from 'pinia-orm'
 import { piniaLocalStorageState } from '../plugin/state'
-import { get as getItem } from 'idb-keyval'
-import { IndexWiths } from '@vuemodel/core'
+import { getDriverKey, IndexWiths } from '@vuemodel/core'
 import { getClassRelationships } from 'pinia-orm-helpers'
 import { pick } from './pick'
 import { Constructor } from '../types/Constructor'
+import { createIndexedDbRepo } from './createIndexedDbRepo'
 
 // const insertedModels: Record<string, boolean> = {}
 
@@ -35,14 +35,16 @@ export function discoverEntities<T extends Model> (
 export async function ensureModelRecordsInStore<T extends typeof Model> (
   ModelClass: T,
   withParam: IndexWiths<InstanceType<T>> = {},
+  driver: string | undefined,
 ) {
   const entities = discoverEntities(ModelClass, withParam)
-  console.log('entities', entities)
   entities[ModelClass.entity] = ModelClass
   for (const entry of Object.entries(entities)) {
+    const dbPrefix = getDriverKey(driver) + ':'
+    const dbRepo = createIndexedDbRepo(entry[1], { prefix: dbPrefix })
+
     const repo = useRepo(entry[1] as typeof Model, piniaLocalStorageState.store)
-    const recordsKey = `${entry[1].entity}.records`
-    const records = (await getItem(recordsKey)) ?? {}
-    repo.insert(Object.values(records))
+    const records = (await dbRepo.index()) ?? []
+    repo.insert(records)
   }
 }

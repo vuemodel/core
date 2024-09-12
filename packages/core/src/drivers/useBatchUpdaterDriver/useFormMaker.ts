@@ -208,8 +208,6 @@ export function useFormMaker<
       indexFilters[primaryKeyField] = { in: missingModelIds }
 
       await indexer.index({ filters: indexFilters })
-      console.log(indexer.response.value)
-      console.log(indexer.makeQuery().whereId(missingModelIds).get())
 
       makeFromModels(
         indexer.makeQuery().whereId(missingModelIds).get(),

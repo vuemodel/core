@@ -49,5 +49,8 @@ export {
   destroy,
 }
 
+export { createIndexedDbRepo } from './utils/createIndexedDbRepo'
+export { deleteDatabases } from './utils/deleteDatabases'
+
 export { createPiniaLocalStorage } from './plugin/createPiniaLocalStorage'
 export * from './plugin/state'

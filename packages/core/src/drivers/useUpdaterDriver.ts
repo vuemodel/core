@@ -218,6 +218,7 @@ export function useUpdaterDriver<T extends typeof Model> (
         standardErrors: [{ message: '', name: 'no id' }],
         success: false,
         validationErrors: {} as FormValidationErrors<T>,
+        entity: ModelClass.entity,
       }
       return response.value
     }

@@ -1,10 +1,10 @@
 import {
   FindOptions,
   FindResponse,
+  getDriverKey,
   getMergedDriverConfig,
 } from '@vuemodel/core'
 import { Model, useRepo } from 'pinia-orm'
-import { get as getItem } from 'idb-keyval'
 import { DeclassifyPiniaOrmModel } from 'pinia-orm-helpers'
 import { piniaLocalStorageState } from '../../plugin/state'
 import { wait } from '../../utils/wait'
@@ -12,12 +12,16 @@ import { applyWiths } from '../index/applyWiths'
 import { makeMockErrorResponse } from '../../utils/makeMockErrorResponse'
 import { ensureModelRecordsInStore } from '../../utils/ensureModelRecordsInStore'
 import { LoosePrimaryKey } from '@vuemodel/core/src/types/LoosePrimaryKey'
+import { createIndexedDbRepo } from '../../utils/createIndexedDbRepo'
 
 export async function find<T extends typeof Model> (
   ModelClass: T,
   id: LoosePrimaryKey,
   options: FindOptions<T> = {},
 ): Promise<FindResponse<T>> {
+  const dbPrefix = getDriverKey(options.driver) + ':'
+  const dbRepo = createIndexedDbRepo(ModelClass, { prefix: dbPrefix })
+
   return new Promise(async (resolve, reject) => {
     const config = getMergedDriverConfig(options?.driver)
     const optionsMerged = Object.assign(
@@ -38,6 +42,7 @@ export async function find<T extends typeof Model> (
         success: false,
         validationErrors: {},
         record: undefined,
+        entity: ModelClass.entity,
       })
     }
 
@@ -51,6 +56,7 @@ export async function find<T extends typeof Model> (
         success: false,
         validationErrors: {},
         record: undefined,
+        entity: ModelClass.entity,
       })
     })
     const notifyOnError = 'notifyOnError' in options ? options.notifyOnError : config?.notifyOnError?.find
@@ -68,14 +74,10 @@ export async function find<T extends typeof Model> (
 
     const repo = useRepo(ModelClass, piniaLocalStorageState.store)
 
-    const recordsKey = `${ModelClass.entity}.records`
-
     await wait(piniaLocalStorageState.mockLatencyMs ?? 0)
 
-    const records = (await getItem<Record<string, DeclassifyPiniaOrmModel<InstanceType<T>>>>(recordsKey)) ?? {} as Record<string, DeclassifyPiniaOrmModel<InstanceType<T>>>
-
     const idResolved = Array.isArray(id) ? JSON.stringify(id) : id
-    const record = records?.[idResolved] as DeclassifyPiniaOrmModel<InstanceType<T>> | undefined
+    const record = (dbRepo.find(idResolved)) as unknown as DeclassifyPiniaOrmModel<InstanceType<T>> | undefined
 
     if (!record) {
       return errorReturnFunction({
@@ -84,13 +86,14 @@ export async function find<T extends typeof Model> (
         success: false,
         action: 'find',
         validationErrors: {},
+        entity: ModelClass.entity,
       })
     }
 
     repo.insert(record)
     const query = repo.query()
     if (options?.with) {
-      await ensureModelRecordsInStore(ModelClass, options.with)
+      await ensureModelRecordsInStore(ModelClass, options.with, options.driver)
       applyWiths(ModelClass, query, options.with)
     }
 
@@ -102,6 +105,7 @@ export async function find<T extends typeof Model> (
       success: true,
       validationErrors: undefined,
       action: 'find',
+      entity: ModelClass.entity,
     }
 
     repo.flush()

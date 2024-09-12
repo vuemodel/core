@@ -1,12 +1,12 @@
-import { FormValidationErrors, getMergedDriverConfig, SyncOptions, SyncResponse, Form, LoosePrimaryKey, FilterPiniaOrmModelToManyRelationshipTypes } from '@vuemodel/core'
+import { FormValidationErrors, getMergedDriverConfig, SyncOptions, SyncResponse, LoosePrimaryKey, FilterPiniaOrmModelToManyRelationshipTypes, getDriverKey, getRecordPrimaryKey } from '@vuemodel/core'
 import { Model } from 'pinia-orm'
-import { get as getItem, set as setItem } from 'idb-keyval'
 import { DeclassifyPiniaOrmModel } from 'pinia-orm-helpers'
 import { piniaLocalStorageState } from '../../plugin/state'
 import { wait } from '../../utils/wait'
 import { makeMockErrorResponse } from '../../utils/makeMockErrorResponse'
 import clone from 'just-clone'
-import { deepToRaw } from '../../utils/deepToRaw'
+import { createIndexedDbRepo } from '../../utils/createIndexedDbRepo'
+import { keyBy } from '../../utils/keyBy'
 
 export async function sync<T extends typeof Model> (
   ModelClass: T,
@@ -23,6 +23,11 @@ export async function sync<T extends typeof Model> (
       options,
     )
 
+    // discover model of the pivot table
+    const Relation = (new ModelClass()).$getRelation(related)
+    const PivotModel = Relation.pivot
+    const PivotConstructor = PivotModel.constructor
+
     const errorReturnFunction = optionsMerged.throw ? reject : resolve
 
     if (options.signal?.aborted) {
@@ -37,6 +42,7 @@ export async function sync<T extends typeof Model> (
         attached: undefined,
         detached: undefined,
         updated: undefined,
+        entity: PivotConstructor.entity,
       })
     }
 
@@ -52,6 +58,7 @@ export async function sync<T extends typeof Model> (
         attached: undefined,
         detached: undefined,
         updated: undefined,
+        entity: PivotConstructor.entity,
       })
     })
     const notifyOnError = 'notifyOnError' in options ? options.notifyOnError : config?.notifyOnError?.update
@@ -65,20 +72,20 @@ export async function sync<T extends typeof Model> (
     })
     if (mockErrorResponse !== false) return errorReturnFunction(mockErrorResponse)
 
-    // discover model of the pivot table
-    const Relation = (new ModelClass()).$getRelation(related)
-    const PivotModel = Relation.pivot
+    const dbPrefix = getDriverKey(options.driver) + ':'
+    const dbRepo = createIndexedDbRepo(PivotConstructor, { prefix: dbPrefix })
 
     // get records on the pivot table
-    const recordsKey = `${PivotModel.$entity()}.records`
-    const records = (await getItem<Record<string, Form<InstanceType<T>>>>(recordsKey)) ?? {}
+    const records = keyBy(await dbRepo.index(), record => {
+      return getRecordPrimaryKey(PivotConstructor, record)
+    })
     const recordEntries = Object.entries(records)
 
     // Remove all records with the id of this ModelClass
     const foreignPivotKey = Relation.foreignPivotKey // this model
     const relatedPivotKey = Relation.relatedPivotKey // related model
-    const currentPivotEntries = recordEntries.filter(([recordId, record]) => {
-      return record[foreignPivotKey] === id
+    const currentPivotEntries = recordEntries.filter((entry) => {
+      return entry[1][foreignPivotKey] === id
     })
 
     const attached: DeclassifyPiniaOrmModel<InstanceType<T>>[] = []
@@ -89,7 +96,7 @@ export async function sync<T extends typeof Model> (
     currentPivotEntries.forEach(([pivotId, pivotRecord]) => {
       if (!forms[pivotRecord[relatedPivotKey]]) {
         detached.push(clone(records[pivotId]))
-        delete records[pivotId]
+        dbRepo.destroy(JSON.parse(pivotId))
       }
     })
 
@@ -100,7 +107,7 @@ export async function sync<T extends typeof Model> (
         } else if (key === relatedPivotKey) {
           return recordToAttachId
         }
-        return null // Fallback in case of unexpected keys (optional)
+        return null // Fallback in case of unexpected keys
       })
       const compositeId = JSON.stringify(idsArray)
 
@@ -111,15 +118,13 @@ export async function sync<T extends typeof Model> (
           ...pivotForm,
         }
         attached.push(recordToAdd)
-        records[compositeId] = recordToAdd
+        dbRepo.create(recordToAdd)
       } else {
         const recordToUpdate = { ...records[compositeId], ...pivotForm }
         updated.push(recordToUpdate)
-        records[compositeId] = recordToUpdate
+        dbRepo.update(JSON.parse(compositeId), recordToUpdate)
       }
     })
-
-    await setItem(recordsKey, deepToRaw(records))
 
     await wait(piniaLocalStorageState.mockLatencyMs ?? 0)
 
@@ -130,6 +135,7 @@ export async function sync<T extends typeof Model> (
       attached,
       detached,
       updated,
+      entity: PivotConstructor.entity,
     }
 
     return resolve(result)
