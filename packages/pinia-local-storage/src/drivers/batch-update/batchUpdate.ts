@@ -84,11 +84,13 @@ export async function batchUpdate<T extends typeof Model> (
 
       const recordClone = clone(recordForUpdate)
       const attributes = getClassAttributes(ModelClass)
-      const updatedRecord = Object.assign({}, recordClone, pick(form, Object.keys(attributes))) as DeclassifyPiniaOrmModel<InstanceType<T>>
+      const attributeKeys = Object.keys(attributes)
+
+      const updatedRecord = Object.assign({}, pick(recordClone, attributeKeys), pick(form, attributeKeys)) as DeclassifyPiniaOrmModel<InstanceType<T>>
 
       updatedRecords.push(updatedRecord)
 
-      await dbRepo.update(id, form)
+      await dbRepo.update(id, pick(form, attributeKeys))
     }
 
     await wait(piniaLocalStorageState.mockLatencyMs ?? 0)

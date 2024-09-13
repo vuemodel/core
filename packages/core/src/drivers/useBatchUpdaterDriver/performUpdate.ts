@@ -128,6 +128,7 @@ export async function performUpdate<
         }
         syncRequests[parentPrimaryKey] = {
           PivotModel: piniaOrmRelationships[relatedKey].pivot,
+          relatedKey,
           request: request.then(response => {
             (belongsToManyResponses.value as any)[parentPrimaryKey] = response
 
@@ -194,6 +195,10 @@ export async function performUpdate<
 
   const syncRequestEntries = Object.entries(syncRequests)
 
+  let hasManyToManyValidationErrors = false
+  let hasManyToManyStandardErrors = false
+  let hasManyToManyError = false
+
   syncResponses.forEach((syncResponse, index) => {
     const PivotClass = syncRequestEntries[index][1].PivotModel.constructor
     const pivotRepo = useRepo<Model>(PivotClass)
@@ -201,15 +206,19 @@ export async function performUpdate<
     // On Success
     if (syncResponse.success) {
       pivotRepo.destroy(syncResponse.detached?.map(record => getRecordPrimaryKey(PivotClass, record)))
-      pivotRepo.insert(syncResponse.attached)
-      pivotRepo.insert(syncResponse.updated)
+      pivotRepo.save(syncResponse.attached)
+      pivotRepo.save(syncResponse.updated)
     }
-    // On validation error
-    {
-      tags: {
-        '1': {
-          photo_id: ['error 1', 'error 2']
-        }
+
+    if (!syncResponse.success) {
+      hasManyToManyError = true
+
+      if (Object.values(syncResponse.validationErrors).length) {
+        hasManyToManyValidationErrors = true
+      }
+
+      if (syncResponse.standardErrors.length) {
+        hasManyToManyStandardErrors = true
       }
     }
     // Use the following variable to trigger error callback further down
@@ -221,17 +230,48 @@ export async function performUpdate<
     // Use the following variable to trigger error callback further down
     // hasManyToManyStandardErrors = true
     // hasManyToManyError = true
-    
+
     // On Error: again, we can use this to trigger an error callback futher down
   })
 
   // Persisting to the store
-  if (persist) {
-    repo.insert(thisResponse?.records ?? [])
+  if (persist && thisResponse.success) {
+    repo.save(thisResponse?.records ?? [])
+  }
+
+  // Merging has many errors into the response
+  if (hasManyToManyError) {
+    thisResponse.success = false
+    if (hasManyToManyStandardErrors) {
+      if (!thisResponse.standardErrors) {
+        thisResponse.standardErrors = []
+      }
+      syncResponses.forEach(syncResponse => {
+        if (syncResponse.standardErrors?.length) {
+          thisResponse.standardErrors?.push(...syncResponse.standardErrors)
+        }
+      })
+    }
+    if (hasManyToManyValidationErrors) {
+      if (!thisResponse.validationErrors) {
+        thisResponse.validationErrors = {}
+      }
+      syncResponses.forEach((syncResponse, index) => {
+        if (
+          syncResponse.success === false &&
+          Object.keys(syncResponse?.validationErrors)?.length
+        ) {
+          const syncRequest = syncRequestEntries[index]
+          // const PivotClass = syncRequest[1].PivotModel
+          const relatedKey = syncRequest[0]
+          thisResponse.validationErrors[relatedKey] = syncResponse.validationErrors
+        }
+      })
+    }
   }
 
   // On Success
-  if (thisResponse?.success) {
+  if (thisResponse?.success && !hasManyToManyError) {
     changes.value = {}
     options?.onSuccess?.(thisResponse)
   }

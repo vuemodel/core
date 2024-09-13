@@ -30,8 +30,11 @@ export function getFormsChangedValues<
     piniaOrmRelationships,
   } = options
 
+  const oldRecordQuery = repo.query()
+  belongsToManyRelationshipKeys?.forEach(related => oldRecordQuery.with(related))
+
   const oldRecordRelateds = belongsToManyRelationshipKeys ? conformManyRelationsToObjectSyntax(
-    repo.find(id) ?? {},
+    oldRecordQuery.find(id) ?? {},
     belongsToManyRelationshipKeys,
     pivotClasses,
     driver,
@@ -87,12 +90,15 @@ export function getFormsChangedValues<
 
       // if all ids are the same
       const newIds = Object.keys(recordChangedValuesOnly?.[key] as any ?? {})
-      const oldIds = oldRecord[key].map((record: Model) => getRecordPrimaryKey(relationship.related.constructor as typeof Model, record))
+      const oldIds = oldRecord[key]?.map((record: Model) => getRecordPrimaryKey(relationship.related.constructor as typeof Model, record)) ?? []
       if (newIds.length !== oldIds.length) return
 
       const idsAreTheSame = JSON.stringify(newIds.sort()) === JSON.stringify(oldIds.sort())
       const hasPivotWithValues = Object.values(newIds as any)
-        .some(form => !!Object.values(form ?? {}).length)
+        .some(form => {
+          if (typeof form !== 'object') return false
+          return !!Object.values(form ?? {}).length
+        })
 
       if (idsAreTheSame && !hasPivotWithValues) {
         delete recordChangedValuesOnly[key]

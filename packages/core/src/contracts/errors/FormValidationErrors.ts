@@ -1,8 +1,8 @@
 import { Model } from 'pinia-orm'
-import { DeclassifyPiniaOrmModel } from 'pinia-orm-helpers'
+import { Form } from '../..'
 
-export type FormValidationErrors<T extends typeof Model> = {
-  [K in keyof Partial<DeclassifyPiniaOrmModel<InstanceType<T>>>]: string[];
+export type FormValidationErrors<T extends typeof Model = any> = {
+  [K in keyof Form<InstanceType<T>>]: string[];
 } & {
   [key: string]: string[];
 };

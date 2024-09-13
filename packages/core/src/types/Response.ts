@@ -4,6 +4,7 @@ import { StandardErrors } from '../contracts/errors/StandardErrors'
 import { QueryValidationErrors } from '../contracts/errors/QueryValidationErrors'
 import { FormValidationErrors } from '../contracts/errors/FormValidationErrors'
 import { PaginationDetails } from '../contracts/crud/index/PaginationDetails'
+import { UseBatchUpdateFormValidationErrors } from '../contracts/batch-update/UseBatchUpdater'
 
 export type BaseSuccessResponse = {
   standardErrors: undefined
@@ -38,7 +39,7 @@ export type BatchFormValidationSuccessResponse = BaseSuccessResponse & {
 }
 
 export type BatchFormValidationErrorResponse<T extends typeof Model> = BaseErrorResponse & {
-  validationErrors: Record<string, FormValidationErrors<T>>
+  validationErrors: UseBatchUpdateFormValidationErrors<T>
 }
 
 export type SingleRecordResponse<T extends typeof Model> = {

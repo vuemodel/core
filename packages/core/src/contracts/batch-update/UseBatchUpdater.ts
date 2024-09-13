@@ -6,6 +6,7 @@ import { FormValidationErrors } from '../errors/FormValidationErrors'
 import { StandardErrors } from '../errors/StandardErrors'
 import { UseIndexerOptions, UseIndexerReturn } from '../crud/index/UseIndexer'
 import { PiniaOrmManyRelationsForm } from '../../types/PiniaOrmManyRelationsForm'
+import { Form } from '../..'
 
 type UnwrapType<T> =
   T extends Array<infer U> ? U :
@@ -13,6 +14,18 @@ type UnwrapType<T> =
   never;
 
 export type BatchUpdateForm<T extends Model> = PiniaOrmForm<T> & PiniaOrmManyRelationsForm<T>
+
+export type UseBatchUpdateFormValidationErrors<T extends typeof Model> = Record<
+  string,
+  FormValidationErrors<T> &
+  {
+    [RelationKey in keyof FilterPiniaOrmModelToRelationshipTypes<InstanceType<T>>]: Record<string, {
+      [K in keyof Form<T[RelationKey]>]: string[]
+    } & {
+      [key: string]: string[]
+    }>
+  }
+>
 
 export interface BatchUpdateMeta<T extends Model> {
   changed: boolean
@@ -205,7 +218,7 @@ export interface UseBatchUpdaterReturn<
   /**
    * Validation errors, keyed by the records id
    */
-  validationErrors: ComputedRef<Record<string, FormValidationErrors<T>>>
+  validationErrors: ComputedRef<UseBatchUpdateFormValidationErrors<T>>
 
   /**
    * All non-validation errors
