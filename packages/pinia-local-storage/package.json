@@ -1,6 +1,6 @@
 {
   "name": "@vuemodel/pinia-local-storage",
-  "version": "0.0.25",
+  "version": "0.0.26",
   "scripts": {
     "build": "unbuild",
     "stub": "unbuild --stub",
