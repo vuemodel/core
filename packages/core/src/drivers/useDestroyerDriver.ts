@@ -10,6 +10,8 @@ import { getFirstDefined } from '../utils/getFirstDefined'
 import clone from 'just-clone'
 import { destroy as destroyResource } from '../actions/destroy'
 import { generateRandomString } from '../utils/generateRandomString'
+import { OnDestroyOptimisticPersistMessage, OnDestroyPersistMessage } from '../broadcasting/BroadcastMessages'
+import { deepmerge } from 'deepmerge-ts'
 
 const defaultOptions = {
   persist: true,
@@ -21,12 +23,21 @@ export function useDestroyerDriver<T extends typeof Model> (
 ): UseDestroyerReturn<T> {
   options = Object.assign({}, defaultOptions, options)
   const composableId = generateRandomString(8)
+  const driverKey = getDriverKey(options.driver)
+
+  const destroyOptimisticPersistChannel = new BroadcastChannel(`vuemodel.${driverKey}.destroyOptimisticPersist`)
+  const destroyOptimisticPersistEntityChannel = new BroadcastChannel(`vuemodel.${driverKey}.${ModelClass.entity}.destroyOptimisticPersist`)
+  const destroyPersistChannel = new BroadcastChannel(`vuemodel.${driverKey}.destroyPersist`)
+  const destroyPersistEntityChannel = new BroadcastChannel(`vuemodel.${driverKey}.${ModelClass.entity}.destroyPersist`)
 
   const driverConfig = getMergedDriverConfig(options.driver)
   const repo = useRepo<InstanceType<T>>(
     ModelClass as unknown as Constructor<InstanceType<T>>,
     driverConfig.pinia,
   )
+
+  const destroyPersistHooks = deepmerge(driverConfig.hooks?.destroyPersist ?? [])
+  const destroyOptimisticPersistHooks = deepmerge(driverConfig.hooks?.destroyOptimisticPersist ?? [])
 
   const activeRequests = ref<UseDestroyerReturn<T>['activeRequests']>({} as UseDestroyerReturn<T>['activeRequests'])
 
@@ -79,6 +90,20 @@ export function useDestroyerDriver<T extends typeof Model> (
 
     if (optimistic && persist) {
       repo.destroy(resolvedId)
+
+      const destroyPersistMessage: OnDestroyOptimisticPersistMessage = clone({
+        entity: ModelClass.entity,
+        id: resolvedId,
+      })
+
+      destroyOptimisticPersistHooks.forEach(async hook => await hook({
+        ModelClass,
+        entity: ModelClass.entity,
+        id: resolvedId,
+      }))
+
+      destroyOptimisticPersistChannel.postMessage(destroyPersistMessage)
+      destroyOptimisticPersistEntityChannel.postMessage(destroyPersistMessage)
     }
 
     const controller = new AbortController()
@@ -89,7 +114,7 @@ export function useDestroyerDriver<T extends typeof Model> (
       ModelClass,
       String(resolvedId),
       {
-        driver: getDriverKey(options?.driver),
+        driver: driverKey,
         notifyOnError: options?.notifyOnError,
         signal,
         throw: false,
@@ -110,6 +135,22 @@ export function useDestroyerDriver<T extends typeof Model> (
     // Persisting to the store
     if (persist && response.value?.record) {
       repo.destroy(resolvedId)
+
+      if (response.value.success) {
+        const destroyPersistMessage: OnDestroyPersistMessage<T> = clone({
+          entity: ModelClass.entity,
+          response: response.value,
+        })
+
+        destroyPersistHooks.forEach(async hook => await hook({
+          ModelClass,
+          entity: ModelClass.entity,
+          response: response.value as DestroySuccessResponse<typeof Model>,
+        }))
+
+        destroyPersistChannel.postMessage(destroyPersistMessage)
+        destroyPersistEntityChannel.postMessage(destroyPersistMessage)
+      }
     }
 
     // On Success

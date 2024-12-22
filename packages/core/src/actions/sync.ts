@@ -3,11 +3,14 @@ import { Model } from 'pinia-orm'
 import { SyncResponse } from '../types/Response'
 import { resolveSyncParams } from './resolveSyncParams'
 import clone from 'just-clone'
-import { OnSyncingMessage, OnSyncedMessage } from '../types/BroadcastMessages'
+import { OnSyncingMessage, OnSyncedMessage } from '../broadcasting/BroadcastMessages'
 import { Sync, SyncOptions } from '../contracts/sync/Sync'
 import { FilterPiniaOrmModelToManyRelationshipTypes } from '../types/FilterPiniaOrmModelToManyRelationshipTypes'
 import { DeclassifyPiniaOrmModel } from 'pinia-orm-helpers'
 import { LoosePrimaryKey } from '../types/LoosePrimaryKey'
+import { getDriverKey } from '../utils/getDriverKey'
+import { getMergedDriverConfig } from '../utils/getMergedDriverConfig'
+import { deepmerge } from 'deepmerge-ts'
 
 export function sync<T extends typeof Model>(
   ModelClass: T, // When a Model class is passed, use this signature
@@ -42,9 +45,14 @@ export function sync<T extends typeof Model> (
     formOrOptions,
     options,
   )
-  const driverKey = typeof params.ModelClass === 'string' ? params.ModelClass : params.options?.driver
+  const driverKey = getDriverKey(params.options?.driver)
 
   const driver = getDriverFunction('sync', driverKey) as Sync<T>
+
+  const driverConfig = getMergedDriverConfig(driverKey)
+
+  const syncingHooks = deepmerge(driverConfig.hooks?.syncing ?? [])
+  const syncedHooks = deepmerge(driverConfig.hooks?.synced ?? [])
 
   const entity = params.ModelClass.entity
 
@@ -63,6 +71,13 @@ export function sync<T extends typeof Model> (
     forms: keyValueForm,
   })
 
+  syncingHooks.forEach(async hook => await hook({
+    ModelClass: params.ModelClass,
+    entity: params.ModelClass.entity,
+    related: params.related,
+    forms: keyValueForm,
+  }))
+
   syncingChannel.postMessage(syncingPostMessage)
   syncingEntityChannel.postMessage(syncingPostMessage)
 
@@ -73,13 +88,23 @@ export function sync<T extends typeof Model> (
     keyValueForm,
     params.options,
   ).then(response => {
-    const syncedPostMessage: OnSyncedMessage<T> = clone({
-      entity,
-      related: params.related,
-      response,
-    })
-    syncedChannel.postMessage(syncedPostMessage)
-    syncedEntityChannel.postMessage(syncedPostMessage)
+    if (response.success) {
+      const syncedPostMessage: OnSyncedMessage = clone({
+        entity,
+        related: params.related,
+        response,
+      })
+
+      syncedHooks.forEach(async hook => await hook({
+        ModelClass: params.ModelClass,
+        entity,
+        related: params.related,
+        response,
+      }))
+
+      syncedChannel.postMessage(syncedPostMessage)
+      syncedEntityChannel.postMessage(syncedPostMessage)
+    }
     return response
   })
 }

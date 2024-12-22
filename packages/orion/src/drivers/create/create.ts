@@ -30,6 +30,7 @@ export async function create<T extends typeof Model> (
         success: false,
         validationErrors: {} as FormValidationErrors<T>,
         record: undefined,
+        entity: ModelClass.entity,
       })
     }
 
@@ -43,6 +44,7 @@ export async function create<T extends typeof Model> (
         success: false,
         validationErrors: {} as FormValidationErrors<T>,
         record: undefined,
+        entity: ModelClass.entity,
       })
     })
     const notifyOnError = 'notifyOnError' in options ? options.notifyOnError : config?.notifyOnError?.create
@@ -57,6 +59,7 @@ export async function create<T extends typeof Model> (
         standardErrors: [{ name: 'primary key unknown', message: 'could not discover the records primary key' }],
         success: false,
         validationErrors: {} as FormValidationErrors<T>,
+        entity: ModelClass.entity,
       })
     }
 
@@ -73,6 +76,7 @@ export async function create<T extends typeof Model> (
         validationErrors: undefined,
         success: true,
         action: 'create',
+        entity: ModelClass.entity,
       }
 
       return resolve(result)
@@ -83,6 +87,7 @@ export async function create<T extends typeof Model> (
         success: false,
         action: 'create',
         record: undefined,
+        entity: ModelClass.entity,
       }
 
       result.standardErrors = [

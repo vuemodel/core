@@ -1,4 +1,5 @@
 import { Form } from '@vuemodel/core'
+import clone from 'just-clone'
 import { Model } from 'pinia-orm'
 import { DeclassifyPiniaOrmModel } from 'pinia-orm-helpers'
 
@@ -85,7 +86,7 @@ class ModelRepo<T extends typeof Model> {
           return reject(`Record with id ${id} not found`)
         }
 
-        const updatedRecord = { ...existingRecord, ...updates }
+        const updatedRecord = clone({ ...existingRecord, ...updates })
         const putRequest = store.put(updatedRecord)
 
         putRequest.onsuccess = () => resolve()
@@ -212,11 +213,11 @@ class ModelRepo<T extends typeof Model> {
     })
   }
 
-  async batchUpdate (forms: { [id: string]: Partial<Form<InstanceType<T>>> }) {
+  async bulkUpdate (forms: { [id: string]: Partial<Form<InstanceType<T>>> }) {
     const db = await this.ensureDbExists()
 
     return new Promise<void>((resolve, reject) => {
-      // Create a single transaction for batch updates
+      // Create a single transaction for bulk updates
       const tx = db.transaction(this.storeName, 'readwrite')
       const store = tx.objectStore(this.storeName)
 
@@ -229,7 +230,7 @@ class ModelRepo<T extends typeof Model> {
         getRequest.onsuccess = () => {
           const existingRecord = getRequest.result
           if (existingRecord) {
-            const updatedRecord = { ...existingRecord, ...forms[id] }
+            const updatedRecord = clone({ ...existingRecord, ...forms[id] })
             store.put(updatedRecord) // Use store.put inside the same transaction
           } else {
             console.warn(`Record with id ${id} not found. Skipping.`)

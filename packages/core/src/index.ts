@@ -50,12 +50,12 @@ export * from './actions/destroy'
 export * from './composables/useDestroyer'
 export * from './drivers/useDestroyerDriver'
 
-// Batch Updater
-export * from './contracts/batch-update/BatchUpdate'
-export * from './contracts/batch-update/UseBatchUpdater'
-export * from './actions/batchUpdate'
-export * from './composables/useBatchUpdater'
-export * from './drivers/useBatchUpdaterDriver/useBatchUpdaterDriver'
+// Bulk Updater
+export * from './contracts/bulk-update/BulkUpdate'
+export * from './contracts/bulk-update/UseBulkUpdater'
+export * from './actions/bulkUpdate'
+export * from './composables/useBulkUpdater'
+export * from './drivers/useBulkUpdaterDriver/useBulkUpdaterDriver'
 
 // Syncer
 export * from './contracts/sync/Sync'
@@ -68,6 +68,9 @@ export * from './contracts/errors/StandardErrors'
 export * from './contracts/errors/FormValidationErrors'
 export * from './contracts/errors/QueryValidationErrors'
 
+// Broadcasting
+export * from './broadcasting/makeChannel'
+
 // Utils
 export * from './utils/firstDefined'
 export * from './utils/getRawDriverConfig'
@@ -77,10 +80,10 @@ export * from './utils/getMergedDriverConfig'
 export * from './utils/getBaseConfig'
 export * from './utils/populateFormWithRecord'
 export * from './utils/getRecordPrimaryKey'
-export * from './utils/makeChannel'
 
 // Types
 export * from './types/LoosePrimaryKey'
 export * from './types/Forms'
-export * from './types/BroadcastMessages'
+export * from './broadcasting/BroadcastMessages'
 export * from './types/FilterPiniaOrmModelToManyRelationshipTypes'
+export * from './hooks/Hooks'

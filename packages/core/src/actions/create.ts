@@ -5,8 +5,10 @@ import { PiniaOrmForm } from 'pinia-orm-helpers'
 import { CreateResponse } from '../types/Response'
 import { resolveCreateParams } from './resolveCreateParams'
 import clone from 'just-clone'
-import { OnCreatedMessage, OnCreatingMessage } from '../types/BroadcastMessages'
+import { OnCreatedMessage, OnCreatingMessage } from '../broadcasting/BroadcastMessages'
 import { getDriverKey } from '../utils/getDriverKey'
+import { deepmerge } from 'deepmerge-ts'
+import { getMergedDriverConfig } from '../utils/getMergedDriverConfig'
 
 /**
  * Create a record on the "backend".
@@ -33,6 +35,11 @@ export function create<T extends typeof Model> (
 
   const driver = getDriverFunction('create', driverKey) as Create<T>
 
+  const driverConfig = getMergedDriverConfig(driverKey)
+
+  const creatingHooks = deepmerge(driverConfig.hooks?.creating ?? [])
+  const createdHooks = deepmerge(driverConfig.hooks?.created ?? [])
+
   const entity = params.ModelClass.entity
 
   const creatingChannel = new BroadcastChannel(`vuemodel.${driverKey}.creating`)
@@ -43,14 +50,20 @@ export function create<T extends typeof Model> (
 
   const creatingPostMessage: OnCreatingMessage<T> = clone({ entity, form: params.form })
 
+  creatingHooks.forEach(async hook => await hook({ ModelClass: params.ModelClass, entity, form: params.form }))
+
   creatingChannel.postMessage(creatingPostMessage)
   creatingEntityChannel.postMessage(creatingPostMessage)
 
   return driver(params.ModelClass, params.form, params.options)
-    .then(response => {
-      const createdPostMessage: OnCreatedMessage<T> = clone({ entity, response })
-      createdChannel.postMessage(createdPostMessage)
-      createdEntityChannel.postMessage(createdPostMessage)
+    .then((response) => {
+      if (response.success) {
+        const createdPostMessage: OnCreatedMessage<T> = clone({ entity, response })
+        createdHooks.forEach(async hook => await hook({ ModelClass: params.ModelClass, entity, response }))
+
+        createdChannel.postMessage(createdPostMessage)
+        createdEntityChannel.postMessage(createdPostMessage)
+      }
       return response
     })
 }

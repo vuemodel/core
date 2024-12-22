@@ -22,10 +22,12 @@ import { resolveIndexParams } from './resolveIndexParams'
 import { getRecordPrimaryKey } from '../utils/getRecordPrimaryKey'
 import { IndexWiths } from '../contracts/crud/index/IndexWiths'
 import { IndexWithsLoose } from '../contracts/crud/index/IndexWithsLoose'
-import { IndexFilters, IndexSuccessResponse } from '..'
+import { IndexFilters, IndexSuccessResponse, OnIndexPersistMessage } from '..'
 import { getFirstDefined } from '../utils/getFirstDefined'
 import { index as indexResource } from '../actions/index'
 import { generateRandomString } from '../utils/generateRandomString'
+import clone from 'just-clone'
+import { removeFunctions } from '../utils/removeFunctions'
 
 const defaultOptions = {
   persist: true,
@@ -38,12 +40,19 @@ export function useIndexerDriver<T extends typeof Model> (
 ): UseIndexerReturn<T> {
   options = Object.assign({}, defaultOptions, options)
   const composableId = generateRandomString(8)
+  const driverKey = getDriverKey(options.driver)
+
+  const indexPersistChannel = new BroadcastChannel(`vuemodel.${driverKey}.indexPersist`)
+  const indexPersistEntityChannel = new BroadcastChannel(`vuemodel.${driverKey}.${ModelClass.entity}.indexPersist`)
 
   const driverConfig = getMergedDriverConfig(options.driver)
   const repo = useRepo<InstanceType<T>>(
     ModelClass as unknown as Constructor<InstanceType<T>>,
     driverConfig.pinia,
   )
+
+  const indexPersistHooks = deepmerge(driverConfig.hooks?.indexPersist ?? [])
+
   const pagination: Ref<PaginationDetails> = ref(options.pagination ?? {} as PaginationDetails)
   const {
     pause: pauseImmediatePaginationWatcher,
@@ -98,17 +107,33 @@ export function useIndexerDriver<T extends typeof Model> (
     return ids
   })
 
-  function makeQuery () {
-    const withObject = makeWithQuery(toValue(options?.with ?? {})) as IndexWiths<InstanceType<T>>
-    const filtersObject = toValue(options?.filters ?? {})
-    const orderByArray = toValue(options?.orderBy ?? [])
-
+  function makeQuery (makeQueryOptions?: {
+    omitWhereIdFilter?: boolean
+    omitWith?: boolean
+    omitFilters?: boolean
+    omitOrderBy?: boolean
+  }) {
     const query = repo.query()
 
-    query.whereId(toValue(responseIds) ?? [])
-    if (withObject) applyWiths(ModelClass, query, withObject)
-    if (filtersObject) applyFilters(query, filtersObject)
-    if (orderByArray) applyOrderBys(query, orderByArray)
+    const withObject = makeQueryOptions?.omitWith
+      ? {}
+      : makeWithQuery(toValue(options?.with ?? {})) as IndexWiths<InstanceType<T>>
+
+    const filtersObject = makeQueryOptions?.omitFilters
+      ? {}
+      : toValue(options?.filters ?? {})
+
+    const orderByArray = makeQueryOptions?.omitFilters
+      ? []
+      : toValue(options?.orderBy ?? [])
+
+    if (!makeQueryOptions?.omitWhereIdFilter) {
+      query.whereId(toValue(responseIds) ?? [])
+    }
+
+    applyWiths(ModelClass, query, withObject)
+    applyFilters(query, filtersObject)
+    applyOrderBys(query, orderByArray)
 
     return query
   }
@@ -133,6 +158,7 @@ export function useIndexerDriver<T extends typeof Model> (
     // response.value = undefined
 
     const resolvedScopes = resolveScopes(
+      ModelClass,
       options?.driver ?? vueModelState.default ?? 'default',
       ModelClass.entity,
       options?.scopes,
@@ -209,22 +235,27 @@ export function useIndexerDriver<T extends typeof Model> (
     const controller = new AbortController()
     const signal = controller.signal
 
+    const useIndexerOptions = { ...options, ...resolvedParams.options, composableId }
+
     indexing.value = true
+
+    const requestPagination = {
+      recordsPerPage: paginationMerged?.recordsPerPage,
+      page: paginationMerged?.page,
+    }
+
     const thisRequest = indexResource(
       ModelClass,
       {
-        driver: getDriverKey(options?.driver),
+        driver: driverKey,
         filters,
         with: withMerged,
         orderBy,
         notifyOnError,
-        pagination: {
-          recordsPerPage: paginationMerged?.recordsPerPage,
-          page: paginationMerged?.page,
-        },
+        pagination: requestPagination,
         signal,
         throw: false,
-        _useIndexerOptions: { ...options, ...resolvedParams.options, composableId },
+        _useIndexerOptions: useIndexerOptions,
       },
     )
 
@@ -267,6 +298,34 @@ export function useIndexerDriver<T extends typeof Model> (
       const responseResolved = toValue(response)
       if (responseResolved) {
         options?.onSuccess?.(responseResolved as IndexSuccessResponse<T>)
+      }
+
+      const useIndexerOptionsWithoutFunction = useIndexerOptions ? removeFunctions(useIndexerOptions) : {}
+
+      if (responseResolved?.success) {
+        const indexPersistMessage: OnIndexPersistMessage<T> = clone({
+          entity: ModelClass.entity,
+          response: responseResolved,
+          filters,
+          with: withMerged,
+          orderBy,
+          pagination: responseResolved.pagination,
+          _useIndexerOptions: useIndexerOptionsWithoutFunction,
+        }) as any
+
+        indexPersistHooks.forEach(async hook => await hook({
+          ModelClass,
+          entity: ModelClass.entity,
+          response: responseResolved,
+          filters,
+          with: withMerged,
+          orderBy,
+          pagination: responseResolved.pagination,
+          _useIndexerOptions: useIndexerOptionsWithoutFunction,
+        }))
+
+        indexPersistChannel.postMessage(indexPersistMessage)
+        indexPersistEntityChannel.postMessage(indexPersistMessage)
       }
     }
 

@@ -27,6 +27,7 @@ export function resolveScope (
 }
 
 export function resolveScopes (
+  ModelClass: typeof Model,
   driver: string | (() => string),
   entity: string,
   scopesToUse: UseIndexerOptions<typeof Model>['scopes'],
@@ -83,7 +84,7 @@ export function resolveScopes (
     if (typeof scope === 'string') {
       const configuredScope = configuredScopes[scope]
       if (typeof configuredScope === 'function') {
-        return configuredScope({ entity, driver: driverResolved })
+        return configuredScope({ ModelClass, entity, driver: driverResolved })
       } else {
         return configuredScope
       }
@@ -91,7 +92,7 @@ export function resolveScopes (
       const configuredScope = configuredScopes[scope.name]
       if (typeof configuredScope === 'function') {
         const parametersResolved = typeof scope.parameters === 'function' ? scope.parameters() : scope.parameters
-        return configuredScope({ entity, driver: driverResolved }, parametersResolved ?? undefined)
+        return configuredScope({ ModelClass, entity, driver: driverResolved }, parametersResolved ?? undefined)
       } else {
         return configuredScope
       }

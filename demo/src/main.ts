@@ -20,11 +20,11 @@ const vueModel = createVueModel({
         optimistic: true,
         pinia,
         notifyOnError: {
-          batchUpdate: true,
+          bulkUpdate: true,
         },
         errorNotifiers: {
-          batchUpdate () {
-            console.log('batch update error notifier!')
+          bulkUpdate () {
+            console.log('bulk update error notifier!')
           },
         },
       },

@@ -8,7 +8,7 @@ const errorNotifierNameMap = {
   index: 'index',
   destroy: 'destroy',
   find: 'find',
-  batchUpdate: 'batch-update',
+  bulkUpdate: 'bulk-update',
 }
 
 export function makeMockErrorResponse<T extends typeof Model, R extends Response<T>> (
@@ -17,7 +17,7 @@ export function makeMockErrorResponse<T extends typeof Model, R extends Response
     config: VueModelConfig
     ModelClass: T,
     withValidationErrors: boolean,
-    errorNotifierFunctionKey: 'create' | 'update' | 'index' | 'destroy' | 'find' | 'batchUpdate'
+    errorNotifierFunctionKey: 'create' | 'update' | 'index' | 'destroy' | 'find' | 'bulkUpdate'
   },
 ): R | false {
   if (

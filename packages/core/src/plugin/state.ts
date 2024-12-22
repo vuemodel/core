@@ -6,6 +6,7 @@ import { NotifyOnErrorOptions } from '../types/NotifyOnErrorOptions'
 import { Pinia } from 'pinia'
 import { ObjectQueryScope } from '../types/ObjectQueryScope'
 import { Response } from '../types/Response'
+import { BulkUpdatedHookPayload, BulkUpdatePersistHookPayload, BulkUpdatingHookPayload, CreatedHookPayload, CreateOptimisticPersistHookPayload, CreatePersistHookPayload, CreatingHookPayload, DestroyedHookPayload, DestroyingHookPayload, DestroyOptimisticPersistHookPayload, DestroyPersistHookPayload, FindingHookPayload, FindPersistHookPayload, FoundHookPayload, IndexedHookPayload, IndexingHookPayload, IndexPersistHookPayload, SyncedHookPayload, SyncingHookPayload, SyncPersistHookPayload, UpdatedHookPayload, UpdateOptimisticPersistHookPayload, UpdatePersistHookPayload, UpdatingHookPayload } from '../hooks/Hooks'
 
 export type ErrorNotifyErrors = {
   standardErrors: StandardErrors
@@ -14,23 +15,49 @@ export type NotifyErrorsWithValidation = {
   validationErrors: FormValidationErrors<typeof Model>
 } & ErrorNotifyErrors
 
-export type NotifyErrorsWithBatchValidation = {
+export type NotifyErrorsWithBulkValidation = {
   validationErrors: Record<string, FormValidationErrors<typeof Model>>
 } & ErrorNotifyErrors
 
 export type ErrorNotifier = (options: { model: typeof Model, errors: ErrorNotifyErrors }) => void
 export type ErrorNotifierWithValidation = (options: { model: typeof Model, errors: NotifyErrorsWithValidation }) => void
-export type ErrorNotifierWithBatchValidation = (options: { model: typeof Model, errors: NotifyErrorsWithBatchValidation }) => void
+export type ErrorNotifierWithBulkValidation = (options: { model: typeof Model, errors: NotifyErrorsWithBulkValidation }) => void
 
 export type PluginScope = string | { name: string, parameters: Record<string, any> | (() => Record<string, any>) }
 export type PluginScopeConfig = ObjectQueryScope |
 ((
-  context?: { entity: string, driver: string },
+  context?: { ModelClass: typeof Model, entity: string, driver: string },
   payload?: any
 ) => ObjectQueryScope)
 
 export type VueModelConfig = {
   pinia?: Pinia
+  hooks?: {
+    creating?: ((payload: CreatingHookPayload) => Promise<void> | void)[]
+    created?: ((payload: CreatedHookPayload) => Promise<void> | void)[]
+    createPersist?: ((payload: CreatePersistHookPayload) => Promise<void> | void)[]
+    createOptimisticPersist?: ((payload: CreateOptimisticPersistHookPayload) => Promise<void> | void)[]
+    updating?: ((payload: UpdatingHookPayload) => Promise<void> | void)[]
+    updated?: ((payload: UpdatedHookPayload) => Promise<void> | void)[]
+    updatePersist?: ((payload: UpdatePersistHookPayload) => Promise<void> | void)[]
+    updateOptimisticPersist?: ((payload: UpdateOptimisticPersistHookPayload) => Promise<void> | void)[]
+    indexing?: ((payload: IndexingHookPayload) => Promise<void> | void)[]
+    indexed?: ((payload: IndexedHookPayload) => Promise<void> | void)[]
+    indexPersist?: ((payload: IndexPersistHookPayload) => Promise<void> | void)[]
+    finding?: ((payload: FindingHookPayload) => Promise<void> | void)[]
+    found?: ((payload: FoundHookPayload) => Promise<void> | void)[]
+    findPersist?: ((payload: FindPersistHookPayload) => Promise<void> | void)[]
+    destroying?: ((payload: DestroyingHookPayload) => Promise<void> | void)[]
+    destroyed?: ((payload: DestroyedHookPayload) => Promise<void> | void)[]
+    destroyPersist?: ((payload: DestroyPersistHookPayload) => Promise<void> | void)[]
+    destroyOptimisticPersist?: ((payload: DestroyOptimisticPersistHookPayload) => Promise<void> | void)[]
+    bulkUpdating?: ((payload: BulkUpdatingHookPayload) => Promise<void> | void)[]
+    bulkUpdated?: ((payload: BulkUpdatedHookPayload) => Promise<void> | void)[]
+    bulkUpdatePersist?: ((payload: BulkUpdatePersistHookPayload) => Promise<void> | void)[]
+    syncing?: ((payload: SyncingHookPayload) => Promise<void> | void)[]
+    synced?: ((payload: SyncedHookPayload) => Promise<void> | void)[]
+    syncPersist?: ((payload: SyncPersistHookPayload) => Promise<void> | void)[]
+  },
   excludeFields?: string[]
   notifyOnError?: NotifyOnErrorOptions | undefined
   autoUpdateDebounce?: number | (() => number)
@@ -47,7 +74,8 @@ export type VueModelConfig = {
     index?: ErrorNotifierWithValidation
     destroy?: ErrorNotifier
     find?: ErrorNotifierWithValidation
-    batchUpdate?: ErrorNotifierWithBatchValidation
+    bulkUpdate?: ErrorNotifierWithBulkValidation
+    sync?: ErrorNotifierWithBulkValidation
   }
   scopes?: Record<string, PluginScopeConfig>
   entityScopes?: Record<string, Record<string, PluginScopeConfig>>

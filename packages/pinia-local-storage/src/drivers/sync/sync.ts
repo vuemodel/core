@@ -68,7 +68,7 @@ export async function sync<T extends typeof Model> (
       ModelClass,
       notifyOnError,
       withValidationErrors: true,
-      errorNotifierFunctionKey: 'batchUpdate',
+      errorNotifierFunctionKey: 'bulkUpdate',
     })
     if (mockErrorResponse !== false) return errorReturnFunction(mockErrorResponse)
 

@@ -18,6 +18,8 @@ import { generateRandomString } from '../utils/generateRandomString'
 import { update as updateResource } from '../actions/update'
 import { getDriverKey } from '../utils/getDriverKey'
 import { useFinder } from '../composables/useFinder'
+import { OnUpdateOptimisticPersistMessage, OnUpdatePersistMessage } from '../broadcasting/BroadcastMessages'
+import { deepmerge } from 'deepmerge-ts'
 
 const defaultOptions = {
   persist: true,
@@ -29,8 +31,13 @@ export function useUpdaterDriver<T extends typeof Model> (
   options?: UseUpdaterOptions<T>,
 ): UseUpdaterReturn<T> {
   options = Object.assign({}, defaultOptions, options)
-
   const composableId = generateRandomString(8)
+  const driverKey = getDriverKey(options.driver)
+
+  const updateOptimisticPersistChannel = new BroadcastChannel(`vuemodel.${driverKey}.updateOptimisticPersist`)
+  const updateOptimisticPersistEntityChannel = new BroadcastChannel(`vuemodel.${driverKey}.${ModelClass.entity}.updateOptimisticPersist`)
+  const updatePersistChannel = new BroadcastChannel(`vuemodel.${driverKey}.updatePersist`)
+  const updatePersistEntityChannel = new BroadcastChannel(`vuemodel.${driverKey}.${ModelClass.entity}.updatePersist`)
 
   const resourceFinder = useFinder(ModelClass, {
     persist: true,
@@ -42,6 +49,9 @@ export function useUpdaterDriver<T extends typeof Model> (
     ModelClass as unknown as Constructor<InstanceType<T>>,
     driverConfig.pinia,
   )
+
+  const updatePersistHooks = deepmerge(driverConfig.hooks?.updatePersist ?? [])
+  const updateOptimisticPersistHooks = deepmerge(driverConfig.hooks?.updateOptimisticPersist ?? [])
 
   const form = ref(options.form ?? {}) as Ref<PiniaOrmForm<InstanceType<T>>>
 
@@ -236,6 +246,20 @@ export function useUpdaterDriver<T extends typeof Model> (
       repo.destroy(resolvedId)
       thisOptimisticRecord = repo.insert(mergedForm)
       optimisticRecord.value = thisOptimisticRecord
+
+      const updateOptimisticPersistMessage: OnUpdateOptimisticPersistMessage<T> = clone({
+        entity: ModelClass.entity,
+        form: mergedForm,
+      })
+
+      updateOptimisticPersistHooks.forEach(async hook => await hook({
+        ModelClass,
+        entity: ModelClass.entity,
+        form: mergedForm,
+      }))
+
+      updateOptimisticPersistChannel.postMessage(updateOptimisticPersistMessage)
+      updateOptimisticPersistEntityChannel.postMessage(updateOptimisticPersistMessage)
     } else {
       thisOptimisticRecord = undefined
     }
@@ -249,7 +273,7 @@ export function useUpdaterDriver<T extends typeof Model> (
       String(resolvedId),
       changedValues,
       {
-        driver: getDriverKey(options?.driver),
+        driver: driverKey,
         notifyOnError: options?.notifyOnError,
         signal,
         throw: false,
@@ -271,10 +295,28 @@ export function useUpdaterDriver<T extends typeof Model> (
     response.value = thisResponse
 
     // Persisting to the store
-    if (persist && thisResponse?.record && !optimistic) {
-      // TODO: Is it still necessary to destroy the record first?
-      repo.destroy(resolvedId)
-      repo.insert(thisResponse?.record)
+    if (persist && thisResponse?.record) {
+      if (!optimistic) {
+        // TODO: Is it still necessary to destroy the record first?
+        repo.destroy(resolvedId)
+        repo.insert(thisResponse?.record)
+      }
+
+      if (thisResponse.success) {
+        const updatePersistMessage: OnUpdatePersistMessage<T> = clone({
+          entity: ModelClass.entity,
+          response: thisResponse,
+        })
+
+        updatePersistHooks.forEach(async hook => await hook({
+          ModelClass,
+          entity: ModelClass.entity,
+          response: thisResponse,
+        }))
+
+        updatePersistChannel.postMessage(updatePersistMessage)
+        updatePersistEntityChannel.postMessage(updatePersistMessage)
+      }
     }
 
     // On Success

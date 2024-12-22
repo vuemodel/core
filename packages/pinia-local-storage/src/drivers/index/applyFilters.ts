@@ -30,8 +30,8 @@ function executeFilterBlock (record: Model, filterGroups: FilterGroup): boolean[
 }
 
 export function applyFilters (query: Query, filters: IndexFilters<InstanceType<typeof Model>>) {
-  const fields = getClassAttributes(query.model.constructor)
-  const relationships = getClassRelationships(query.model.constructor)
+  const fields = getClassAttributes(query.model.constructor as typeof Model)
+  const relationships = getClassRelationships(query.model.constructor as typeof Model)
 
   Object.entries(filters).forEach(([field, actions]) => {
     if (!actions) return

@@ -4,5 +4,6 @@ export interface NotifyOnErrorOptions {
   destroy?: boolean
   find?: boolean
   index?: boolean
-  batchUpdate?: boolean
+  bulkUpdate?: boolean
+  sync?: boolean
 }

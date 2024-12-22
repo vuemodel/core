@@ -24,6 +24,7 @@ export function applyWiths<T extends Model> (
       const relationships = getClassRelationships(RelatedClass)
 
       const resolvedScopes = resolveScopes(
+        RelatedClass,
         options?.driver ?? vueModelState.default ?? 'default',
         RelatedClass.entity,
         undefined,

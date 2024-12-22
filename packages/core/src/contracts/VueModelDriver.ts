@@ -11,8 +11,8 @@ import { UseFinder } from './crud/find/UseFinder'
 import { UseDestroyer } from './crud/destroy/UseDestroyer'
 import { VueModelConfig } from '../plugin/state'
 import { VueModelDriverFeatures } from './VueModelDriverFeatures'
-import { UseBatchUpdater } from './batch-update/UseBatchUpdater'
-import { BatchUpdate } from './batch-update/BatchUpdate'
+import { UseBulkUpdater } from './bulk-update/UseBulkUpdater'
+import { BulkUpdate } from './bulk-update/BulkUpdate'
 import { Sync } from './sync/Sync'
 
 export interface VueModelDriver<T extends typeof Model = typeof Model> {
@@ -31,8 +31,8 @@ export interface VueModelDriver<T extends typeof Model = typeof Model> {
   destroy: Destroy<T>
   useDestroyer: UseDestroyer<T>
 
-  batchUpdate?: BatchUpdate<T>
-  useBatchUpdater?: UseBatchUpdater<T>
+  bulkUpdate?: BulkUpdate<T>
+  useBulkUpdater?: UseBulkUpdater<T>
 
   sync?: Sync<T>
 

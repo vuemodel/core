@@ -1,10 +1,11 @@
 import {
-  VueModelDriver,
   useCreatorDriver,
   useUpdaterDriver,
   useIndexerDriver,
   useFinderDriver,
   useDestroyerDriver,
+  useBulkUpdaterDriver,
+  VueModelDriverConfig,
 } from '@vuemodel/core'
 
 import { index } from './drivers/index/index'
@@ -13,8 +14,10 @@ import { find } from './drivers/find/find'
 import { destroy } from './drivers/destroy/destroy'
 import { update } from './drivers/update/update'
 import features from './features.json'
+import { bulkUpdate } from './drivers/bulk-update/bulkUpdate'
+import { sync } from './drivers/sync/sync'
 
-export const orionVueModelDriver: VueModelDriver['driver'] = {
+export const orionVueModelDriver: VueModelDriverConfig['driver'] = {
   features,
 
   index,
@@ -31,6 +34,11 @@ export const orionVueModelDriver: VueModelDriver['driver'] = {
 
   destroy,
   useDestroyer: useDestroyerDriver,
+
+  bulkUpdate,
+  useBulkUpdater: useBulkUpdaterDriver,
+
+  sync,
 }
 
 export {

@@ -6,7 +6,10 @@ import { UpdateResponse } from '../types/Response'
 import { LoosePrimaryKey } from '../types/LoosePrimaryKey'
 import { resolveUpdateParams } from './resolveUpdateParams'
 import clone from 'just-clone'
-import { OnUpdatedMessage, OnUpdatingMessage } from '../types/BroadcastMessages'
+import { OnUpdatedMessage, OnUpdatingMessage } from '../broadcasting/BroadcastMessages'
+import { getDriverKey } from '../utils/getDriverKey'
+import { getMergedDriverConfig } from '../utils/getMergedDriverConfig'
+import { deepmerge } from 'deepmerge-ts'
 
 /**
  * Update a record on the "backend".
@@ -33,11 +36,16 @@ export function update<T extends typeof Model> (
   hasDriverOptions?: UpdateOptions<T>,
 ): Promise<UpdateResponse<T>> {
   const params = resolveUpdateParams<T>(ModelClass, id, form, options, hasDriverOptions)
-  const driverKey = typeof ModelClass === 'string' ? ModelClass : (options as UpdateOptions<T>)?.driver
+  const driverKey = getDriverKey(params.options.driver)
 
   const driver = getDriverFunction('update', driverKey) as Update<T>
 
+  const driverConfig = getMergedDriverConfig(driverKey)
+
   const entity = params.ModelClass.entity
+
+  const updatingHooks = deepmerge(driverConfig.hooks?.updating ?? [])
+  const updatedHooks = deepmerge(driverConfig.hooks?.updated ?? [])
 
   const updatingChannel = new BroadcastChannel(`vuemodel.${driverKey}.updating`)
   const updatedChannel = new BroadcastChannel(`vuemodel.${driverKey}.updated`)
@@ -45,6 +53,8 @@ export function update<T extends typeof Model> (
   const updatedEntityChannel = new BroadcastChannel(`vuemodel.${driverKey}.${entity}.updated`)
 
   const updatingPostMessage: OnUpdatingMessage<T> = clone({ entity, form: params.form, id: params.id })
+
+  updatingHooks.forEach(async hook => await hook({ ModelClass: params.ModelClass, entity, form: params.form, id: params.id }))
 
   updatingChannel.postMessage(updatingPostMessage)
   updatingEntityChannel.postMessage(updatingPostMessage)
@@ -55,9 +65,14 @@ export function update<T extends typeof Model> (
     params.form,
     params.options,
   ).then(response => {
-    const updatedPostMessage: OnUpdatedMessage<T> = clone({ entity, response })
-    updatedChannel.postMessage(updatedPostMessage)
-    updatedEntityChannel.postMessage(updatedPostMessage)
+    if (response.success) {
+      const updatedPostMessage: OnUpdatedMessage<T> = clone({ entity, response })
+
+      updatedHooks.forEach(async hook => await hook({ ModelClass: params.ModelClass, entity, response }))
+
+      updatedChannel.postMessage(updatedPostMessage)
+      updatedEntityChannel.postMessage(updatedPostMessage)
+    }
     return response
   })
 }

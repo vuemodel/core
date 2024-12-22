@@ -4,7 +4,7 @@ import { StandardErrors } from '../contracts/errors/StandardErrors'
 import { QueryValidationErrors } from '../contracts/errors/QueryValidationErrors'
 import { FormValidationErrors } from '../contracts/errors/FormValidationErrors'
 import { PaginationDetails } from '../contracts/crud/index/PaginationDetails'
-import { UseBatchUpdateFormValidationErrors } from '../contracts/batch-update/UseBatchUpdater'
+import { UseBulkUpdateFormValidationErrors } from '../contracts/bulk-update/UseBulkUpdater'
 
 export type BaseSuccessResponse = {
   standardErrors: undefined
@@ -34,12 +34,12 @@ export type FormValidationErrorResponse<T extends typeof Model> = BaseErrorRespo
   validationErrors: FormValidationErrors<T>
 }
 
-export type BatchFormValidationSuccessResponse = BaseSuccessResponse & {
+export type BulkFormValidationSuccessResponse = BaseSuccessResponse & {
   validationErrors: undefined
 }
 
-export type BatchFormValidationErrorResponse<T extends typeof Model> = BaseErrorResponse & {
-  validationErrors: UseBatchUpdateFormValidationErrors<T>
+export type BulkFormValidationErrorResponse<T extends typeof Model> = BaseErrorResponse & {
+  validationErrors: UseBulkUpdateFormValidationErrors<T>
 }
 
 export type SingleRecordResponse<T extends typeof Model> = {
@@ -76,17 +76,17 @@ export type IndexSuccessResponse<T extends typeof Model> = { action: 'index' } &
 export type IndexErrorResponse<T extends typeof Model> = { action: 'index' } & QueryValidationErrorResponse & MultipleRecordsResponse<T>
 export type IndexResponse<T extends typeof Model> = IndexSuccessResponse<T> | IndexErrorResponse<T>
 
-export type BatchUpdateSuccessResponse<T extends typeof Model> = { action: 'batch-update' } & BatchFormValidationSuccessResponse & MultipleRecordsResponse<T>
-export type BatchUpdateErrorResponse<T extends typeof Model> = { action: 'batch-update' } & BatchFormValidationErrorResponse<T> & MultipleRecordsResponse<T>
-export type BatchUpdateResponse<T extends typeof Model> = BatchUpdateSuccessResponse<T> | BatchUpdateErrorResponse<T>
+export type BulkUpdateSuccessResponse<T extends typeof Model> = { action: 'bulk-update' } & BulkFormValidationSuccessResponse & MultipleRecordsResponse<T>
+export type BulkUpdateErrorResponse<T extends typeof Model> = { action: 'bulk-update' } & BulkFormValidationErrorResponse<T> & MultipleRecordsResponse<T>
+export type BulkUpdateResponse<T extends typeof Model> = BulkUpdateSuccessResponse<T> | BulkUpdateErrorResponse<T>
 
 export type SyncSuccessResponse = {
   action: 'sync'
-  attached: Record<string, any>[] | undefined
-  detached: Record<string, any>[] | undefined
-  updated: Record<string, any>[] | undefined
+  attached: Record<string, any>[]
+  detached: Record<string, any>[]
+  updated: Record<string, any>[]
 } & BaseSuccessResponse
-export type SyncErrorResponse<T extends typeof Model> = BatchFormValidationErrorResponse<T> & {
+export type SyncErrorResponse<T extends typeof Model> = BulkFormValidationErrorResponse<T> & {
   action: 'sync'
   attached: undefined
   detached: undefined
@@ -100,5 +100,5 @@ export type Response<T extends typeof Model> =
   UpdateResponse<T> |
   DestroyResponse<T> |
   IndexResponse<T> |
-  BatchUpdateResponse<T> |
+  BulkUpdateResponse<T> |
   SyncResponse<T>

@@ -37,6 +37,7 @@ export async function index<T extends typeof Model> (
         success: false,
         validationErrors: {},
         records: undefined,
+        entity: ModelClass.entity,
       })
     }
 
@@ -50,6 +51,7 @@ export async function index<T extends typeof Model> (
         success: false,
         validationErrors: {},
         records: undefined,
+        entity: ModelClass.entity,
       })
     })
 
@@ -90,6 +92,7 @@ export async function index<T extends typeof Model> (
           recordsCount: response.meta?.total,
           recordsPerPage: response.meta?.per_page,
         },
+        entity: ModelClass.entity,
       }
 
       return resolve(result)
@@ -100,6 +103,7 @@ export async function index<T extends typeof Model> (
         success: false,
         action: 'index',
         records: undefined,
+        entity: ModelClass.entity,
       }
 
       result.standardErrors = [

@@ -15,6 +15,8 @@ import { create as createResource } from '../actions/create'
 import { getDriverKey } from '../utils/getDriverKey'
 import { generateRandomString } from '../utils/generateRandomString'
 import { makeId } from '../utils/makeId'
+import { OnCreateOptimisticPersistMessage, OnCreatePersistMessage } from '../broadcasting/BroadcastMessages'
+import { deepmerge } from 'deepmerge-ts'
 
 const defaultOptions = {
   persist: true,
@@ -26,12 +28,21 @@ export function useCreatorDriver<T extends typeof Model> (
 ): UseCreatorReturn<T> {
   options = Object.assign({}, defaultOptions, options)
   const composableId = generateRandomString(8)
+  const driverKey = getDriverKey(options.driver)
+
+  const createOptimisticPersistChannel = new BroadcastChannel(`vuemodel.${driverKey}.createOptimisticPersist`)
+  const createOptimisticPersistEntityChannel = new BroadcastChannel(`vuemodel.${driverKey}.${ModelClass.entity}.createOptimisticPersist`)
+  const createPersistChannel = new BroadcastChannel(`vuemodel.${driverKey}.createPersist`)
+  const createPersistEntityChannel = new BroadcastChannel(`vuemodel.${driverKey}.${ModelClass.entity}.createPersist`)
 
   const driverConfig = getMergedDriverConfig(options.driver)
   const repo = useRepo<InstanceType<T>>(
     ModelClass as unknown as Constructor<InstanceType<T>>,
     driverConfig.pinia,
   )
+
+  const createPersistHooks = deepmerge(driverConfig.hooks?.createPersist ?? [])
+  const createOptimisticPersistHooks = deepmerge(driverConfig.hooks?.createOptimisticPersist ?? [])
 
   const form = ref(options.form ?? {}) as Ref<PiniaOrmForm<InstanceType<T>>>
 
@@ -109,6 +120,20 @@ export function useCreatorDriver<T extends typeof Model> (
     if (optimistic && persist) {
       thisOptimisticRecord = repo.insert(mergedForm)
       optimisticRecord.value = thisOptimisticRecord
+
+      const createPersistMessage: OnCreateOptimisticPersistMessage<T> = clone({
+        entity: ModelClass.entity,
+        form: mergedForm,
+      })
+
+      createOptimisticPersistHooks.forEach(async hook => await hook({
+        ModelClass,
+        entity: ModelClass.entity,
+        form: mergedForm,
+      }))
+
+      createOptimisticPersistChannel.postMessage(createPersistMessage)
+      createOptimisticPersistEntityChannel.postMessage(createPersistMessage)
     } else {
       thisOptimisticRecord = undefined
     }
@@ -121,7 +146,7 @@ export function useCreatorDriver<T extends typeof Model> (
       ModelClass,
       mergedForm,
       {
-        driver: getDriverKey(options?.driver),
+        driver: driverKey,
         notifyOnError: options?.notifyOnError,
         signal,
         throw: false,
@@ -143,6 +168,22 @@ export function useCreatorDriver<T extends typeof Model> (
     // Persisting to the store
     if (persist && thisResponse?.record) {
       repo.insert(thisResponse.record)
+
+      if (thisResponse.success) {
+        const createPersistMessage: OnCreatePersistMessage<T> = clone({
+          entity: ModelClass.entity,
+          response: thisResponse,
+        })
+
+        createPersistHooks.forEach(async hook => await hook({
+          ModelClass,
+          entity: ModelClass.entity,
+          response: thisResponse,
+        }))
+
+        createPersistChannel.postMessage(createPersistMessage)
+        createPersistEntityChannel.postMessage(createPersistMessage)
+      }
     }
 
     // On Success

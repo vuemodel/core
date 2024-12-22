@@ -32,6 +32,7 @@ export async function update<T extends typeof Model> (
         success: false,
         validationErrors: {} as FormValidationErrors<T>,
         record: undefined,
+        entity: ModelClass.entity,
       })
     }
 
@@ -45,6 +46,7 @@ export async function update<T extends typeof Model> (
         success: false,
         validationErrors: {} as FormValidationErrors<T>,
         record: undefined,
+        entity: ModelClass.entity,
       })
     })
     const notifyOnError = 'notifyOnError' in options ? options.notifyOnError : config?.notifyOnError?.update
@@ -64,6 +66,7 @@ export async function update<T extends typeof Model> (
         standardErrors: undefined,
         validationErrors: undefined,
         success: true,
+        entity: ModelClass.entity,
       }
 
       return resolve(result)
@@ -74,6 +77,7 @@ export async function update<T extends typeof Model> (
         success: false,
         action: 'update',
         record: undefined,
+        entity: ModelClass.entity,
       }
 
       result.standardErrors = [

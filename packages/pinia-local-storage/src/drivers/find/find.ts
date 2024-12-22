@@ -77,7 +77,7 @@ export async function find<T extends typeof Model> (
     await wait(piniaLocalStorageState.mockLatencyMs ?? 0)
 
     const idResolved = Array.isArray(id) ? JSON.stringify(id) : id
-    const record = (dbRepo.find(idResolved)) as unknown as DeclassifyPiniaOrmModel<InstanceType<T>> | undefined
+    const record = await (dbRepo.find(idResolved)) as unknown as DeclassifyPiniaOrmModel<InstanceType<T>> | undefined
 
     if (!record) {
       return errorReturnFunction({

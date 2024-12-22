@@ -5,7 +5,10 @@ import { FindResponse } from '../types/Response'
 import { LoosePrimaryKey } from '../types/LoosePrimaryKey'
 import { resolveFindParams } from './resolveFindParams'
 import clone from 'just-clone'
-import { OnFindingMessage, OnFoundMessage } from '../types/BroadcastMessages'
+import { OnFindingMessage, OnFoundMessage } from '../broadcasting/BroadcastMessages'
+import { getDriverKey } from '../utils/getDriverKey'
+import { getMergedDriverConfig } from '../utils/getMergedDriverConfig'
+import { deepmerge } from 'deepmerge-ts'
 
 /**
  * Find a record on the "backend".
@@ -26,11 +29,16 @@ export function find<T extends typeof Model> (
   hasDriverOptions?: FindOptions<T>,
 ): Promise<FindResponse<T>> {
   const params = resolveFindParams<T>(ModelClass, id, options, hasDriverOptions)
-  const driverKey = typeof ModelClass === 'string' ? ModelClass : (options as FindOptions<T>)?.driver
+  const driverKey = getDriverKey(params.options.driver)
 
   const driver = getDriverFunction('find', driverKey) as Find<T>
 
   const entity = params.ModelClass.entity
+
+  const driverConfig = getMergedDriverConfig(driverKey)
+
+  const findingHooks = deepmerge(driverConfig.hooks?.finding ?? [])
+  const foundHooks = deepmerge(driverConfig.hooks?.found ?? [])
 
   const findingChannel = new BroadcastChannel(`vuemodel.${driverKey}.finding`)
   const foundChannel = new BroadcastChannel(`vuemodel.${driverKey}.found`)
@@ -43,6 +51,13 @@ export function find<T extends typeof Model> (
     id: params.id,
   })
 
+  findingHooks.forEach(async hook => await hook({
+    ModelClass: params.ModelClass,
+    entity,
+    with: params.options.with ?? {},
+    id: params.id,
+  }))
+
   findingChannel.postMessage(findingPostMessage)
   findingEntityChannel.postMessage(findingPostMessage)
 
@@ -51,13 +66,23 @@ export function find<T extends typeof Model> (
     params.id,
     params.options,
   ).then(response => {
-    const foundPostMessage: OnFoundMessage<T> = clone({
-      entity,
-      response,
-      with: params.options.with ?? {},
-    })
-    foundChannel.postMessage(foundPostMessage)
-    foundEntityChannel.postMessage(foundPostMessage)
+    if (response.success) {
+      const foundPostMessage: OnFoundMessage<T> = clone({
+        entity,
+        response,
+        with: params.options.with ?? {},
+      })
+
+      foundHooks.forEach(async hook => await hook({
+        ModelClass: params.ModelClass,
+        entity,
+        response,
+        with: params.options.with ?? {},
+      }))
+
+      foundChannel.postMessage(foundPostMessage)
+      foundEntityChannel.postMessage(foundPostMessage)
+    }
     return response
   })
 }

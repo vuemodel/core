@@ -1,10 +1,12 @@
 import { FormValidationErrors, UpdateOptions, UpdateResponse, getMergedDriverConfig, LoosePrimaryKey, getDriverKey } from '@vuemodel/core'
 import { Model } from 'pinia-orm'
-import { PiniaOrmForm } from 'pinia-orm-helpers'
+import { getClassAttributes, PiniaOrmForm } from 'pinia-orm-helpers'
 import { piniaLocalStorageState } from '../../plugin/state'
 import { wait } from '../../utils/wait'
 import { makeMockErrorResponse } from '../../utils/makeMockErrorResponse'
 import { createIndexedDbRepo } from '../../utils/createIndexedDbRepo'
+import { pick } from '../../utils/pick'
+import clone from 'just-clone'
 
 export async function update<T extends typeof Model> (
   ModelClass: T,
@@ -35,6 +37,7 @@ export async function update<T extends typeof Model> (
         success: false,
         validationErrors: {} as FormValidationErrors<T>,
         record: undefined,
+        entity: ModelClass.entity,
       })
     }
 
@@ -48,6 +51,7 @@ export async function update<T extends typeof Model> (
         success: false,
         validationErrors: {} as FormValidationErrors<T>,
         record: undefined,
+        entity: ModelClass.entity,
       })
     })
     const notifyOnError = 'notifyOnError' in options ? options.notifyOnError : config?.notifyOnError?.update
@@ -71,10 +75,14 @@ export async function update<T extends typeof Model> (
         success: false,
         action: 'update',
         validationErrors: {} as FormValidationErrors<T>,
+        entity: ModelClass.entity,
       })
     }
 
-    await dbRepo.update(idResolved, form)
+    const attributes = getClassAttributes(ModelClass)
+    const attributeKeys = Object.keys(attributes)
+
+    await dbRepo.update(idResolved, pick(clone(form), attributeKeys))
     const updatedRecord = await dbRepo.find(idResolved)
 
     await wait(piniaLocalStorageState.mockLatencyMs ?? 0)
@@ -85,6 +93,7 @@ export async function update<T extends typeof Model> (
       standardErrors: undefined,
       validationErrors: undefined,
       success: true,
+      entity: ModelClass.entity,
     }
 
     return resolve(result)

@@ -233,7 +233,12 @@ export interface UseIndexerReturn<T extends typeof Model> {
    *  .with('user')
    *  .first()
    */
-  makeQuery(): Query<InstanceType<T>>
+  makeQuery(makeQueryOptions?: {
+    omitWhereIdFilter?: boolean
+    omitWith?: boolean
+    omitFilters?: boolean
+    omitOrderBy?: boolean
+  }): Query<InstanceType<T>>
 
   /**
    * For working with more than one page of data.

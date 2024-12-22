@@ -20,6 +20,8 @@ import { IndexWiths } from '../contracts/crud/index/IndexWiths'
 import { getFirstDefined } from '../utils/getFirstDefined'
 import { find as findResource } from '../actions/find'
 import { generateRandomString } from '../utils/generateRandomString'
+import { OnFindPersistMessage } from '../broadcasting/BroadcastMessages'
+import clone from 'just-clone'
 
 const defaultOptions = {
   persist: true,
@@ -32,12 +34,18 @@ export function useFinderDriver<T extends typeof Model> (
 ): UseFinderReturn<T> {
   options = Object.assign({}, defaultOptions, options)
   const composableId = generateRandomString(8)
+  const driverKey = getDriverKey(options.driver)
+
+  const findPersistChannel = new BroadcastChannel(`vuemodel.${driverKey}.findPersist`)
+  const findPersistEntityChannel = new BroadcastChannel(`vuemodel.${driverKey}.${ModelClass.entity}.findPersist`)
 
   const driverConfig = getMergedDriverConfig(options.driver)
   const repo = useRepo<InstanceType<T>>(
     ModelClass as unknown as Constructor<InstanceType<T>>,
     driverConfig.pinia,
   )
+
+  const findPersistHooks = deepmerge(driverConfig.hooks?.findPersist ?? [])
 
   const response = ref<FindResponse<T>>()
   const activeRequest = ref<Promise<FindResponse<T>> & { cancel(): void }>()
@@ -109,6 +117,7 @@ export function useFinderDriver<T extends typeof Model> (
     }
 
     const resolvedScopes = resolveScopes(
+      ModelClass,
       options?.driver ?? vueModelState.default ?? 'default',
       ModelClass.entity,
       undefined,
@@ -133,7 +142,7 @@ export function useFinderDriver<T extends typeof Model> (
       ModelClass,
       String(resolvedId),
       {
-        driver: getDriverKey(options?.driver),
+        driver: driverKey,
         notifyOnError: options?.notifyOnError,
         with: withMerged,
         signal,
@@ -158,6 +167,24 @@ export function useFinderDriver<T extends typeof Model> (
     // Persisting to the store
     if (persist && thisResponse?.record) {
       repo[persistBy](thisResponse?.record)
+
+      if (thisResponse.success) {
+        const findPersistMessage: OnFindPersistMessage<T> = clone({
+          entity: ModelClass.entity,
+          response: thisResponse,
+          with: withMerged,
+        })
+
+        findPersistHooks.forEach(async hook => await hook({
+          ModelClass,
+          entity: ModelClass.entity,
+          response: thisResponse,
+          with: withMerged,
+        }))
+
+        findPersistChannel.postMessage(findPersistMessage)
+        findPersistEntityChannel.postMessage(findPersistMessage)
+      }
     }
 
     // On Success

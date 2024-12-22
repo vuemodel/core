@@ -39,6 +39,7 @@ export async function find<T extends typeof Model> (
         success: false,
         validationErrors: {},
         record: undefined,
+        entity: ModelClass.entity,
       })
     }
 
@@ -52,6 +53,7 @@ export async function find<T extends typeof Model> (
         success: false,
         validationErrors: {},
         record: undefined,
+        entity: ModelClass.entity,
       })
     })
     const notifyOnError = 'notifyOnError' in options ? options.notifyOnError : config?.notifyOnError?.find
@@ -76,6 +78,7 @@ export async function find<T extends typeof Model> (
         standardErrors: undefined,
         validationErrors: undefined,
         success: true,
+        entity: ModelClass.entity,
       }
 
       return resolve(result)
@@ -86,6 +89,7 @@ export async function find<T extends typeof Model> (
         success: false,
         action: 'find',
         record: undefined,
+        entity: ModelClass.entity,
       }
 
       result.standardErrors = [

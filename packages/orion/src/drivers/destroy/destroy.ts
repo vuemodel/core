@@ -31,6 +31,7 @@ export async function destroy<T extends typeof Model> (
         action: 'destroy',
         success: false,
         record: undefined,
+        entity: ModelClass.entity,
       })
     }
 
@@ -43,6 +44,7 @@ export async function destroy<T extends typeof Model> (
         action: 'destroy',
         success: false,
         record: undefined,
+        entity: ModelClass.entity,
       })
     })
 
@@ -55,6 +57,7 @@ export async function destroy<T extends typeof Model> (
         action: 'destroy',
         record: undefined,
         success: false,
+        entity: ModelClass.entity,
       })
     }
 
@@ -72,6 +75,7 @@ export async function destroy<T extends typeof Model> (
         action: 'destroy',
         standardErrors: undefined,
         success: true,
+        entity: ModelClass.entity,
       }
 
       return resolve(result)
@@ -81,6 +85,7 @@ export async function destroy<T extends typeof Model> (
         success: false,
         action: 'destroy',
         record: undefined,
+        entity: ModelClass.entity,
       }
 
       result.standardErrors = [
