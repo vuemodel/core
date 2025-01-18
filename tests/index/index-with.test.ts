@@ -91,7 +91,7 @@ describe('index', () => {
 
   it('can order nested records', async () => {
     if (!setups.driver.features.find.order.nested) {
-      const consoleMock = vi.spyOn(console, 'warn').mockDriver(() => undefined)
+      const consoleMock = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
       await index(User, {
         with: {
           posts: {

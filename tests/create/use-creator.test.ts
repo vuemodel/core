@@ -22,7 +22,7 @@ describe('useCreator', () => {
     const postCreator = useCreator(Post, { form })
     await postCreator.create()
 
-    expect(postCreator.record.value.title).toEqual('LSD Standard')
+    expect(postCreator.record.value?.title).toEqual('LSD Standard')
   })
 
   it('can use the "form" from the composables return and create', async () => {
@@ -31,7 +31,7 @@ describe('useCreator', () => {
     postCreator.form.value.title = 'LSD Standard'
     await postCreator.create()
 
-    expect(postCreator.record.value.title).toEqual('LSD Standard')
+    expect(postCreator.record.value?.title).toEqual('LSD Standard')
   })
 
   it('can pass the form directly to "create"', async () => {
@@ -39,7 +39,7 @@ describe('useCreator', () => {
 
     await postCreator.create({ title: 'LSD Standard' })
 
-    expect(postCreator.record.value.title).toEqual('LSD Standard')
+    expect(postCreator.record.value?.title).toEqual('LSD Standard')
   })
 
   it('can merge fields into the form when it is being created', async () => {
@@ -271,6 +271,7 @@ describe('useCreator', () => {
     setups.setMockLatency(150)
 
     const createPromise1 = postCreator.create({ title: 'promise 1' }) // intentionally not awaited
+    await wait(50)
     const createPromise2 = postCreator.create({ title: 'promise 2' }) // intentionally not awaited
 
     expect(Object.entries(postCreator.activeRequests.value).length).toEqual(2)

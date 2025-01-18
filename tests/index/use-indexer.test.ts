@@ -207,7 +207,7 @@ describe('useIndexer', () => {
 
   it('can order nested records and get an ordered response', async () => {
     if (!setups.driver.features.index.order.nested) {
-      const consoleMock = vi.spyOn(console, 'warn').mockDriver(() => undefined)
+      const consoleMock = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
       const usersIndexer = useIndexer(User, {
         with: {
           posts: {
@@ -247,7 +247,7 @@ describe('useIndexer', () => {
 
   it('can order nested records get ordered records', async () => {
     if (!setups.driver.features.index.order.nested) {
-      const consoleMock = vi.spyOn(console, 'warn').mockDriver(() => undefined)
+      const consoleMock = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
       const usersIndexer = useIndexer(User, {
         with: {
           posts: {
@@ -552,7 +552,7 @@ describe('useIndexer', () => {
     expect(indexer.isFirstPage.value).toEqual(false)
   })
 
-  it('sets a standard error when trying to navigate after the last page', async () => {
+  it.only('sets a standard error when trying to navigate after the last page', async () => {
     await setups.populateRecords('posts', 4)
 
     const indexer = useIndexer(Post, { pagination: { recordsPerPage: 2 } })

@@ -102,10 +102,6 @@ export function useFinderDriver<T extends typeof Model> (
   })
 
   async function find (idParam?: string | number | string[] | number[]) {
-    if (activeRequest.value) {
-      activeRequest.value.cancel()
-    }
-
     response.value = undefined
 
     let resolvedId = idParam ?? toValue(options?.id)

@@ -5,7 +5,6 @@ import { DataverseUser, PhotoTag, User, populateRecords } from '@vuemodel/sample
 import { useRepo } from 'pinia-orm'
 import { ref } from 'vue'
 import { wait } from '../helpers/wait'
-import { clear as clearStorage } from 'idb-keyval'
 import { driverSetupsMap } from '../drivers/driverSetupsMap'
 
 const setups = driverSetupsMap[import.meta.env.IMPLEMENTATION ?? 'piniaLocalStorage']
@@ -16,7 +15,7 @@ describe('useUpdater', () => {
   })
 
   afterEach(async () => {
-    await clearStorage()
+    // await clearStorage()
   })
 
   it('updates the record in the store after update()', async () => {

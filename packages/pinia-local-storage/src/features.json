@@ -3,7 +3,7 @@
     "available": true,
     "order": {
       "shallow": true,
-      "nested": false
+      "nested": true
     },
     "validationErrors": true,
     "filter": {

@@ -1,7 +1,7 @@
 import { describe, beforeEach, it, expect, vi } from 'vitest'
 import { baseSetup } from '../baseSetup'
-import { useIndexer, useDestroyer, UseDestroyerOptions, vueModelState } from '@vuemodel/core'
-import { DataverseUser, PhotoTag, Post, User, populateRecords } from '@vuemodel/sample-data'
+import { useIndexer, useDestroyer, UseDestroyerOptions, vueModelState, find, index } from '@vuemodel/core'
+import { DataverseUser, PhotoTag, Post, User } from '@vuemodel/sample-data'
 import { useRepo } from 'pinia-orm'
 import { ref } from 'vue'
 import { wait } from '../helpers/wait'
@@ -199,6 +199,7 @@ describe('useDestroyer', () => {
 
   it('can destroy a resource with a composite key', async () => {
     await setups.populateRecords('photo_tags', 10)
+
     const photoTagDestroyer = useDestroyer(PhotoTag)
 
     await photoTagDestroyer.destroy('["4","3"]')

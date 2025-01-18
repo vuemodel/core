@@ -75,13 +75,13 @@ export async function destroy<T extends typeof Model> (
       })
     }
 
-    const idResolved = Array.isArray(id) ? JSON.stringify(id) : id
-    const record = (await dbRepo.find(idResolved)) as DeclassifyPiniaOrmModel<InstanceType<T>> | undefined
+    const idAsString = Array.isArray(id) ? JSON.stringify(id) : id
+    const record = (await dbRepo.find(idAsString)) as DeclassifyPiniaOrmModel<InstanceType<T>> | undefined
 
     if (!record) {
       return errorReturnFunction({
         standardErrors: [{
-          message: `record with id "${idResolved}" not found`,
+          message: `record with id "${idAsString}" not found`,
           name: 'not found',
         }],
         action: 'destroy',
@@ -91,7 +91,7 @@ export async function destroy<T extends typeof Model> (
       })
     }
 
-    dbRepo.destroy(idResolved)
+    dbRepo.destroy(idAsString)
     await wait(piniaLocalStorageState.mockLatencyMs ?? 0)
 
     const result: DestroyResponse<T> = {

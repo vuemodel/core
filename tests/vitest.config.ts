@@ -17,7 +17,9 @@ export default defineConfig({
   },
   test: {
     environment: 'jsdom',
+    watch: false,
     reporters: 'dot',
     globals: true,
+    // bail: 1,
   },
 })

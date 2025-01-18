@@ -56,7 +56,7 @@ describe('find', () => {
 
   it('can order nested records', async (ctx) => {
     if (!setups.driver.features.find.order.nested) {
-      const consoleMock = vi.spyOn(console, 'warn').mockDriver(() => undefined)
+      const consoleMock = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
       await find(Post, '1', {
         with: {
           comments: {

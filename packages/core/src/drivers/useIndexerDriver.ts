@@ -155,7 +155,7 @@ export function useIndexerDriver<T extends typeof Model> (
     const resolvedParams = resolveIndexParams(optionsOrId, optionsParam)
 
     pauseImmediatePaginationWatcher()
-    // response.value = undefined
+    response.value = undefined
 
     const resolvedScopes = resolveScopes(
       ModelClass,
@@ -350,10 +350,22 @@ export function useIndexerDriver<T extends typeof Model> (
     return response.value
   }
 
-  async function next () {
+  async function next (): Promise<IndexResponse<T>> {
     const { page, pagesCount, recordsPerPage } = toValue(pagination)
     if (!recordsPerPage) {
-      throw new Error("Cannot paginate to next records. 'recordsPerPage' must be set.")
+      const errorMessage = "Cannot paginate to next records. 'recordsPerPage' must be set."
+      standardErrors.value.push({
+        name: 'recordsPerPage not set',
+        message: errorMessage,
+      })
+      return {
+        action: 'index',
+        entity: ModelClass.entity,
+        records: undefined,
+        standardErrors: standardErrors.value,
+        success: false,
+        validationErrors: {},
+      }
     }
 
     if (page && pagesCount && (page === pagesCount)) {
@@ -362,7 +374,14 @@ export function useIndexerDriver<T extends typeof Model> (
         name: 'beyond last page',
         message: errorMessage,
       })
-      throw new Error(errorMessage)
+      return {
+        action: 'index',
+        entity: ModelClass.entity,
+        records: undefined,
+        standardErrors: standardErrors.value,
+        success: false,
+        validationErrors: {},
+      }
     }
     pauseImmediatePaginationWatcher()
     pagination.value.page = page ? (page + 1) : 1

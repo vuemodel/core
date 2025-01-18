@@ -16,17 +16,17 @@
     "@vuemodel/orion": "workspace:^",
     "@vuemodel/pinia-local-storage": "workspace:^",
     "@vuemodel/sample-data": "workspace:^",
-    "fake-indexeddb": "^5.0.1",
-    "idb-keyval": "^6.2.1",
+    "fake-indexeddb": "^6.0.0",
     "pinia": "^2.1.6",
     "pinia-orm": "1.7.x",
     "pinia-orm-helpers": "^0.0.16",
-    "vitest": "^1.0.0-beta.3",
+    "vitest": "^3.0.1",
     "vue": "^3.3.4",
-    "wretch": "^2.8.0"
+    "wretch": "^2.11.0"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^4.3.4",
-    "happy-dom": "^12.10.3"
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@vitest/ui": "^3.0.1",
+    "happy-dom": "^16.0.1"
   }
 }

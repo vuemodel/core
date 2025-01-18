@@ -1,10 +1,9 @@
-import { createPiniaLocalStorage, piniaLocalStorageState, piniaLocalVueModelDriver } from '@vuemodel/pinia-local-storage'
+import 'fake-indexeddb/auto'
+import { createPiniaLocalStorage, deleteDatabases, piniaLocalStorageState, piniaLocalVueModelDriver } from '@vuemodel/pinia-local-storage'
 import { DriverSetups } from './driverSetupsMap'
 import { useRepo } from 'pinia-orm'
 import { Album, Comment, Photo, Post, User, populateRecords } from '@vuemodel/sample-data'
 import { createPinia } from 'pinia'
-import 'fake-indexeddb/auto'
-import { clear as clearStorage } from 'idb-keyval'
 
 export const piniaLocalStorageSetups: DriverSetups = {
   populateRecords: async (entityName, numberOfRecords) => {
@@ -26,7 +25,7 @@ export const piniaLocalStorageSetups: DriverSetups = {
   },
 
   async baseSetup (app, context) {
-    await clearStorage()
+    await deleteDatabases('testDriver')
 
     piniaLocalStorageState.mockStandardErrors = undefined
     piniaLocalStorageState.mockValidationErrors = undefined

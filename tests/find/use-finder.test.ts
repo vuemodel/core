@@ -250,7 +250,7 @@ describe('useFinder', () => {
 
   it('can order nested records and get a ordered response', async () => {
     if (!setups.driver.features.find.order.nested) {
-      const consoleMock = vi.spyOn(console, 'warn').mockDriver(() => undefined)
+      const consoleMock = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
       const userFinder = useFinder(User, {
         with: {
           posts: {
@@ -290,7 +290,7 @@ describe('useFinder', () => {
 
   it('can order nested records, and get ordered records from the store', async () => {
     if (!setups.driver.features.find.order.nested) {
-      const consoleMock = vi.spyOn(console, 'warn').mockDriver(() => undefined)
+      const consoleMock = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
       const userFinder = useFinder(User, {
         with: {
           posts: {
@@ -564,28 +564,6 @@ describe('useFinder', () => {
       .toBeTruthy()
   })
 
-  it('cancels the first request if a second request is made and the first is not done yet', async () => {
-    await setups.populateRecords('posts', 10)
-    setups.setMockLatency(100)
-
-    const postsFinder = useFinder(Post)
-    const findRequestA = postsFinder.find('1')
-    const findRequestB = postsFinder.find('2')
-
-    await wait(200)
-    const findRequestAPromiseState = await promiseState(findRequestA)
-    const findRequestBPromiseState = await promiseState(findRequestB)
-    expect(findRequestAPromiseState.status).toEqual('fulfilled')
-    expect(findRequestBPromiseState.status).toEqual('pending')
-
-    await findRequestB
-
-    expect(postsFinder.standardErrors.value.length)
-      .toEqual(0)
-    expect(postsFinder.record.value)
-      .toBeTruthy()
-  })
-
   it('can notify on error', async () => {
     setups.setMockStandardErrors([
       { name: 'thingy-messup', message: 'The thingy messed up' },
@@ -602,9 +580,5 @@ describe('useFinder', () => {
     await postFinder.find('1')
 
     expect(findErrorNotifierSpy).toHaveBeenCalled()
-  })
-
-  it('can cancel the request', async () => {
-    //
   })
 })
