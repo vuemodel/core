@@ -3,28 +3,36 @@ import clone from 'just-clone'
 import { Model } from 'pinia-orm'
 import { DeclassifyPiniaOrmModel } from 'pinia-orm-helpers'
 
-const createdDatabases: { [key: string]: boolean } = {} // Global cache for created databases
+// const createdDatabases: { [key: string]: boolean } = {}
 
+// A generic repository class for a given Pinia ORM Model
 class ModelRepo<T extends typeof Model> {
   private storeName: string
   private primaryKeyField: string | string[]
+  private ModelClass: T
 
   constructor (ModelClass: T, prefix: string = '') {
+    this.ModelClass = ModelClass
     this.storeName = prefix + ModelClass.entity
     this.primaryKeyField = ModelClass.primaryKey
   }
 
-  private async ensureDbExists (): Promise<IDBDatabase> {
-    // Check if the database has already been created in the cache
-    if (createdDatabases[this.storeName]) {
-      return new Promise((resolve, reject) => {
-        const request = indexedDB.open(this.storeName)
-        request.onsuccess = () => resolve(request.result)
-        request.onerror = () => reject(`Failed to open DB: ${request.error}`)
-      })
+  private parseId (id: any) {
+    if (Array.isArray(this.primaryKeyField) &&
+      typeof id === 'string' &&
+      id.startsWith('[') &&
+      id.endsWith(']')
+    ) {
+      return JSON.parse(id)
     }
+    return id
+  }
 
-    // If not in cache, create the database
+  /**
+   * Create or open a database for the current `storeName`.
+   * Uses a global cache to avoid re-creating the object store repeatedly.
+   */
+  private async ensureDbExists (): Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(this.storeName, 1)
 
@@ -38,8 +46,6 @@ class ModelRepo<T extends typeof Model> {
       }
 
       request.onsuccess = () => {
-        // Mark the database as created in the cache
-        createdDatabases[this.storeName] = true
         resolve(request.result)
       }
 
@@ -49,117 +55,178 @@ class ModelRepo<T extends typeof Model> {
     })
   }
 
-  async create (record: DeclassifyPiniaOrmModel<InstanceType<T>>) {
+  /**
+   * Insert a new record into the DB.
+   */
+  async create (record: DeclassifyPiniaOrmModel<InstanceType<T>>): Promise<void> {
     const db = await this.ensureDbExists()
     return new Promise<void>((resolve, reject) => {
       const tx = db.transaction(this.storeName, 'readwrite')
       const store = tx.objectStore(this.storeName)
-      const request = store.add(record)
+      store.add(record)
 
-      request.onsuccess = () => resolve()
-      request.onerror = () => reject(request.error)
+      tx.oncomplete = () => {
+        db.close()
+        resolve()
+      }
+
+      tx.onerror = () => {
+        db.close()
+        reject(tx.error)
+      }
     })
   }
 
-  async find (id: any) {
+  /**
+   * Fetch a single record by ID.
+   */
+  async find (id: any): Promise<DeclassifyPiniaOrmModel<InstanceType<T>> | undefined> {
+    id = this.parseId(id)
     const db = await this.ensureDbExists()
-    return new Promise<DeclassifyPiniaOrmModel<InstanceType<T>> | undefined>((resolve, reject) => {
+    return new Promise((resolve, reject) => {
+      let result: DeclassifyPiniaOrmModel<InstanceType<T>> | undefined
       const tx = db.transaction(this.storeName, 'readonly')
       const store = tx.objectStore(this.storeName)
       const request = store.get(id)
 
-      request.onsuccess = () => resolve(request.result as DeclassifyPiniaOrmModel<InstanceType<T>>)
-      request.onerror = () => reject(request.error)
+      request.onsuccess = () => {
+        result = request.result as DeclassifyPiniaOrmModel<InstanceType<T>> | undefined
+      }
+      request.onerror = () => {
+        reject(request.error)
+      }
+
+      tx.oncomplete = () => {
+        db.close()
+        resolve(result)
+      }
+
+      tx.onerror = () => {
+        db.close()
+        reject(tx.error)
+      }
     })
   }
 
-  async update (id: any, updates: Partial<DeclassifyPiniaOrmModel<InstanceType<T>>>) {
+  /**
+   * Update a record by merging `updates` into the existing record.
+   */
+  async update (id: any, updates: Partial<DeclassifyPiniaOrmModel<InstanceType<T>>>): Promise<ReturnType<Model['$getKey']>> {
+    id = this.parseId(id)
     const db = await this.ensureDbExists()
-    return new Promise<void>((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       const tx = db.transaction(this.storeName, 'readwrite')
       const store = tx.objectStore(this.storeName)
       const getRequest = store.get(id)
 
+      let newId: ReturnType<Model['$getKey']> = ''
+
       getRequest.onsuccess = () => {
         const existingRecord = getRequest.result
         if (!existingRecord) {
-          return reject(`Record with id ${id} not found`)
+          return
         }
-
         const updatedRecord = clone({ ...existingRecord, ...updates })
-        const putRequest = store.put(updatedRecord)
-
-        putRequest.onsuccess = () => resolve()
-        putRequest.onerror = () => reject(putRequest.error)
+        newId = (new this.ModelClass(updatedRecord)).$getKey()
+        store.put(updatedRecord)
       }
 
-      getRequest.onerror = () => reject(getRequest.error)
+      getRequest.onerror = () => {
+        reject(getRequest.error)
+      }
+
+      tx.oncomplete = () => {
+        db.close()
+        resolve(newId)
+      }
+      tx.onerror = () => {
+        db.close()
+        reject(tx.error)
+      }
     })
   }
 
-  async destroy (id: any) {
+  /**
+   * Delete a record by ID.
+   */
+  async destroy (id: any): Promise<void> {
+    id = this.parseId(id)
     const db = await this.ensureDbExists()
     return new Promise<void>((resolve, reject) => {
       const tx = db.transaction(this.storeName, 'readwrite')
       const store = tx.objectStore(this.storeName)
-      const request = store.delete(id)
+      store.delete(id)
 
-      request.onsuccess = () => resolve()
-      request.onerror = () => reject(request.error)
+      tx.oncomplete = () => {
+        db.close()
+        resolve()
+      }
+      tx.onerror = () => {
+        db.close()
+        reject(tx.error)
+      }
     })
   }
 
+  /**
+   * Fetch multiple records, optionally by IDs or pagination.
+   */
   async index (options: {
-    pagination?: { page: number; recordsPerPage: number };
-    ids?: string[] | string[][];
-  } = {}) {
+    pagination?: { page: number; recordsPerPage: number }
+    ids?: string[] | string[][]
+  } = {}): Promise<T[] | DeclassifyPiniaOrmModel<InstanceType<T>>[]> {
     const { pagination, ids } = options
     const db = await this.ensureDbExists()
 
     if (ids && ids.length > 0) {
-      // Fetch specific records by ids
+      // Fetch specific records by IDs
       return this.fetchByIds(db, ids)
     } else if (pagination) {
-      // Use optimized pagination with openCursor
+      // Use a cursor for paginated fetch
       return this.paginatedFetch(db, pagination.page, pagination.recordsPerPage)
     } else {
-      // Fetch all records without pagination
+      // Fetch all records
       return this.fetchAll(db)
     }
   }
 
+  /**
+   * Fetch records by multiple IDs.
+   */
   private fetchByIds (db: IDBDatabase, ids: string[] | string[][]): Promise<T[]> {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const tx = db.transaction(this.storeName, 'readonly')
       const store = tx.objectStore(this.storeName)
       const results: T[] = []
-      let fetchCount = 0
+
+      tx.oncomplete = () => {
+        db.close()
+        resolve(results)
+      }
+
+      tx.onerror = () => {
+        db.close()
+        reject(tx.error)
+      }
 
       ids.forEach((id) => {
-        const request = store.get(id) // Direct lookup by primary key
-
+        const request = store.get(id)
         request.onsuccess = () => {
           if (request.result) {
-            results.push(request.result) // Add only if record exists
-          }
-          fetchCount++
-          // Once all IDs have been processed, resolve the results
-          if (fetchCount === ids.length) {
-            resolve(results)
+            results.push(request.result)
           }
         }
-
         request.onerror = () => {
-          fetchCount++
-          // Skip over non-existent records, continue fetching the others
-          if (fetchCount === ids.length) {
-            resolve(results) // Resolve results even if some requests failed
-          }
+          console.warn(`Error fetching record with ID: ${id}`, request.error)
+          // Keep going even if one record fails
         }
       })
     })
   }
 
+  /**
+   * Paginated fetch using a cursor.
+   */
   private paginatedFetch (db: IDBDatabase, page: number, recordsPerPage: number): Promise<T[]> {
     return new Promise((resolve, reject) => {
       const tx = db.transaction(this.storeName, 'readonly')
@@ -169,94 +236,119 @@ class ModelRepo<T extends typeof Model> {
       let skipCount = (page - 1) * recordsPerPage
       let count = 0
 
+      tx.oncomplete = () => {
+        db.close()
+        resolve(results)
+      }
+
+      tx.onerror = () => {
+        db.close()
+        reject(tx.error)
+      }
+
       cursorRequest.onsuccess = (event) => {
         const cursor = (event.target as IDBRequest<IDBCursorWithValue>).result
-
-        if (!cursor) {
-          resolve(results) // No more results
-          return
-        }
+        if (!cursor) return
 
         if (skipCount > 0) {
-          // Skip the records until we reach the desired page
           skipCount--
           cursor.continue()
           return
         }
 
-        // Collect the records for the current page
         results.push(cursor.value)
         count++
 
         if (count < recordsPerPage) {
           cursor.continue()
-        } else {
-          resolve(results) // We've collected enough records for the page
         }
       }
 
-      cursorRequest.onerror = () => reject(cursorRequest.error)
+      cursorRequest.onerror = () => {
+        console.error('Error with cursor request:', cursorRequest.error)
+        reject(cursorRequest.error)
+      }
     })
   }
 
+  /**
+   * Fetch all records without pagination.
+   */
   private fetchAll (db: IDBDatabase): Promise<T[]> {
     return new Promise((resolve, reject) => {
+      let results: T[] = []
       const tx = db.transaction(this.storeName, 'readonly')
       const store = tx.objectStore(this.storeName)
       const request = store.getAll()
 
       request.onsuccess = () => {
-        resolve(request.result)
+        // Temporarily store the data until the transaction completes
+        results = request.result
       }
 
-      request.onerror = () => reject(request.error)
+      request.onerror = () => {
+        reject(request.error)
+      }
+
+      tx.oncomplete = () => {
+        db.close()
+        resolve(results)
+      }
+
+      tx.onerror = () => {
+        db.close()
+        reject(tx.error)
+      }
     })
   }
 
-  async bulkUpdate (forms: { [id: string]: Partial<Form<InstanceType<T>>> }) {
+  /**
+   * Perform multiple updates in one transaction.
+   */
+  async bulkUpdate (forms: { [id: string]: Partial<Form<InstanceType<T>>> }): Promise<void> {
     const db = await this.ensureDbExists()
 
     return new Promise<void>((resolve, reject) => {
-      // Create a single transaction for bulk updates
       const tx = db.transaction(this.storeName, 'readwrite')
       const store = tx.objectStore(this.storeName)
-
       const ids = Object.keys(forms)
-      let successCount = 0
 
+      tx.oncomplete = () => {
+        db.close()
+        resolve()
+      }
+      tx.onerror = () => {
+        db.close()
+        reject(`Transaction failed: ${tx.error}`)
+      }
+
+      // For each ID, fetch the record and update it (if it exists)
       ids.forEach((id) => {
         const getRequest = store.get(id)
-
         getRequest.onsuccess = () => {
           const existingRecord = getRequest.result
           if (existingRecord) {
             const updatedRecord = clone({ ...existingRecord, ...forms[id] })
-            store.put(updatedRecord) // Use store.put inside the same transaction
+            store.put(updatedRecord)
           } else {
             console.warn(`Record with id ${id} not found. Skipping.`)
           }
-          successCount++
-          if (successCount === ids.length) {
-            resolve()
-          }
         }
-
         getRequest.onerror = () => {
           console.warn(`Failed to fetch record with id ${id}. Skipping.`)
-          successCount++
-          if (successCount === ids.length) {
-            resolve() // Resolve even if some updates failed
-          }
         }
       })
-
-      tx.oncomplete = () => resolve()
-      tx.onerror = () => reject(`Transaction failed: ${tx.error}`)
     })
   }
 }
 
-export function createIndexedDbRepo<T extends typeof Model> (ModelClass: T, options?: { prefix?: string }) {
+/**
+ * Factory function to create a ModelRepo instance.
+ */
+export function createIndexedDbRepo<T extends typeof Model> (
+  ModelClass: T,
+  options?: { prefix?: string },
+) {
   const prefix = options?.prefix ?? ''
   return new ModelRepo<T>(ModelClass, prefix)
 }

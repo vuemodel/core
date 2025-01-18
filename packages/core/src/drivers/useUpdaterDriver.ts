@@ -237,9 +237,12 @@ export function useUpdaterDriver<T extends typeof Model> (
     const optimistic = getFirstDefined<boolean>([toValue(options?.optimistic), driverConfig.optimistic]) &&
       persist
 
-    const originalRecord = clone(repo.find(resolvedId) ?? {})
+    const originalRecord = repo.find(resolvedId)
+    const originalRecordClone = clone(originalRecord ?? {})
 
-    const changedValues = getFormsChangedValues(String(resolvedId), mergedForm)
+    const changedValues = originalRecord
+      ? getFormsChangedValues(String(resolvedId), mergedForm)
+      : mergedForm
 
     let thisOptimisticRecord: InstanceType<T> | undefined
     if (optimistic && persist) {
@@ -337,10 +340,10 @@ export function useUpdaterDriver<T extends typeof Model> (
     // On Error
     if (thisResponse.validationErrors || thisResponse.standardErrors) {
       options?.onError?.(thisResponse as UpdateErrorResponse<T>)
-      if (optimistic && originalRecord) {
+      if (optimistic && originalRecordClone) {
         repo.destroy(resolvedId)
-        if (originalRecord) {
-          repo.insert(originalRecord)
+        if (originalRecordClone) {
+          repo.insert(originalRecordClone)
         }
       }
     }

@@ -82,8 +82,8 @@ export async function update<T extends typeof Model> (
     const attributes = getClassAttributes(ModelClass)
     const attributeKeys = Object.keys(attributes)
 
-    await dbRepo.update(idResolved, pick(clone(form), attributeKeys))
-    const updatedRecord = await dbRepo.find(idResolved)
+    const updatedRecordId = await dbRepo.update(idResolved, pick(clone(form), attributeKeys))
+    const updatedRecord = await dbRepo.find(updatedRecordId)
 
     await wait(piniaLocalStorageState.mockLatencyMs ?? 0)
 
