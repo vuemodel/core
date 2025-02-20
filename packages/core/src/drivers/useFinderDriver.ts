@@ -3,7 +3,7 @@ import { computed, ref, toValue, watch } from 'vue'
 import { DeclassifyPiniaOrmModel } from 'pinia-orm-helpers'
 import { UseFinderOptions, UseFinderReturn } from '../contracts/crud/find/UseFinder'
 import { getDriverKey } from '../utils/getDriverKey'
-import { FindResponse } from '../types/Response'
+import { FindErrorResponse, FindResponse, FindSuccessResponse } from '../types/Response'
 import { StandardErrors } from '../contracts/errors/StandardErrors'
 import { pick } from '../utils/pick'
 import { Constructor } from '../types/Constructor'
@@ -22,6 +22,7 @@ import { find as findResource } from '../actions/find'
 import { generateRandomString } from '../utils/generateRandomString'
 import { OnFindPersistMessage } from '../broadcasting/BroadcastMessages'
 import clone from 'just-clone'
+import { useCallbacks } from '../utils/useCallbacks'
 
 const defaultOptions = {
   persist: true,
@@ -38,6 +39,11 @@ export function useFinderDriver<T extends typeof Model> (
 
   const findPersistChannel = new BroadcastChannel(`vuemodel.${driverKey}.findPersist`)
   const findPersistEntityChannel = new BroadcastChannel(`vuemodel.${driverKey}.${ModelClass.entity}.findPersist`)
+
+  const onSuccessCallbacks = useCallbacks<[FindSuccessResponse<T>]>([options.onSuccess])
+  const onStandardErrorCallbacks = useCallbacks<[FindErrorResponse<T>]>([options.onStandardError])
+  const onValidationErrorCallbacks = useCallbacks<[FindErrorResponse<T>]>([options.onValidationError])
+  const onErrorCallbacks = useCallbacks<[FindErrorResponse<T>]>([options.onError])
 
   const driverConfig = getMergedDriverConfig(options.driver)
   const repo = useRepo<InstanceType<T>>(
@@ -186,23 +192,23 @@ export function useFinderDriver<T extends typeof Model> (
     // On Success
     if (thisResponse?.success) {
       if (thisResponse) {
-        options?.onSuccess?.(thisResponse)
+        onSuccessCallbacks.run(thisResponse)
       }
     }
 
     // On validation error
     if (thisResponse.validationErrors) {
-      options?.onValidationError?.(thisResponse)
+      onValidationErrorCallbacks.run(thisResponse)
     }
 
     // On standard error
     if (thisResponse.standardErrors) {
-      options?.onStandardError?.(thisResponse)
+      onStandardErrorCallbacks.run(thisResponse)
     }
 
     // On any error
     if (!thisResponse.success) {
-      options?.onError?.(thisResponse)
+      onErrorCallbacks.run(thisResponse)
     }
 
     finding.value = false
@@ -235,5 +241,9 @@ export function useFinderDriver<T extends typeof Model> (
     ModelClass,
     repo,
     composableId,
+    onError: onErrorCallbacks.add,
+    onStandardError: onStandardErrorCallbacks.add,
+    onSuccess: onSuccessCallbacks.add,
+    onValidationError: onValidationErrorCallbacks.add,
   }
 }

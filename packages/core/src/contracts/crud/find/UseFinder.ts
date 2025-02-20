@@ -5,6 +5,7 @@ import { StandardErrors } from '../../errors/StandardErrors'
 import { IndexWiths } from '../index/IndexWiths'
 import { FindErrorResponse, FindResponse, FindSuccessResponse } from '../../../types/Response'
 import { LoosePrimaryKey } from '../../../types/LoosePrimaryKey'
+import { Callback } from '../../../utils/useCallbacks'
 
 export interface UseFinderOptions<T extends typeof Model> {
   /**
@@ -185,6 +186,28 @@ export interface UseFinderReturn<T extends typeof Model> {
    * The PiniaORM model used to create this composable
    */
   ModelClass: T,
+
+  /**
+   * Callback called after a successful request.
+   */
+  onSuccess: (callback: Callback<[FindSuccessResponse<T>]>) => void
+
+  /**
+   * Callback called when an error occurs (including validation error).
+   */
+  onError: (callback: Callback<[FindErrorResponse<T>]>) => void
+
+  /**
+   * Callback called when an error occurs (NOT including validation error).
+   */
+  onStandardError: (callback: Callback<[FindErrorResponse<T>]>) => void
+
+  /**
+   * Callback called when a validation error occurs. Note, you
+   * likely won't need to use this callback as all validation
+   * errors exist within the "validationErrors" computed ref.
+   */
+  onValidationError: (callback: Callback<[FindResponse<T>]>) => void
 }
 
 export type UseFinder<T extends typeof Model> = (

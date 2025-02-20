@@ -7,6 +7,7 @@ import { StandardErrors } from '../errors/StandardErrors'
 import { UseIndexerOptions, UseIndexerReturn } from '../crud/index/UseIndexer'
 import { PiniaOrmManyRelationsForm } from '../../types/PiniaOrmManyRelationsForm'
 import { Form } from '../..'
+import { Callback } from '../../utils/useCallbacks'
 
 type UnwrapType<T> =
   T extends Array<infer U> ? U :
@@ -27,24 +28,30 @@ export type UseBulkUpdateFormValidationErrors<T extends typeof Model> = Record<
   }
 >
 
-export interface BulkUpdateMeta<T extends Model> {
+export interface BulkUpdateMeta<T extends typeof Model> {
   changed: boolean
-  initialValues: BulkUpdateForm<T>
+  initialValues: BulkUpdateForm<InstanceType<T>>
   makingForm: boolean
   updating: boolean
+  failed: boolean
+  changes: BulkUpdateForm<InstanceType<T>>
+  standardErrors: StandardErrors,
+  validationErrors: UseBulkUpdateFormValidationErrors<T>,
   fields: {
-    [K in keyof FilterPiniaOrmModelToFieldTypes<T>]: {
+    [K in keyof FilterPiniaOrmModelToFieldTypes<InstanceType<T>>]: {
+      errors: string[],
       changed: boolean
       updating: boolean
+      failed: boolean
       initialValue: UnwrapType<T[K]>
     }
   }
 }
 
-export type FormWithMeta<T extends Model> = {
+export type FormWithMeta<T extends typeof Model> = {
   id: string
-  form: BulkUpdateForm<T>
-  record: Item<T>
+  form: BulkUpdateForm<InstanceType<T>>
+  record: Item<InstanceType<T>>
 } & BulkUpdateMeta<T>
 
 export interface UseBulkUpdateUpdateOptions<T extends typeof Model> {
@@ -71,6 +78,13 @@ export interface UseBulkUpdaterOptions<
    */
   immediatelyMakeForms?: MaybeRefOrGetter<boolean>
 
+  /**
+   * Which events should trigger the forms to update?
+   *
+   * VueModel has hooks for all of its actions. `syncOn` allows
+   * the updater to use these hooks, and update its forms
+   * appropriately to ensure they're never out of date.
+   */
   syncOn?: MaybeRefOrGetter<{
     indexed?: boolean
     created?: boolean
@@ -78,6 +92,11 @@ export interface UseBulkUpdaterOptions<
     updated?: boolean
     destroyed?: boolean
   }>
+
+  /**
+   * Return forms to their original state if an error occurs
+   */
+  rollbacks?: MaybeRefOrGetter<boolean>
 
   /**
    * `useBulkUpdater` uses `useIndexer` behind the scenes
@@ -168,7 +187,7 @@ export interface UseBulkUpdaterOptions<
 }
 
 export interface UseBulkUpdaterReturn<
-  T extends typeof Model,
+  T extends typeof Model = typeof Model,
   RelationshipTypes = FilterPiniaOrmModelToRelationshipTypes<InstanceType<T>>,
   Request = Promise<BulkUpdateResponse<T>> & { cancel(): void },
   SyncRequests = Record<
@@ -229,7 +248,7 @@ export interface UseBulkUpdaterReturn<
   /**
    * Meta information for all forms and their fields, keyed by id
    */
-  meta: Ref<Record<string, BulkUpdateMeta<InstanceType<T>>>>
+  meta: Ref<Record<string, BulkUpdateMeta<T>>>
 
   /**
    * The PiniaORM repo
@@ -276,7 +295,7 @@ export interface UseBulkUpdaterReturn<
    * having access to everything you need to
    * communicate the state of the form
    */
-  formsWithMeta: ComputedRef<FormWithMeta<InstanceType<T>>[]>
+  formsWithMeta: ComputedRef<FormWithMeta<T>[]>
 
   /**
    * Every composable gets an id. Used internally
@@ -372,6 +391,28 @@ export interface UseBulkUpdaterReturn<
    * `true` if the latest request retrieved the last page
    */
   indexer: UseIndexerReturn<T>
+
+  /**
+   * Callback called after a successful request.
+   */
+  onSuccess: (callback: Callback<[BulkUpdateSuccessResponse<T>]>) => void
+
+  /**
+   * Callback called when an error occurs (including validation error).
+   */
+  onError: (callback: Callback<[BulkUpdateErrorResponse<T>]>) => void
+
+  /**
+   * Callback called when an error occurs (NOT including validation error).
+   */
+  onStandardError: (callback: Callback<[BulkUpdateErrorResponse<T>]>) => void
+
+  /**
+   * Callback called when a validation error occurs. Note, you
+   * likely won't need to use this callback as all validation
+   * errors exist within the "validationErrors" computed ref.
+   */
+  onValidationError: (callback: Callback<[BulkUpdateErrorResponse<T>]>) => void
 }
 
 export type UseBulkUpdater<T extends typeof Model> = (

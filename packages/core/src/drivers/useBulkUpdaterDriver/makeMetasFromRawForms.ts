@@ -8,7 +8,7 @@ export function makeMetasFromRawForms<
 > (
   options: {
     rawForms: Record<string, PiniaOrmForm<InstanceType<T>>>,
-    defaultMeta: BulkUpdateMeta<InstanceType<T>>
+    defaultMeta: BulkUpdateMeta<T>
     meta: R['meta']
   },
 ) {

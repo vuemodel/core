@@ -2,7 +2,7 @@ import clone from 'just-clone'
 import { Collection, Model } from 'pinia-orm'
 import { FilterPiniaOrmModelToFieldTypes, FilterPiniaOrmModelToRelationshipTypes, getClassRelationships, PiniaOrmForm } from 'pinia-orm-helpers'
 import { nextTick, watch, WatchStopHandle } from 'vue'
-import { BulkUpdateMeta, UseBulkUpdaterReturn } from '../../contracts/bulk-update/UseBulkUpdater'
+import { BulkUpdateForm, BulkUpdateMeta, UseBulkUpdaterReturn } from '../../contracts/bulk-update/UseBulkUpdater'
 import { getFormsChangedValues } from './getFormsChangedValues'
 import deepEqual from 'deep-equal'
 import { IndexFilters } from '../../contracts/crud/index/IndexFilters'
@@ -52,34 +52,61 @@ export function useFormMaker<
   // belongsToManyRelationshipKeys
 
   const defaultFieldMetas = Object.fromEntries<{
-    changed: boolean,
-    updating: boolean,
+    changed: boolean
+    changes: BulkUpdateForm<InstanceType<T>>
+    updating: boolean
+    failed: boolean
     initialValue: any
+    errors: string[]
   }>(
     fieldKeys.map(field => {
       return [
         field,
-        { changed: false, updating: false, initialValue: null },
+        {
+          changed: false,
+          updating: false,
+          failed: false,
+          initialValue: null,
+          changes: {},
+          errors: [],
+        },
       ]
     }),
   )
 
   const defaultBelongsToManyMetas = Object.fromEntries<{
-    changed: boolean,
-    updating: boolean,
+    changed: boolean
+    changes: BulkUpdateForm<InstanceType<T>>
+    updating: boolean
+    failed: boolean
     initialValue: any
+    errors: string[]
   }>(
     belongsToManyRelationshipKeys.map(field => {
       return [
         field,
-        { changed: false, updating: false, initialValue: null },
+        {
+          changed: false,
+          updating: false,
+          failed: false,
+          initialValue: null,
+          changes: {},
+          errors: [],
+        },
       ]
     }),
   )
 
-  const defaultMeta: BulkUpdateMeta<InstanceType<T>> = {
+  const defaultMeta: BulkUpdateMeta<T> = {
     changed: false,
-    fields: { ...defaultFieldMetas, ...defaultBelongsToManyMetas },
+    failed: false,
+    changes: {},
+    standardErrors: [],
+    validationErrors: {},
+    fields: {
+      ...defaultFieldMetas,
+      ...defaultBelongsToManyMetas,
+    },
     initialValues: {},
     makingForm: false,
     updating: false,
@@ -114,7 +141,9 @@ export function useFormMaker<
           meta.value[id].fields[field] = {
             changed: false,
             updating: false,
+            failed: false,
             initialValue: initialFieldValue,
+            errors: [],
           }
         }
       })
@@ -137,6 +166,8 @@ export function useFormMaker<
         meta.value[id].fields[field] = {
           changed: false,
           updating: false,
+          failed: false,
+          errors: [],
           initialValue: initialFieldValue as any,
         }
       })

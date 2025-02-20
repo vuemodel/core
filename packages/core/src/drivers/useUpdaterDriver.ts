@@ -2,7 +2,7 @@ import { Item, Model, useRepo } from 'pinia-orm'
 import { Ref, computed, nextTick, ref, toValue, watch } from 'vue'
 import { DeclassifyPiniaOrmModel, PiniaOrmForm } from 'pinia-orm-helpers'
 import { UseUpdaterOptions, UseUpdaterReturn } from '../contracts/crud/update/UseUpdater'
-import { UpdateErrorResponse, UpdateResponse } from '../types/Response'
+import { UpdateErrorResponse, UpdateResponse, UpdateSuccessResponse } from '../types/Response'
 import { FormValidationErrors } from '../contracts/errors/FormValidationErrors'
 import { StandardErrors } from '../contracts/errors/StandardErrors'
 import { Constructor } from '../types/Constructor'
@@ -20,6 +20,7 @@ import { getDriverKey } from '../utils/getDriverKey'
 import { useFinder } from '../composables/useFinder'
 import { OnUpdateOptimisticPersistMessage, OnUpdatePersistMessage } from '../broadcasting/BroadcastMessages'
 import { deepmerge } from 'deepmerge-ts'
+import { useCallbacks } from '../utils/useCallbacks'
 
 const defaultOptions = {
   persist: true,
@@ -38,6 +39,11 @@ export function useUpdaterDriver<T extends typeof Model> (
   const updateOptimisticPersistEntityChannel = new BroadcastChannel(`vuemodel.${driverKey}.${ModelClass.entity}.updateOptimisticPersist`)
   const updatePersistChannel = new BroadcastChannel(`vuemodel.${driverKey}.updatePersist`)
   const updatePersistEntityChannel = new BroadcastChannel(`vuemodel.${driverKey}.${ModelClass.entity}.updatePersist`)
+
+  const onSuccessCallbacks = useCallbacks<[UpdateSuccessResponse<T>]>([options.onSuccess])
+  const onErrorCallbacks = useCallbacks<[UpdateErrorResponse<T>]>([options.onError])
+  const onStandardErrorCallbacks = useCallbacks<[UpdateErrorResponse<T>]>([options.onStandardError])
+  const onValidationErrorCallbacks = useCallbacks<[UpdateErrorResponse<T>]>([options.onValidationError])
 
   const resourceFinder = useFinder(ModelClass, {
     persist: true,
@@ -324,22 +330,22 @@ export function useUpdaterDriver<T extends typeof Model> (
 
     // On Success
     if (thisResponse?.success) {
-      options?.onSuccess?.(thisResponse)
+      onSuccessCallbacks.run(thisResponse)
     }
 
     // On validation error
     if (thisResponse.validationErrors) {
-      options?.onValidationError?.(thisResponse as UpdateErrorResponse<T>)
+      onValidationErrorCallbacks.run(thisResponse as UpdateErrorResponse<T>)
     }
 
     // On standard error
     if (thisResponse.standardErrors) {
-      options?.onStandardError?.(thisResponse)
+      onStandardErrorCallbacks.run(thisResponse)
     }
 
     // On Error
     if (thisResponse.validationErrors || thisResponse.standardErrors) {
-      options?.onError?.(thisResponse as UpdateErrorResponse<T>)
+      onErrorCallbacks.run(thisResponse as UpdateErrorResponse<T>)
       if (optimistic && originalRecordClone) {
         repo.destroy(resolvedId)
         if (originalRecordClone) {
@@ -403,5 +409,9 @@ export function useUpdaterDriver<T extends typeof Model> (
     ModelClass,
     repo,
     composableId,
+    onSuccess: onSuccessCallbacks.add,
+    onError: onErrorCallbacks.add,
+    onStandardError: onStandardErrorCallbacks.add,
+    onValidationError: onValidationErrorCallbacks.add,
   }
 }

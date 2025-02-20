@@ -1,7 +1,7 @@
 import { Model, useRepo } from 'pinia-orm'
 import { Ref, computed, nextTick, ref, toValue, watch } from 'vue'
 import { UseIndexerOptions, UseIndexerReturn } from '../contracts/crud/index/UseIndexer'
-import { IndexResponse } from '../types/Response'
+import { IndexResponse, IndexSuccessResponse, IndexErrorResponse } from '../types/Response'
 import { getDriverKey } from '../utils/getDriverKey'
 import { QueryValidationErrors } from '../contracts/errors/QueryValidationErrors'
 import { StandardErrors } from '../contracts/errors/StandardErrors'
@@ -22,12 +22,13 @@ import { resolveIndexParams } from './resolveIndexParams'
 import { getRecordPrimaryKey } from '../utils/getRecordPrimaryKey'
 import { IndexWiths } from '../contracts/crud/index/IndexWiths'
 import { IndexWithsLoose } from '../contracts/crud/index/IndexWithsLoose'
-import { IndexFilters, IndexSuccessResponse, OnIndexPersistMessage } from '..'
+import { IndexFilters, OnIndexPersistMessage } from '..'
 import { getFirstDefined } from '../utils/getFirstDefined'
 import { index as indexResource } from '../actions/index'
 import { generateRandomString } from '../utils/generateRandomString'
 import clone from 'just-clone'
 import { removeFunctions } from '../utils/removeFunctions'
+import { useCallbacks } from '../utils/useCallbacks'
 
 const defaultOptions = {
   persist: true,
@@ -44,6 +45,12 @@ export function useIndexerDriver<T extends typeof Model> (
 
   const indexPersistChannel = new BroadcastChannel(`vuemodel.${driverKey}.indexPersist`)
   const indexPersistEntityChannel = new BroadcastChannel(`vuemodel.${driverKey}.${ModelClass.entity}.indexPersist`)
+
+  const onSuccessCallbacks = useCallbacks<[IndexSuccessResponse<T>]>([options.onSuccess])
+  const onErrorCallbacks = useCallbacks<[IndexErrorResponse<T>, QueryValidationErrors]>([options.onError])
+  const onStandardErrorCallbacks = useCallbacks<[IndexErrorResponse<T>]>([options.onStandardError])
+  const onValidationErrorCallbacks = useCallbacks<[IndexResponse<T>]>([options.onValidationError])
+  const onPaginateImmediateCallbacks = useCallbacks<[IndexResponse<T>]>([options.onPaginateImmediate])
 
   const driverConfig = getMergedDriverConfig(options.driver)
   const repo = useRepo<InstanceType<T>>(
@@ -62,7 +69,7 @@ export function useIndexerDriver<T extends typeof Model> (
       () => pagination.value.page,
       () => pagination.value.recordsPerPage,
     ],
-    (newValues, oldValues) => {
+    async (newValues, oldValues) => {
       const [newCurrentPage, newRecordsPerPage] = newValues
       const [oldCurrentPage, oldRecordsPerPage] = oldValues
       if (
@@ -70,7 +77,7 @@ export function useIndexerDriver<T extends typeof Model> (
         ((newCurrentPage !== oldCurrentPage) || (newRecordsPerPage !== oldRecordsPerPage)) &&
         (newCurrentPage && newRecordsPerPage)
       ) {
-        index()
+        index().then(response => onPaginateImmediateCallbacks.run(response))
       }
     })
 
@@ -297,7 +304,7 @@ export function useIndexerDriver<T extends typeof Model> (
     if (response.value?.success) {
       const responseResolved = toValue(response)
       if (responseResolved) {
-        options?.onSuccess?.(responseResolved as IndexSuccessResponse<T>)
+        onSuccessCallbacks.run(responseResolved as IndexSuccessResponse<T>)
       }
 
       const useIndexerOptionsWithoutFunction = useIndexerOptions ? removeFunctions(useIndexerOptions) : {}
@@ -331,17 +338,17 @@ export function useIndexerDriver<T extends typeof Model> (
 
     // On validation error
     if (response.value.validationErrors) {
-      options?.onValidationError?.(response.value)
+      onValidationErrorCallbacks.run(response.value)
     }
 
     // On standard error
     if (response.value.standardErrors) {
-      options?.onStandardError?.(response.value)
+      onStandardErrorCallbacks.run(response.value)
     }
 
     // On any error
     if (response.value.validationErrors || response.value.standardErrors) {
-      options?.onError?.(response.value)
+      onErrorCallbacks.run(response.value, response.value.validationErrors)
     }
 
     indexing.value = false
@@ -482,5 +489,10 @@ export function useIndexerDriver<T extends typeof Model> (
     ModelClass,
     repo,
     composableId,
+    onError: onErrorCallbacks.add,
+    onStandardError: onStandardErrorCallbacks.add,
+    onSuccess: onSuccessCallbacks.add,
+    onValidationError: onValidationErrorCallbacks.add,
+    onPaginateImmediate: onPaginateImmediateCallbacks.add,
   }
 }

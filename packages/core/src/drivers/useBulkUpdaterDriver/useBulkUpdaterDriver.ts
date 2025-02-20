@@ -2,7 +2,7 @@ import { Collection, Model, Relation, useRepo } from 'pinia-orm'
 import { BulkUpdateForm, BulkUpdateMeta, UseBulkUpdaterOptions, UseBulkUpdaterReturn, UseBulkUpdateUpdateOptions } from '../../contracts/bulk-update/UseBulkUpdater'
 import { DeclassifyPiniaOrmModel, FilterPiniaOrmModelToFieldTypes, FilterPiniaOrmModelToRelationshipTypes, getClassRelationships, RelationshipDefinition } from 'pinia-orm-helpers'
 import { computed, onBeforeUnmount, ref, toValue, WatchStopHandle } from 'vue'
-import { BulkUpdateResponse, SyncResponse } from '../../types/Response'
+import { BulkUpdateErrorResponse, BulkUpdateResponse, BulkUpdateSuccessResponse, SyncResponse } from '../../types/Response'
 import { getMergedDriverConfig } from '../../utils/getMergedDriverConfig'
 import { Constructor } from '../../types/Constructor'
 import { generateRandomString } from '../../utils/generateRandomString'
@@ -19,10 +19,12 @@ import omit from 'just-omit'
 import { IndexWiths } from '../../contracts/crud/index/IndexWiths'
 import { getDriverKey } from '../../utils/getDriverKey'
 import { onSyncPersist } from '../../broadcasting/makeChannel'
+import { useCallbacks } from '../../utils/useCallbacks'
 
 const defaultOptions = {
   persist: true,
   excludeFields: [],
+  rollbacks: true,
   syncOn: {
     indexed: true,
     created: true,
@@ -53,9 +55,14 @@ export function useBulkUpdaterDriver<
   const syncPersistChannel = new BroadcastChannel(`vuemodel.${driverKey}.syncPersist`)
   const syncPersistEntityChannel = new BroadcastChannel(`vuemodel.${driverKey}.${ModelClass.entity}.syncPersist`)
 
+  const onSuccessCallbacks = useCallbacks<[BulkUpdateSuccessResponse<T>]>([options.onSuccess])
+  const onErrorCallbacks = useCallbacks<[BulkUpdateErrorResponse<T>]>([options.onError])
+  const onStandardErrorCallbacks = useCallbacks<[BulkUpdateErrorResponse<T>]>([options.onStandardError])
+  const onValidationErrorCallbacks = useCallbacks<[BulkUpdateErrorResponse<T>]>([options.onValidationError])
+
   const forms = ref<Record<string, BulkUpdateForm<InstanceType<T>>>>(options.forms ?? {})
   const changes = ref<Record<string, BulkUpdateForm<InstanceType<T>>>>({})
-  const meta = ref<Record<string, BulkUpdateMeta<InstanceType<T>>>>({})
+  const meta = ref<Record<string, BulkUpdateMeta<T>>>({})
   const updating = ref(false)
   const activeRequests = ref<Record<string | number, {
     request: Promise<BulkUpdateResponse<T>> & { cancel(): void }
@@ -142,6 +149,13 @@ export function useBulkUpdaterDriver<
       with: indexerWith,
     },
   )
+
+  indexer.onPaginateImmediate(response => {
+    if (response.records) {
+      onPaginate(response.records)
+      currentPageIds.value = getRecordPrimaryKeys(response.records)
+    }
+  })
 
   const fields = (new ModelClass()).$fields()
   const fieldKeys = Object.entries(fields)
@@ -248,7 +262,7 @@ export function useBulkUpdaterDriver<
         record: repo.find(id),
         form: form as BulkUpdateForm<InstanceType<T>>,
         // ...relatedForms,
-        ...(meta.value[id] as BulkUpdateMeta<InstanceType<T>>),
+        ...(meta.value[id] as BulkUpdateMeta<T>),
       }
     })
   })
@@ -280,6 +294,9 @@ export function useBulkUpdaterDriver<
   })
 
   function update (_optionsParam?: UseBulkUpdateUpdateOptions<T>) {
+    /**
+     * TODO: Surely we can do better than this craziness
+     */
     return performUpdate(_optionsParam ?? {}, {
       activeRequest,
       activeRequests,
@@ -302,6 +319,10 @@ export function useBulkUpdaterDriver<
       bulkUpdatePersistEntityChannel,
       syncPersistChannel,
       syncPersistEntityChannel,
+      onSuccessCallbacks,
+      onErrorCallbacks,
+      onStandardErrorCallbacks,
+      onValidationErrorCallbacks,
     })
   }
 
@@ -407,5 +428,10 @@ export function useBulkUpdaterDriver<
     toPage,
     records: indexer.records,
     updatedRecords,
+
+    onError: onErrorCallbacks.add,
+    onStandardError: onStandardErrorCallbacks.add,
+    onSuccess: onSuccessCallbacks.add,
+    onValidationError: onValidationErrorCallbacks.add,
   }
 }

@@ -6,6 +6,7 @@ import { StandardErrors } from '../../errors/StandardErrors'
 import { UpdateErrorResponse, UpdateResponse, UpdateSuccessResponse } from '../../../types/Response'
 import { UseFinderReturn } from '../find/UseFinder'
 import { LoosePrimaryKey } from '../../../types/LoosePrimaryKey'
+import { Callback } from '../../../utils/useCallbacks'
 
 export interface UseUpdaterOptions<T extends typeof Model> {
   /**
@@ -286,6 +287,28 @@ export interface UseUpdaterReturn<T extends typeof Model> {
    * The PiniaORM model used to create this composable
    */
   ModelClass: T,
+
+  /**
+   * Callback called after a successful request.
+   */
+  onSuccess: (callback: Callback<[UpdateSuccessResponse<T>]>) => void
+
+  /**
+   * Callback called when an error occurs (including validation error).
+   */
+  onError: (callback: Callback<[UpdateErrorResponse<T>]>) => void
+
+  /**
+   * Callback called when an error occurs (NOT including validation error).
+   */
+  onStandardError: (callback: Callback<[UpdateErrorResponse<T>]>) => void
+
+  /**
+   * Callback called when a validation error occurs. Note, you
+   * likely won't need to use this callback as all validation
+   * errors exist within the "validationErrors" computed ref.
+   */
+  onValidationError: (callback: Callback<[UpdateErrorResponse<T>]>) => void
 }
 
 export type UseUpdater<T extends typeof Model> = (

@@ -3,6 +3,7 @@ import { ComputedRef, MaybeRefOrGetter, Ref } from 'vue'
 import { StandardErrors } from '../../errors/StandardErrors'
 import { DestroyErrorResponse, DestroyResponse, DestroySuccessResponse } from '../../../types/Response'
 import { LoosePrimaryKey } from '../../../types/LoosePrimaryKey'
+import { Callback } from '../../../utils/useCallbacks'
 
 export interface UseDestroyerOptions<T extends typeof Model> {
   /**
@@ -16,14 +17,14 @@ export interface UseDestroyerOptions<T extends typeof Model> {
   onSuccess?: (response: DestroySuccessResponse<T>) => void
 
   /**
-   * Callback called when a standard error occurs.
-   */
-  onStandardError?: (response: DestroyErrorResponse<T>) => void
-
-  /**
    * Callback called when an error occurs.
    */
   onError?: (response: DestroyErrorResponse<T>) => void
+
+  /**
+   * Callback called when a standard error occurs.
+   */
+  onStandardError?: (response: DestroyErrorResponse<T>) => void
 
   /**
    * Should the retrieved data be persisted to the store?
@@ -132,6 +133,23 @@ export interface UseDestroyerReturn<T extends typeof Model> {
    * The PiniaORM model used to create this composable
    */
   ModelClass: T,
+
+  /**
+   * Callback called after a successful request.
+   */
+  onSuccess: (callback: Callback<[DestroySuccessResponse<T>]>) => void
+
+  /**
+   * Callback called when a validation error occurs. Note, you
+   * likely won't need to use this callback as all validation
+   * errors exist within the "validationErrors" computed ref.
+   */
+  onError: (callback: Callback<[DestroyErrorResponse<T>]>) => void
+
+  /**
+   * Callback called when an error occurs (NOT including validation error).
+   */
+  onStandardError: (callback: Callback<[DestroyErrorResponse<T>]>) => void
 }
 
 export type UseDestroyer<T extends typeof Model> = (

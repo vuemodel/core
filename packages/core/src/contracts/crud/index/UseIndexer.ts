@@ -10,6 +10,7 @@ import { PaginationDetails } from './PaginationDetails'
 import { IndexScopes } from './IndexScopes'
 import { LoosePrimaryKey } from '../../../types/LoosePrimaryKey'
 import { IndexOptionsParam } from '../../../types/UseIndexerParams'
+import { Callback } from '../../../utils/useCallbacks'
 
 export interface UseIndexerOptions<T extends typeof Model> {
   /**
@@ -73,6 +74,13 @@ export interface UseIndexerOptions<T extends typeof Model> {
    * errors exist within the "validationErrors" computed ref.
    */
   onValidationError?: (response: IndexResponse<T>) => void
+
+  /**
+   * Mostly for internal use with bulk update. Triggered when
+   * `paginateImmediate: true`, and pagination occurs due
+   * to a change of the `pagination` reactive variable
+   */
+  onPaginateImmediate?: (response: IndexResponse<T>) => void
 
   /**
    * Should the retrieved data be persisted to the store?
@@ -320,6 +328,35 @@ export interface UseIndexerReturn<T extends typeof Model> {
    * The PiniaORM model used to create this composable
    */
   ModelClass: T,
+
+  /**
+   * Callback called after a successful request.
+   */
+  onSuccess: (callback: Callback<[IndexSuccessResponse<T>]>) => void
+
+  /**
+   * Callback called when an error occurs (including validation error).
+   */
+  onError: (callback: Callback<[IndexErrorResponse<T>, QueryValidationErrors]>) => void
+
+  /**
+   * Callback called when an error occurs (NOT including validation error).
+   */
+  onStandardError: (callback: Callback<[IndexErrorResponse<T>]>) => void
+
+  /**
+   * Callback called when a validation error occurs. Note, you
+   * likely won't need to use this callback as all validation
+   * errors exist within the "validationErrors" computed ref.
+   */
+  onValidationError: (callback: Callback<[IndexResponse<T>]>) => void
+
+  /**
+   * Mostly for internal use with bulk update. Triggered when
+   * `paginateImmediate: true`, and pagination occurs due
+   * to a change of the `pagination` reactive variable
+   */
+  onPaginateImmediate: (callback: Callback<[IndexResponse<T>]>) => void
 }
 
 export type UseIndexer<T extends typeof Model> = (

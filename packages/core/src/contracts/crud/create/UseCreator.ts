@@ -4,6 +4,7 @@ import { ComputedRef, MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
 import { PiniaOrmForm } from 'pinia-orm-helpers'
 import { StandardErrors } from '../../errors/StandardErrors'
 import { CreateErrorResponse, CreateResponse, CreateSuccessResponse, CreateValidationErrorResponse } from '../../../types/Response'
+import { Callback } from '../../../utils/useCallbacks'
 
 export interface UseCreatorOptions<T extends typeof Model> {
   /**
@@ -184,6 +185,28 @@ export interface UseCreatorReturn<T extends typeof Model> {
    * when working with events.
    */
   composableId: string
+
+  /**
+   * Callback called after a successful request.
+   */
+  onSuccess: (callback: Callback<[CreateSuccessResponse<T>]>) => void
+
+  /**
+   * Callback called when an error occurs (including validation error).
+   */
+  onError: (callback: Callback<[CreateErrorResponse<T>, FormValidationErrors<T>]>) => void
+
+  /**
+   * Callback called when an error occurs (NOT including validation error).
+   */
+  onStandardError: (callback: Callback<[CreateErrorResponse<T>]>) => void
+
+  /**
+   * Callback called when a validation error occurs. Note, you
+   * likely won't need to use this callback as all validation
+   * errors exist within the "validationErrors" computed ref.
+   */
+  onValidationError: (callback: Callback<[CreateValidationErrorResponse<T>, FormValidationErrors<T>]>) => void
 }
 
 export type UseCreator<T extends typeof Model> = (

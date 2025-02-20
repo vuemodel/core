@@ -2,7 +2,7 @@ import { Item, Model, useRepo } from 'pinia-orm'
 import { computed, ref, toValue } from 'vue'
 import { UseDestroyerOptions, UseDestroyerReturn } from '../contracts/crud/destroy/UseDestroyer'
 import { getDriverKey } from '../utils/getDriverKey'
-import { DestroyResponse, DestroySuccessResponse } from '../types/Response'
+import { DestroyErrorResponse, DestroyResponse, DestroySuccessResponse } from '../types/Response'
 import { StandardErrors } from '../contracts/errors/StandardErrors'
 import { Constructor } from '../types/Constructor'
 import { getMergedDriverConfig } from '../utils/getMergedDriverConfig'
@@ -12,6 +12,7 @@ import { destroy as destroyResource } from '../actions/destroy'
 import { generateRandomString } from '../utils/generateRandomString'
 import { OnDestroyOptimisticPersistMessage, OnDestroyPersistMessage } from '../broadcasting/BroadcastMessages'
 import { deepmerge } from 'deepmerge-ts'
+import { useCallbacks } from '../utils/useCallbacks'
 
 const defaultOptions = {
   persist: true,
@@ -29,6 +30,10 @@ export function useDestroyerDriver<T extends typeof Model> (
   const destroyOptimisticPersistEntityChannel = new BroadcastChannel(`vuemodel.${driverKey}.${ModelClass.entity}.destroyOptimisticPersist`)
   const destroyPersistChannel = new BroadcastChannel(`vuemodel.${driverKey}.destroyPersist`)
   const destroyPersistEntityChannel = new BroadcastChannel(`vuemodel.${driverKey}.${ModelClass.entity}.destroyPersist`)
+
+  const onSuccessCallbacks = useCallbacks<[DestroySuccessResponse<T>]>([options.onSuccess])
+  const onStandardErrorCallbacks = useCallbacks<[DestroyErrorResponse<T>]>([options.onStandardError])
+  const onErrorCallbacks = useCallbacks<[DestroyErrorResponse<T>]>([options.onError])
 
   const driverConfig = getMergedDriverConfig(options.driver)
   const repo = useRepo<InstanceType<T>>(
@@ -157,13 +162,18 @@ export function useDestroyerDriver<T extends typeof Model> (
     if (response.value?.success) {
       const responseResolved = toValue(response)
       if (responseResolved) {
-        options?.onSuccess?.(responseResolved as DestroySuccessResponse<T>)
+        onSuccessCallbacks.run(responseResolved as DestroySuccessResponse<T>)
       }
     }
 
-    // On standard error
+    // On Standard Error
     if (response.value.standardErrors) {
-      options?.onStandardError?.(response.value)
+      onStandardErrorCallbacks.run(response.value)
+    }
+
+    // On Error
+    if (!response.value.success) {
+      onErrorCallbacks.run(response.value)
     }
 
     if (!response.value.success && optimistic && persist && clonedRecord) {
@@ -187,5 +197,8 @@ export function useDestroyerDriver<T extends typeof Model> (
     ModelClass,
     repo,
     composableId,
+    onError: onErrorCallbacks.add,
+    onStandardError: onStandardErrorCallbacks.add,
+    onSuccess: onSuccessCallbacks.add,
   }
 }

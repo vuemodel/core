@@ -14,6 +14,7 @@ import { VueModelDriverFeatures } from './VueModelDriverFeatures'
 import { UseBulkUpdater } from './bulk-update/UseBulkUpdater'
 import { BulkUpdate } from './bulk-update/BulkUpdate'
 import { Sync } from './sync/Sync'
+import { UseModel } from './crud/use-model/UseModel'
 
 export interface VueModelDriver<T extends typeof Model = typeof Model> {
   create: Create<T>
@@ -35,6 +36,8 @@ export interface VueModelDriver<T extends typeof Model = typeof Model> {
   useBulkUpdater?: UseBulkUpdater<T>
 
   sync?: Sync<T>
+
+  useModel?: UseModel<T>
 
   features: VueModelDriverFeatures
 }

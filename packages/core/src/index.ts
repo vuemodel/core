@@ -61,6 +61,11 @@ export * from './drivers/useBulkUpdaterDriver/useBulkUpdaterDriver'
 export * from './contracts/sync/Sync'
 export * from './actions/sync'
 
+// Use Model
+export * from './contracts/crud/use-model/UseModel'
+export * from './composables/useModel'
+export * from './drivers/useModelDriver'
+
 // Errors
 export * from './types/ApiError'
 export * from './types/Response'

@@ -1,6 +1,6 @@
 import { toValue } from 'vue'
 import { UseBulkUpdaterOptions, UseBulkUpdaterReturn, UseBulkUpdateUpdateOptions } from '../../contracts/bulk-update/UseBulkUpdater'
-import { BulkUpdateResponse, BulkUpdateErrorResponse, SyncResponse } from '../../types/Response'
+import { BulkUpdateResponse, BulkUpdateErrorResponse, SyncResponse, BulkUpdateSuccessResponse } from '../../types/Response'
 import { getDriverKey } from '../../utils/getDriverKey'
 import { bulkUpdate as bulkUpdateRecords } from '../../actions/bulkUpdate'
 import { Model, useRepo } from 'pinia-orm'
@@ -13,6 +13,7 @@ import { FilterPiniaOrmModelToRelationshipTypes, RelationshipDefinition } from '
 import { getRecordPrimaryKey } from '../../utils/getRecordPrimaryKey'
 import { OnBulkUpdatePersistMessage, OnSyncPersistMessage } from '../../broadcasting/BroadcastMessages'
 import { BulkUpdatePersistHookPayload, SyncPersistHookPayload } from '../../hooks/Hooks'
+import { UseCallbacksReturn } from '../../utils/useCallbacks'
 // (Promise<SyncResponse<T>> & { cancel(): void })
 
 export async function performUpdate<
@@ -43,6 +44,10 @@ export async function performUpdate<
     bulkUpdatePersistEntityChannel: BroadcastChannel,
     syncPersistChannel: BroadcastChannel,
     syncPersistEntityChannel: BroadcastChannel,
+    onSuccessCallbacks: UseCallbacksReturn<[BulkUpdateSuccessResponse<T>]>,
+    onErrorCallbacks: UseCallbacksReturn<[BulkUpdateErrorResponse<T>]>,
+    onStandardErrorCallbacks: UseCallbacksReturn<[BulkUpdateErrorResponse<T>]>,
+    onValidationErrorCallbacks: UseCallbacksReturn<[BulkUpdateErrorResponse<T>]>,
   },
 ): Promise<BulkUpdateResponse<T>> {
   type SyncRequests = Record<
@@ -53,6 +58,17 @@ export async function performUpdate<
     }
   >
   type Request = Promise<BulkUpdateResponse<T>> & { cancel(): void }
+
+  if (!Object.keys(composableOptions.changes.value).length) {
+    return {
+      action: 'bulk-update',
+      entity: composableOptions.ModelClass.entity,
+      records: [],
+      success: true,
+      standardErrors: undefined,
+      validationErrors: undefined,
+    }
+  }
 
   const {
     response,
@@ -76,6 +92,10 @@ export async function performUpdate<
     syncPersistHooks,
     syncPersistChannel,
     syncPersistEntityChannel,
+    onSuccessCallbacks,
+    onErrorCallbacks,
+    onStandardErrorCallbacks,
+    onValidationErrorCallbacks,
   } = composableOptions
 
   const driverKey = getDriverKey(options?.driver)
@@ -134,6 +154,8 @@ export async function performUpdate<
   for (const entry of Object.entries(changes.value)) {
     const parentPrimaryKey = entry[0] as keyof RelationshipTypes
     const recordChanges = entry[1]
+
+    // Relationships
     for (const relatedKey of belongsToManyRelationshipKeys) {
       const relatedChange = (recordChanges as any)[relatedKey]
       if (relatedChange) {
@@ -160,6 +182,7 @@ export async function performUpdate<
   const changedRecordMetas = Object.entries(changes.value).map(changeEntry => {
     const recordMeta = meta.value[changeEntry[0]]
     recordMeta.updating = true
+    recordMeta.changes = changeEntry[1]
     return recordMeta
   })
 
@@ -286,7 +309,7 @@ export async function performUpdate<
     thisResponse.success = false
     if (hasManyToManyStandardErrors) {
       if (!thisResponse.standardErrors) {
-        thisResponse.standardErrors = []
+        thisResponse.standardErrors = undefined
       }
       syncResponses.forEach(syncResponse => {
         if (syncResponse.standardErrors?.length) {
@@ -314,24 +337,59 @@ export async function performUpdate<
 
   // On Success
   if (thisResponse?.success && !hasManyToManyError) {
+    changedRecordMetas.forEach(recordMeta => {
+      recordMeta.failed = false
+      recordMeta.changes = {}
+      recordMeta.validationErrors = {}
+      recordMeta.standardErrors = []
+    })
+
     changes.value = {}
-    options?.onSuccess?.(thisResponse)
+    onSuccessCallbacks.run(thisResponse)
   }
 
   // On validation error
   if (thisResponse.validationErrors) {
-    options?.onValidationError?.(thisResponse as BulkUpdateErrorResponse<T>)
+    onValidationErrorCallbacks.run(thisResponse as BulkUpdateErrorResponse<T>)
   }
 
   // On standard error
   if (thisResponse.standardErrors) {
-    options?.onStandardError?.(thisResponse)
+    onStandardErrorCallbacks.run(thisResponse)
   }
 
-  // On Error
+  // On Error (any error)
   if (thisResponse.validationErrors || thisResponse.standardErrors) {
-    options?.onError?.(thisResponse as BulkUpdateErrorResponse<T>)
+    onErrorCallbacks.run(thisResponse as BulkUpdateErrorResponse<T>)
+
+    const rollbacksResolved = toValue(options?.rollbacks)
+
+    // if we have rollbcks, "changes" need to be reset
+    changedRecordMetas.forEach(recordMeta => {
+      if (rollbacksResolved) {
+        recordMeta.changes = {}
+      }
+      recordMeta.failed = true
+    })
+
+    Object.keys(changes.value).forEach(id => {
+      meta.value[id].standardErrors = thisResponse.standardErrors
+      meta.value[id].validationErrors = thisResponse.validationErrors
+
+      const validationErrorEntries = Object.entries(thisResponse.validationErrors)
+      if (validationErrorEntries.length) {
+        validationErrorEntries.forEach(([field, errors]) => {
+          /* @ts-expect-error validation error keys will always be in metas fields */
+          meta.value[id][field] = errors
+        })
+      }
+    })
+
+    if (rollbacksResolved) {
+      formMaker.makeForms(Object.keys(changes.value))
+    }
   }
+
   delete activeRequests.value[requestId]
 
   return thisResponse

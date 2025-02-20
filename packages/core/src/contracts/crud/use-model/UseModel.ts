@@ -1,11 +1,12 @@
 import { Model, Repository } from 'pinia-orm'
 import { MaybeRefOrGetter, Reactive, Ref } from 'vue'
 import { PiniaOrmForm } from 'pinia-orm-helpers'
-import { CreateResponse, DestroyResponse, UpdateResponse } from '../../../types/Response'
+import { CreateResponse, UpdateResponse } from '../../../types/Response'
 import { UseBulkUpdaterOptions, UseBulkUpdaterReturn } from '../../bulk-update/UseBulkUpdater'
 import { UseCreatorOptions, UseCreatorReturn } from '../create/UseCreator'
 import { UseDestroyerOptions, UseDestroyerReturn } from '../destroy/UseDestroyer'
 import { UseIndexerOptions, UseIndexerReturn } from '../index/UseIndexer'
+import { IndexFilters } from '../index/IndexFilters'
 import { LoosePrimaryKey } from '../../../types/LoosePrimaryKey'
 
 export interface UseModelOptions<T extends typeof Model> {
@@ -64,88 +65,93 @@ export interface UseModelOptions<T extends typeof Model> {
 }
 
 export interface UseModelReturn<T extends typeof Model> {
-  bulkUpdater: UseBulkUpdaterReturn<T>
-  creator: UseCreatorReturn<T>
-  destroyer: UseDestroyerReturn<T>
-  indexer: UseIndexerReturn<T>
+  creator: {
+    /**
+     * A ref of the form used to create a resource. We'll
+     * likely want to model fields of this form in the UI.
+     */
+    form: UseCreatorReturn<T>['form']
 
-  /**
-   * A ref of the form used to create a resource. We'll
-   * likely want to model fields of this form in the UI.
-   */
-  createForm: UseCreatorReturn<T>['form']
+    /**
+     * Perform the `Create` request
+     * NOTE: the "form" param is not required! You likely chose
+     * to model the form in your template using `creator.form.value`.
+     */
+    create: UseCreatorReturn<T>['create']
 
-  /**
-   * Perform the `Create` request
-   * NOTE: the "form" param is not required! You likely chose
-   * to model the form in your template using `creator.form.value`.
-   */
-  create: UseCreatorReturn<T>['create']
+    /**
+     * `true` while creating a resource.
+     */
+    creating: UseCreatorReturn<T>['creating']
 
-  /**
-   * `true` while creating a resource.
-   */
-  creating: UseCreatorReturn<T>['creating']
+    /**
+     * A boolean you may choose to use for displaying the form.
+     */
+    showForm: Ref<boolean>
+  }
 
-  /**
-   * A boolean you may choose to use for displaying the form.
-   */
-  showCreateForm: Ref<boolean>
+  updater: {
+    /**
+     * `true` while indexing.
+     */
+    indexing: UseIndexerReturn<T>['indexing']
 
-  /**
-   * `true` while indexing.
-   */
-  indexing: UseIndexerReturn<T>['indexing']
+    /**
+     * Perform an index request.
+     */
+    index: UseIndexerReturn<T>['index']
 
-  /**
-   * Perform an index request.
-   */
-  index: UseIndexerReturn<T>['index']
+    /**
+     * Records retrieved from the latest index request.
+     *
+     * NOTE: These records come from `bulkUpdater.records`
+     */
+    records: UseBulkUpdaterReturn<T>['records']
 
-  /**
-   * Records retrieved from the latest index request.
-   *
-   * NOTE: These records come from `bulkUpdater.records`
-   */
-  records: UseBulkUpdaterReturn<T>['records']
+    formsKeyed: UseBulkUpdaterReturn<T>['forms']
 
-  updateForms: UseBulkUpdaterReturn<T>['forms']
+    forms: UseBulkUpdaterReturn<T>['formsWithMeta']
 
-  updateFormsWithMeta: UseBulkUpdaterReturn<T>['formsWithMeta']
+    update: UseBulkUpdaterReturn<T>['update'],
 
-  showUpdateForm: Ref<boolean>
+    /**
+     * Either false, or the id of the record to be updated
+     */
+    showFormId: Ref<LoosePrimaryKey | false>
 
-  /**
-   * Go to the next page.
-   *
-   * NOTE: This is called on `bulkUpdater.next()`
-   */
-  next: UseBulkUpdaterReturn<T>['next']
+    /**
+     * Go to the next page.
+     *
+     * NOTE: This is called on `bulkUpdater.next()`
+     */
+    next: UseBulkUpdaterReturn<T>['next']
 
-  /**
-   * Go to the previous page.
-   *
-   * NOTE: This is called on `bulkUpdater.previous()`
-   */
-  previous: UseBulkUpdaterReturn<T>['previous']
+    /**
+     * Go to the previous page.
+     *
+     * NOTE: This is called on `bulkUpdater.previous()`
+     */
+    previous: UseBulkUpdaterReturn<T>['previous']
 
-  pagination: UseBulkUpdaterReturn<T>['pagination']
-  toPage: UseBulkUpdaterReturn<T>['toPage']
-  toFirstPage: UseBulkUpdaterReturn<T>['toFirstPage']
-  toLastPage: UseBulkUpdaterReturn<T>['toLastPage']
-  currentPageIds: UseBulkUpdaterReturn<T>['currentPageIds']
-  isFirstPage: UseBulkUpdaterReturn<T>['isFirstPage']
-  isLastPage: UseBulkUpdaterReturn<T>['isLastPage']
+    pagination: UseBulkUpdaterReturn<T>['pagination']
+    toPage: UseBulkUpdaterReturn<T>['toPage']
+    toFirstPage: UseBulkUpdaterReturn<T>['toFirstPage']
+    toLastPage: UseBulkUpdaterReturn<T>['toLastPage']
+    currentPageIds: UseBulkUpdaterReturn<T>['currentPageIds']
+    isFirstPage: UseBulkUpdaterReturn<T>['isFirstPage']
+    isLastPage: UseBulkUpdaterReturn<T>['isLastPage']
+  }
 
-  destroy: (id?: LoosePrimaryKey | LoosePrimaryKey[]) => Promise<DestroyResponse<T>>
-  destroying: UseDestroyerReturn<T>['destroying']
-  showDestroyConfirm: Ref<boolean>
+  destroyer: {
+    destroy: UseDestroyerReturn<T>['destroy']
+    destroying: UseDestroyerReturn<T>['destroying']
+    /**
+     * Either false, or the id of the record to be destroyed
+     */
+    showConfirmId: Ref<LoosePrimaryKey | false>
+  }
 
-  updateOrCreate: (
-    (filter: UseIndexerOptions<T>['filters'], data: PiniaOrmForm<InstanceType<T>>) => Promise<UpdateResponse<T> | CreateResponse<T>>
-  ) & (
-    (data: PiniaOrmForm<InstanceType<T>>) => Promise<UpdateResponse<T> | CreateResponse<T>>
-  )
+  updateOrCreate: (filter: IndexFilters<InstanceType<T>>, data: PiniaOrmForm<InstanceType<T>>) => Promise<UpdateResponse<T> | CreateResponse<T>>
 
   /**
    * The PiniaORM model used to create this composable
@@ -157,6 +163,13 @@ export interface UseModelReturn<T extends typeof Model> {
    */
   repo: Repository<InstanceType<T>>
 
+  composables: {
+    bulkUpdater: UseBulkUpdaterReturn<T>
+    creator: UseCreatorReturn<T>
+    destroyer: UseDestroyerReturn<T>
+    indexer: UseIndexerReturn<T>
+  }
+
   /**
    * Every composable gets an id. Used internally
    * when working with events.
@@ -165,6 +178,6 @@ export interface UseModelReturn<T extends typeof Model> {
 }
 
 export type UseModel<T extends typeof Model> = (
-  model: T,
+  ModelClass: T,
   options?: UseModelOptions<T>
 ) => Reactive<UseModelReturn<T>>

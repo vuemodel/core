@@ -2,7 +2,7 @@ import { Model, PrimaryKey, useRepo } from 'pinia-orm'
 import { Ref, computed, ref, toValue } from 'vue'
 import { DeclassifyPiniaOrmModel, PiniaOrmForm } from 'pinia-orm-helpers'
 import { UseCreatorOptions, UseCreatorReturn } from '../contracts/crud/create/UseCreator'
-import { CreateResponse } from '../types/Response'
+import { CreateErrorResponse, CreateResponse, CreateSuccessResponse, CreateValidationErrorResponse } from '../types/Response'
 import { FormValidationErrors } from '../contracts/errors/FormValidationErrors'
 import { StandardErrors } from '../contracts/errors/StandardErrors'
 import { pick } from '../utils/pick'
@@ -17,6 +17,7 @@ import { generateRandomString } from '../utils/generateRandomString'
 import { makeId } from '../utils/makeId'
 import { OnCreateOptimisticPersistMessage, OnCreatePersistMessage } from '../broadcasting/BroadcastMessages'
 import { deepmerge } from 'deepmerge-ts'
+import { useCallbacks } from '../utils/useCallbacks'
 
 const defaultOptions = {
   persist: true,
@@ -34,6 +35,11 @@ export function useCreatorDriver<T extends typeof Model> (
   const createOptimisticPersistEntityChannel = new BroadcastChannel(`vuemodel.${driverKey}.${ModelClass.entity}.createOptimisticPersist`)
   const createPersistChannel = new BroadcastChannel(`vuemodel.${driverKey}.createPersist`)
   const createPersistEntityChannel = new BroadcastChannel(`vuemodel.${driverKey}.${ModelClass.entity}.createPersist`)
+
+  const onSuccessCallbacks = useCallbacks<[CreateSuccessResponse<T>]>([options.onSuccess])
+  const onStandardErrorCallbacks = useCallbacks<[CreateErrorResponse<T>]>([options.onStandardError])
+  const onValidationErrorCallbacks = useCallbacks<[CreateValidationErrorResponse<T>, FormValidationErrors<T>]>([options.onValidationError])
+  const onErrorCallbacks = useCallbacks<[CreateErrorResponse<T>, FormValidationErrors<T>]>([options.onError])
 
   const driverConfig = getMergedDriverConfig(options.driver)
   const repo = useRepo<InstanceType<T>>(
@@ -190,18 +196,18 @@ export function useCreatorDriver<T extends typeof Model> (
     if (thisResponse?.success) {
       if (Object.keys(activeRequests.value).length <= 1) { form.value = {} }
       if (thisResponse) {
-        options?.onSuccess?.(thisResponse)
+        onSuccessCallbacks.run(thisResponse)
       }
     }
 
     // On validation error
     if (thisResponse.validationErrors && !thisResponse.success) {
-      options?.onValidationError?.(thisResponse, thisResponse.validationErrors)
+      onValidationErrorCallbacks.run(thisResponse, thisResponse.validationErrors)
     }
 
     // On standard error
     if (thisResponse.standardErrors) {
-      options?.onStandardError?.(thisResponse)
+      onStandardErrorCallbacks.run(thisResponse)
     }
 
     // On Error
@@ -211,7 +217,7 @@ export function useCreatorDriver<T extends typeof Model> (
       if (optimistic && thisOptimisticRecord) {
         repo.destroy(requestId)
       }
-      options?.onError?.(thisResponse)
+      onErrorCallbacks.run(thisResponse, thisResponse.validationErrors)
     }
     delete activeRequests.value[requestId]
 
@@ -233,5 +239,9 @@ export function useCreatorDriver<T extends typeof Model> (
     ModelClass,
     repo,
     composableId,
+    onError: onErrorCallbacks.add,
+    onStandardError: onStandardErrorCallbacks.add,
+    onSuccess: onSuccessCallbacks.add,
+    onValidationError: onValidationErrorCallbacks.add,
   }
 }
