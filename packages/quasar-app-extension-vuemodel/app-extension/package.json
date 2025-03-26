@@ -1,0 +1,27 @@
+{
+  "name": "@vuemodel/quasar-app-extension-vuemodel",
+  "type": "module",
+  "version": "0.0.1",
+  "description": "Simple VueModel integration with Quasar Framework",
+  "author": "luke@ldiebold.com",
+  "license": "MIT",
+  "main": "src/index.js",
+  "scripts": {
+    "release": "bumpp --tag '@vuemodel/quasar-app-extension-vuemodel@v%s' && pnpm publish"
+  },
+  "repository": {
+    "type": "https://github.com/vuemodel/vuemodel",
+    "url": "https://github.com/vuemodel/vuemodel"
+  },
+  "bugs": "https://github.com/vuemodel/vuemodel/issues",
+  "homepage": "https://vuemodel.com/",
+  "devDependencies": {
+    "@vuemodel/core": "workspace:latest",
+    "@vuemodel/indexeddb": "workspace:latest",
+    "@vuemodel/orion": "workspace:latest",
+    "bumpp": "^10.1.0"
+  },
+  "dependencies": {
+    "inflection": "^3.0.2"
+  }
+}
