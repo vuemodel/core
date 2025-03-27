@@ -138,7 +138,15 @@ export function useIndexerDriver<T extends typeof Model> (
       query.whereId(toValue(responseIds) ?? [])
     }
 
-    applyWiths(ModelClass, query, withObject)
+    applyWiths(
+      ModelClass,
+      query,
+      withObject,
+      {
+        withoutEntityGlobalScopes: options?.withoutEntityGlobalScopes,
+        withoutGlobalScopes: options?.withoutGlobalScopes,
+      },
+    )
     applyFilters(query, filtersObject)
     applyOrderBys(query, orderByArray)
 

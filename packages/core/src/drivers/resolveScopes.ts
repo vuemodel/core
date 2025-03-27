@@ -32,8 +32,8 @@ export function resolveScopes (
   entity: string,
   scopesToUse: UseIndexerOptions<typeof Model>['scopes'],
   options?: {
-    withoutGlobalScopes: UseIndexerOptions<typeof Model>['withoutGlobalScopes'],
-    withoutEntityGlobalScopes: UseIndexerOptions<typeof Model>['withoutEntityGlobalScopes']
+    withoutGlobalScopes?: UseIndexerOptions<typeof Model>['withoutGlobalScopes'],
+    withoutEntityGlobalScopes?: UseIndexerOptions<typeof Model>['withoutEntityGlobalScopes']
   },
 ): ObjectQueryScope {
   const scopesToUseResolved = toValue(scopesToUse)
@@ -71,6 +71,8 @@ export function resolveScopes (
     appliedEntityScopes = difference(appliedEntityScopes, toValue(options.withoutEntityGlobalScopes))
     appliedDriversEntityScopes = difference(appliedDriversEntityScopes, toValue(options.withoutEntityGlobalScopes))
   }
+
+  console.log('appliedGlobalScopes', appliedGlobalScopes)
 
   const scopesToApply = [
     ...appliedGlobalScopes,

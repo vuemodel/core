@@ -84,7 +84,15 @@ export function useFinderDriver<T extends typeof Model> (
     const withObject = makeWithQuery(toValue(options?.with) as string | string[] | IndexWithsLoose)
     const query = repo.query()
     if (withObject) {
-      applyWiths(ModelClass, query, withObject)
+      applyWiths(
+        ModelClass,
+        query,
+        withObject,
+        {
+          withoutEntityGlobalScopes: options?.withoutEntityGlobalScopes,
+          withoutGlobalScopes: options?.withoutGlobalScopes,
+        },
+      )
     }
     const idResolved = idParam ??
       (response.value?.record ? getRecordId(response.value?.record) : undefined) ??

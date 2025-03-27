@@ -3,7 +3,7 @@ import { useBulkUpdater, useIndexer } from '@vuemodel/core'
 import { populateRecords, User } from '@vuemodel/sample-data'
 import { clear } from 'idb-keyval'
 import UpdateUsersForms from './UpdateUsersForms.vue'
-import { piniaLocalStorageState } from '@vuemodel/indexeddb'
+import { indexedDbState } from '@vuemodel/indexeddb'
 
 const usersIndexer = useIndexer(User)
 async function setUsers () {
@@ -17,7 +17,7 @@ setUsers()
 const usersBulkUpdater = useBulkUpdater(User)
 
 async function updateWithValidationErrors () {
-  piniaLocalStorageState.mockValidationErrors = {
+  indexedDbState.mockValidationErrors = {
     1: {
       name: ['name field is required'],
     },
@@ -28,11 +28,11 @@ async function updateWithValidationErrors () {
 
   await usersBulkUpdater.update()
 
-  piniaLocalStorageState.mockValidationErrors = undefined
+  indexedDbState.mockValidationErrors = undefined
 }
 
 async function updateWithStandardErrors () {
-  piniaLocalStorageState.mockStandardErrors = [
+  indexedDbState.mockStandardErrors = [
     {
       message: 'the server did not like your request',
       name: 'bad request',
@@ -42,7 +42,7 @@ async function updateWithStandardErrors () {
 
   await usersBulkUpdater.update()
 
-  piniaLocalStorageState.mockStandardErrors = undefined
+  indexedDbState.mockStandardErrors = undefined
 }
 </script>
 

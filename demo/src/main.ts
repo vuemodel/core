@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import { Quasar, Dialog } from 'quasar'
 import { createPinia } from 'pinia'
 import { createVueModel, useModelDriver } from '@vuemodel/core'
-import { createPiniaLocalStorage, piniaLocalVueModelDriver } from '@vuemodel/indexeddb'
+import { createIndexedDb, indexedDbVueModelDriver } from '@vuemodel/indexeddb'
 
 import App from './App.vue'
 import router from './router'
@@ -20,7 +20,7 @@ const vueModel = createVueModel({
   drivers: {
     local: {
       driver: {
-        ...piniaLocalVueModelDriver,
+        ...indexedDbVueModelDriver,
         useModel: useModelDriver,
       },
       config: {
@@ -39,7 +39,7 @@ const vueModel = createVueModel({
   },
 })
 
-const piniaLocalStorage = createPiniaLocalStorage({
+const indexedDbStorage = createIndexedDb({
   frontStore: pinia,
   // mockStandardErrors: [{
   //   message: 'sdfg',
@@ -52,7 +52,7 @@ const app = createApp(App)
 app.use(pinia)
 app.use(router)
 app.use(vueModel)
-app.use(piniaLocalStorage)
+app.use(indexedDbStorage)
 app.use(Quasar, {
   plugins: { Dialog }, // import Quasar plugins and add here
 })

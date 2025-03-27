@@ -258,7 +258,15 @@ export function useBulkUpdaterDriver<
       //     return formsWithMeta
       //   }
       const query = repo.query()
-      applyWiths(ModelClass, query, toValue(indexerWith))
+      applyWiths(
+        ModelClass,
+        query,
+        toValue(indexerWith),
+        {
+          withoutEntityGlobalScopes: options.indexer?.withoutEntityGlobalScopes,
+          withoutGlobalScopes: options.indexer?.withoutGlobalScopes,
+        },
+      )
 
       return {
         id,

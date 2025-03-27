@@ -1,5 +1,5 @@
 import { Model } from 'pinia-orm'
-import { Attr, Str, Uid, BelongsTo } from 'pinia-orm/dist/decorators'
+import { Attr, Str, Uid, BelongsTo } from 'pinia-orm/decorators'
 import { User } from 'src/models/User'
 
 export class Todo extends Model {

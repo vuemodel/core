@@ -1,5 +1,5 @@
 import { Model } from 'pinia-orm'
-import { Attr, Uid, BelongsTo } from 'pinia-orm/dist/decorators'
+import { Attr, Uid, BelongsTo } from 'pinia-orm/decorators'
 import { User } from 'src/models/User'
 
 export class {{ resourceClass }} extends Model {

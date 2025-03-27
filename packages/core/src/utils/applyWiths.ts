@@ -8,12 +8,18 @@ import { deepmerge } from 'deepmerge-ts'
 import { Constructor } from '../types/Constructor'
 import { IndexWiths } from '../contracts/crud/index/IndexWiths'
 import { vueModelState } from '../plugin/state'
+import { UseIndexerOptions } from '../contracts/crud/index/UseIndexer'
+import { toValue } from 'vue'
 
 export function applyWiths<T extends Model> (
   ModelClass: Constructor<T>,
   query: Query,
   withParam: IndexWiths<T>,
-  options?: { driver?: string },
+  options?: {
+    driver?: string,
+    withoutGlobalScopes?: UseIndexerOptions<typeof Model>['withoutGlobalScopes'],
+    withoutEntityGlobalScopes?: UseIndexerOptions<typeof Model>['withoutEntityGlobalScopes']
+  },
 ) {
   (Object.entries(withParam)).forEach(([related, relatedOptions]) => {
     query.with(String(related), relatedQuery => {
@@ -28,6 +34,10 @@ export function applyWiths<T extends Model> (
         options?.driver ?? vueModelState.default ?? 'default',
         RelatedClass.entity,
         undefined,
+        {
+          withoutGlobalScopes: toValue(options?.withoutGlobalScopes),
+          withoutEntityGlobalScopes: toValue(options?.withoutEntityGlobalScopes),
+        },
       )
 
       const relatedsFilters = deepmerge(

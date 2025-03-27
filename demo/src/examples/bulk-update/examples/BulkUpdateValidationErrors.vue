@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { useBulkUpdater } from '@vuemodel/core'
-import { piniaLocalStorageState } from '@vuemodel/indexeddb'
+import { indexedDbState } from '@vuemodel/indexeddb'
 import { populateRecords, User } from '@vuemodel/sample-data'
 import { ref } from 'vue'
 
@@ -10,7 +10,7 @@ async function setUsers () {
   await usersBulkUpdater.index()
   await usersBulkUpdater.makeForms()
 
-  piniaLocalStorageState.mockValidationErrors = {
+  indexedDbState.mockValidationErrors = {
     name: ['bad name'],
   }
 }
