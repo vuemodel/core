@@ -6,8 +6,8 @@ export class {{ resourceClass }} extends Model {
   static fields() {
     return {
       id: this.uid(),
-      created_at: this.string(null),
-      updated_at: this.string(null),
+      created_at: this.attr(null),
+      updated_at: this.attr(null),
 
       // Fields
       owner_id: this.attr('owner_id'),

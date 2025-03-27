@@ -6,8 +6,8 @@ export class {{ resourceClass }} extends Model {
   static override entity = '{{ resourceTable }}'
 
   @Uid() declare id: string
-  @Attr(null) declare created_at: string
-  @Attr(null) declare updated_at: string
+  @Attr(null) declare created_at: number
+  @Attr(null) declare updated_at: number
 
   // Fields
   @Attr() declare owner_id: string
