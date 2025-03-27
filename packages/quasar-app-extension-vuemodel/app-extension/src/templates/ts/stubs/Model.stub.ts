@@ -15,5 +15,5 @@ export class {{ resourceClass }} extends Model {
 
   // Relationships
   @BelongsTo(() => User, 'user_id') declare user: User | null
-  // @HasMany(() => TargetModel, '{{ resourceUnderscore }}_id'): declare target_models: TargetModel[]
+  // @HasMany(() => TargetModel, '{{ resourceUnderscore }}_id') declare target_models: TargetModel[]
 }
