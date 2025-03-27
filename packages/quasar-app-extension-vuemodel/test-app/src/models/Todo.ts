@@ -10,10 +10,10 @@ export class Todo extends Model {
   @Str(null) declare updated_at: string
 
   // Fields
-  @Attr() declare user_id: string
+  @Attr() declare owner_id: string
   @Attr() declare some_field: string
 
   // Relationships
-  @BelongsTo(() => User, 'user_id') declare user: User | null
+  @BelongsTo(() => User, 'owner_id') declare owner: User | null
   // @HasMany(() => TargetModel, 'todo_id'): declare target_models: TargetModel[]
 }

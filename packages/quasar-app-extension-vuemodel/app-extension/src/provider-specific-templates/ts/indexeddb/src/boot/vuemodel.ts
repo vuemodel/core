@@ -49,9 +49,9 @@ export default boot(({ app, store }) => {
             scopeToUser (context) {
               const authId = localStorage.getItem('authenticatedUserId')
               const ModelClass = context?.ModelClass
-              const hasProjectIdField = ModelClass ? !!(new ModelClass()).$fields().owner_id : false
+              const hasOwnerIdField = ModelClass ? !!(new ModelClass()).$fields().owner_id : false
 
-              if (hasProjectIdField) {
+              if (hasOwnerIdField) {
                 return {
                   filters: {
                     owner_id: { equals: authId ?? '' },
