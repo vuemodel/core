@@ -11,7 +11,7 @@
 		"@typescript-eslint/parser": "^6.7.0",
 		"@vitejs/plugin-vue": "^4.3.4",
 		"@vuemodel/core": "workspace:^",
-		"@vuemodel/pinia-local-storage": "workspace:^",
+		"@vuemodel/indexeddb": "workspace:^",
 		"@vuemodel/sample-data": "^0.0.4",
 		"eslint": "^8.51.0",
 		"eslint-config-standard": "^17.1.0",

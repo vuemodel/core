@@ -5,11 +5,11 @@ import { getDriverKey } from '../utils/getDriverKey'
 import { useBulkUpdater } from '../composables/useBulkUpdater'
 import { useCreator } from '../composables/useCreator'
 import { useDestroyer } from '../composables/useDestroyer'
-import { ref, watch } from 'vue'
+import { Ref, ref, watch } from 'vue'
 import { useUpdater } from '../composables/useUpdater'
 import { applyFilters } from '../utils/applyFilters'
 import { useIndexer } from '../composables/useIndexer'
-import { DeclassifyPiniaOrmModel } from 'pinia-orm-helpers'
+import { DeclassifyPiniaOrmModel, PiniaOrmForm } from 'pinia-orm-helpers'
 import { getRecordPrimaryKey } from '../utils/getRecordPrimaryKey'
 import { LoosePrimaryKey } from '../types/LoosePrimaryKey'
 
@@ -29,10 +29,16 @@ export function useModelDriver<
 
   const bulkUpdater = useBulkUpdater(driverKey, ModelClass, {
     immediatelyMakeForms: true,
-    ...options.bulkUpdate,
+    ...options.update,
+  })
+  const updateForm: Ref<PiniaOrmForm<InstanceType<T>> | null> = ref(null)
+  bulkUpdater.onSuccess(() => {
+    showUpdateFormId.value = false
   })
   const creator = useCreator(driverKey, ModelClass, options.create)
   creator.onSuccess(response => {
+    showCreateForm.value = false
+
     if (!response.record) return
     const primaryKey = getRecordPrimaryKey(ModelClass, response.record)
     if (!primaryKey) return
@@ -43,7 +49,9 @@ export function useModelDriver<
       bulkUpdater.currentPageIds.value.push(primaryKey)
     }
   })
+
   const destroyer = useDestroyer(driverKey, ModelClass, options.destroy)
+
   const updateOrCreateIndexer = useIndexer(driverKey, ModelClass)
   const updateOrCreateUpdater = useUpdater(driverKey, ModelClass)
 
@@ -51,8 +59,14 @@ export function useModelDriver<
   const showDestroyConfirmId = ref<LoosePrimaryKey | false>(false)
   const showUpdateFormId = ref<LoosePrimaryKey | false>(false)
 
-  watch(showUpdateFormId, (newId) => {
-    if (newId) bulkUpdater.makeForms([String(newId)])
+  watch(showUpdateFormId, async (newId) => {
+    if (newId) {
+      bulkUpdater.makeForms([String(newId)]).then(() => {
+        updateForm.value = bulkUpdater.forms.value?.[String(newId)]
+      })
+    } else {
+      updateForm.value = null
+    }
   })
 
   const updateOrCreate: UseModelReturn<T>['updateOrCreate'] = async (filter, data) => {
@@ -106,6 +120,7 @@ export function useModelDriver<
 
     updater: {
       showFormId: showUpdateFormId,
+      form: updateForm,
       forms: bulkUpdater.formsWithMeta,
       formsKeyed: bulkUpdater.forms,
       update: bulkUpdater.update,
@@ -121,6 +136,8 @@ export function useModelDriver<
       toPage: bulkUpdater.toPage,
       currentPageIds: bulkUpdater.currentPageIds,
       records: bulkUpdater.records,
+      updating: bulkUpdater.updating,
+      meta: bulkUpdater.meta,
     },
 
     /**

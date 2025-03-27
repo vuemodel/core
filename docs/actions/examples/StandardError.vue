@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { Form, create, CreateResponse } from '@vuemodel/core'
-import { piniaLocalStorageState } from '@vuemodel/pinia-local-storage'
+import { piniaLocalStorageState } from '@vuemodel/indexeddb'
 import { Post } from '@vuemodel/sample-data'
 import { ref } from 'vue'
 

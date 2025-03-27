@@ -11,24 +11,24 @@ Like to learn by digging into the code? [Jump to "Usage"](#usage) and try our RE
 - [pinia](https://pinia.vuejs.org/getting-started.html) (the "store")
 - [pinia-orm](https://pinia-orm.codedredd.de/) (a gorgeous layer atop pinia)
 - VueModel Core
-- A driver (while learning, use "pinia-local-storage". It doesn't require a server!)
+- A driver (while learning, use "indexeddb". It doesn't require a server!)
 
 ::: code-group
 
 ```sh [pnpm]
-pnpm add pinia pinia-orm @vuemodel/core @vuemodel/pinia-local-storage
+pnpm add pinia pinia-orm @vuemodel/core @vuemodel/indexeddb
 ```
 
 ```sh [yarn]
-yarn add pinia pinia-orm @vuemodel/core @vuemodel/pinia-local-storage
+yarn add pinia pinia-orm @vuemodel/core @vuemodel/indexeddb
 ```
 
 ```sh [npm]
-npm install pinia pinia-orm @vuemodel/core @vuemodel/pinia-local-storage
+npm install pinia pinia-orm @vuemodel/core @vuemodel/indexeddb
 ```
 
 ```sh [bun]
-bun add pinia pinia-orm @vuemodel/core @vuemodel/pinia-local-storage
+bun add pinia pinia-orm @vuemodel/core @vuemodel/indexeddb
 ```
 
 :::
@@ -43,7 +43,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { createORM } from 'pinia-orm'
 import { createVueModel } from '@vuemodel/core'
-import { createPiniaLocalStorage, piniaLocalVueModelDriver } from '@vuemodel/pinia-local-storage'
+import { createPiniaLocalStorage, piniaLocalVueModelDriver } from '@vuemodel/indexeddb'
 
 const pinia = createPinia()
 const piniaOrm = createORM()
@@ -74,7 +74,7 @@ app.use(piniaOrm)
 ```ts [vue-model.ts (Quasar boot file)]
 import { boot } from 'quasar/wrappers'
 import { createVueModel } from '@vuemodel/core'
-import { createPiniaLocalStorage, piniaLocalVueModelDriver } from '@vuemodel/pinia-local-storage'
+import { createPiniaLocalStorage, piniaLocalVueModelDriver } from '@vuemodel/indexeddb'
 
 export default boot(({ app, store }) => {
   const piniaLocalStorage = createPiniaLocalStorage({
@@ -99,11 +99,11 @@ export default boot(({ app, store }) => {
 
 :::
 
-Want to be able to test loading? If you're using "pinia-local-storage", consider adding a "mock latency". This is kinda like mimicking a slower internet connection.
+Want to be able to test loading? If you're using "indexeddb", consider adding a "mock latency". This is kinda like mimicking a slower internet connection.
 
 (add this to `main.ts`)
 ```ts
-import { piniaLocalStorageState } from '@vuemodel/pinia-local-storage'
+import { piniaLocalStorageState } from '@vuemodel/indexeddb'
 
 piniaLocalStorageState.mockLatencyMs = 250 // add a 250ms delay to every request
 ```

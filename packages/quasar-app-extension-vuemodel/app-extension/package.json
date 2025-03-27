@@ -6,6 +6,9 @@
   "author": "luke@ldiebold.com",
   "license": "MIT",
   "main": "src/index.js",
+  "files": [
+    "src"
+  ],
   "scripts": {
     "release": "bumpp --tag '@vuemodel/quasar-app-extension-vuemodel@v%s' && pnpm publish"
   },

@@ -2,6 +2,7 @@ import { FilterPiniaOrmModelToManyRelationshipTypes, SyncOptions, SyncResponse, 
 import { Model } from 'pinia-orm'
 import { LoosePrimaryKey } from '@vuemodel/core/src/types/LoosePrimaryKey'
 import { OrionDriverOptions, orionState } from '../../plugin/state'
+import { getClassRelationships, RelationshipDefinition } from 'pinia-orm-helpers'
 
 export async function sync<T extends typeof Model> (
   ModelClass: T, // When a Model class is passed, use this signature
@@ -21,6 +22,10 @@ export async function sync<T extends typeof Model> (
     )
 
     const primaryKeyField = String(ModelClass instanceof Model ? ModelClass.$primaryKey() : ModelClass.primaryKey)
+    const relationshipInfo = getClassRelationships(ModelClass)[related] as RelationshipDefinition
+    const foreignPivotKey = relationshipInfo.foreignPivotKey as string
+    const relatedPivotKey = relationshipInfo.relatedPivotKey as string
+    const foreignId = String(id)
 
     const errorReturnFunction = optionsMerged.throw ? reject : resolve
 
@@ -79,21 +84,24 @@ export async function sync<T extends typeof Model> (
 
       const attached = response.attached.map((attachedId) => {
         return {
-          [primaryKeyField]: attachedId,
+          [foreignPivotKey]: foreignId,
+          [relatedPivotKey]: attachedId,
           ...((forms as any)?.[attachedId] ?? {}),
         }
       })
 
       const detached = response.detached.map((detachedId) => {
         return {
-          [primaryKeyField]: detachedId,
+          [foreignPivotKey]: foreignId,
+          [relatedPivotKey]: detachedId,
           ...((forms as any)?.[detachedId] ?? {}),
         }
       })
 
       const updated = response.updated.map((updatedId) => {
         return {
-          [primaryKeyField]: updatedId,
+          [foreignPivotKey]: foreignId,
+          [relatedPivotKey]: updatedId,
           ...((forms as any)?.[updatedId] ?? {}),
         }
       })

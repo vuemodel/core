@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@vuemodel/core": "workspace:^",
-    "@vuemodel/pinia-local-storage": "workspace:^",
+    "@vuemodel/indexeddb": "workspace:^",
     "@vuemodel/sample-data": "workspace:^",
     "fake-indexeddb": "^5.0.1",
     "pinia": "^2.1.7"

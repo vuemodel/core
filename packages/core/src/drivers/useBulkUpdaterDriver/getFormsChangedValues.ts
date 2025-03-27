@@ -11,6 +11,7 @@ export function getFormsChangedValues<
   R extends UseBulkUpdaterReturn<T>
 > (
   options: {
+    skipBelongsToMany?: boolean
     id: string
     newValues: Record<string, any>
     repo: R['repo']
@@ -28,10 +29,13 @@ export function getFormsChangedValues<
     pivotClasses,
     driver,
     piniaOrmRelationships,
+    skipBelongsToMany,
   } = options
 
   const oldRecordQuery = repo.query()
-  belongsToManyRelationshipKeys?.forEach(related => oldRecordQuery.with(related))
+  if (!skipBelongsToMany) {
+    belongsToManyRelationshipKeys?.forEach(related => oldRecordQuery.with(related))
+  }
 
   const oldRecordRelateds = belongsToManyRelationshipKeys ? conformManyRelationsToObjectSyntax(
     oldRecordQuery.find(id) ?? {},
@@ -41,7 +45,7 @@ export function getFormsChangedValues<
   ) : repo.find(id) ?? {}
 
   const oldRecord = { ...repo.find(id), ...oldRecordRelateds }
-  const newRecord = belongsToManyRelationshipKeys ? Object.assign(
+  const newRecord = (belongsToManyRelationshipKeys && !skipBelongsToMany) ? Object.assign(
     {},
     newValues,
     conformManyRelationIdArraysToObjectSyntax(newValues, belongsToManyRelationshipKeys),
@@ -57,11 +61,10 @@ export function getFormsChangedValues<
     const key = entry[0] as keyof BulkUpdateForm<InstanceType<T>>
     const value = entry[1] as BulkUpdateForm<InstanceType<T>>
 
-    if (belongsToManyRelationshipKeys?.includes(key)) {
+    if (!skipBelongsToMany && belongsToManyRelationshipKeys?.includes(key)) {
       // if it's the pivot, skip it
       if (pivotClasses[key]) return
 
-      // if it is a belongs to many
       const relationship = piniaOrmRelationships[key]
 
       // build the object forms

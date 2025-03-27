@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { Form, create, CreateResponse, vueModelState } from '@vuemodel/core'
-import { piniaLocalStorageState } from '@vuemodel/pinia-local-storage'
+import { piniaLocalStorageState } from '@vuemodel/indexeddb'
 import { Post } from '@vuemodel/sample-data'
 import { ref } from 'vue'
 import { Notify } from 'quasar'
@@ -21,7 +21,7 @@ const form = ref<Form<Post>>({ title: '' })
 const response = ref<CreateResponse<typeof Post>>()
 
 async function createPost () {
-  // the "pinia-local-storage" driver makes it easy
+  // the "indexeddb" driver makes it easy
   // to create a mock error for testing!
   piniaLocalStorageState.mockStandardErrors = [{
     name: 'oops',

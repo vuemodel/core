@@ -4,5 +4,8 @@
     "scripts": {},
     "dependencies": {
         "@vuemodel/sample-data": "^0.0.5"
+    },
+    "devDependencies": {
+        "chokidar": "^4.0.3"
     }
 }

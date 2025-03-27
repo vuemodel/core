@@ -47,7 +47,7 @@ jobs:
       - name: Build Packages
         run: |
           pnpm core:build
-          pnpm pinia-local-storage:build
+          pnpm indexeddb:build
           pnpm sample-data:build
       - name: Build with VitePress
         working-directory: ./docs

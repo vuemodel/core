@@ -1,5 +1,5 @@
 import 'fake-indexeddb/auto'
-import { createPiniaLocalStorage, deleteDatabases, piniaLocalStorageState, piniaLocalVueModelDriver } from '@vuemodel/pinia-local-storage'
+import { createPiniaLocalStorage, deleteDatabases, piniaLocalStorageState, piniaLocalVueModelDriver } from '@vuemodel/indexeddb'
 import { DriverSetups } from './driverSetupsMap'
 import { useRepo } from 'pinia-orm'
 import { Album, Comment, Photo, Post, User, populateRecords } from '@vuemodel/sample-data'

@@ -1,4 +1,4 @@
-import { BulkUpdateOptions, BulkUpdateResponse, FormValidationErrors, UpdateResponse, UseBulkUpdateFormValidationErrors, getMergedDriverConfig, vueModelState } from '@vuemodel/core'
+import { BulkUpdateOptions, BulkUpdateResponse, UseBulkUpdateFormValidationErrors, getMergedDriverConfig, vueModelState } from '@vuemodel/core'
 import { Model } from 'pinia-orm'
 import { DeclassifyPiniaOrmModel, PiniaOrmForm } from 'pinia-orm-helpers'
 import { OrionDriverOptions, orionState } from '../../plugin/state'
@@ -54,7 +54,7 @@ export async function bulkUpdate<T extends typeof Model> (
 
     try {
       const response = await wretch.url(`/${ModelClass.entity}/batch`)
-        .patch(forms)
+        .patch(requestData)
         .json() as { data: DeclassifyPiniaOrmModel<InstanceType<T>>[] }
 
       const result: BulkUpdateResponse<T> = {

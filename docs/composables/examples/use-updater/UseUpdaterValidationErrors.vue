@@ -2,7 +2,7 @@
 import { useUpdater } from '@vuemodel/core'
 import { Post } from '@vuemodel/sample-data'
 import { ref } from 'vue'
-import { piniaLocalStorageState } from '../../../../packages/pinia-local-storage/dist'
+import { piniaLocalStorageState } from '../../../../packages/indexeddb/dist'
 
 const postId = ref('1')
 const postUpdater = useUpdater(Post, {

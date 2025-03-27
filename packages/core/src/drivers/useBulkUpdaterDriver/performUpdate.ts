@@ -1,4 +1,4 @@
-import { toValue } from 'vue'
+import { toValue, UnwrapRef } from 'vue'
 import { UseBulkUpdaterOptions, UseBulkUpdaterReturn, UseBulkUpdateUpdateOptions } from '../../contracts/bulk-update/UseBulkUpdater'
 import { BulkUpdateResponse, BulkUpdateErrorResponse, SyncResponse, BulkUpdateSuccessResponse } from '../../types/Response'
 import { getDriverKey } from '../../utils/getDriverKey'
@@ -54,6 +54,8 @@ export async function performUpdate<
     keyof RelationshipTypes,
     {
       request: (Promise<SyncResponse<T>> & { cancel(): void }),
+      foreignId: string,
+      relatedKey: string,
       PivotModel: Model
     }
   >
@@ -116,6 +118,7 @@ export async function performUpdate<
   if (optionsParam.forms) {
     Object.entries(optionsParam.forms).forEach(([formId, form]) => {
       const changedValues = getFormsChangedValues({
+        skipBelongsToMany: true,
         id: formId,
         newValues: form,
         repo,
@@ -130,6 +133,15 @@ export async function performUpdate<
     })
   }
 
+  const changesWithoutBelongsToMany = clone(changes.value)
+
+  belongsToManyRelationshipKeys.forEach(relationshipKey => {
+    Object.keys(changesWithoutBelongsToMany).forEach((id) => {
+      /** @ts-expect-error difficult to type, no benefit */
+      delete changesWithoutBelongsToMany[id][relationshipKey]
+    })
+  })
+
   response.value = undefined
   belongsToManyResponses.value = {}
 
@@ -140,7 +152,7 @@ export async function performUpdate<
 
   const request = bulkUpdateRecords?.(
     ModelClass,
-    clone(changes.value),
+    changesWithoutBelongsToMany,
     {
       driver: driverKey,
       notifyOnError: !!options?.notifyOnError,
@@ -166,6 +178,7 @@ export async function performUpdate<
         syncRequests[parentPrimaryKey] = {
           PivotModel: piniaOrmRelationships[relatedKey].pivot,
           relatedKey,
+          foreignId: String(parentPrimaryKey),
           request: request.then(response => {
             (belongsToManyResponses.value as any)[parentPrimaryKey] = response
 
@@ -238,15 +251,37 @@ export async function performUpdate<
   let hasManyToManyError = false
 
   syncResponses.forEach((syncResponse, index) => {
+    console.log('syncRequestEntries[index]', syncRequestEntries[index])
+    const syncRequest = syncRequestEntries[index][1]
+    /** @ts-expect-error ... */
+    const relatedKey = syncRequest.relatedKey
     /** @ts-expect-error PivotModel doesn't exist for some reason */
-    const PivotClass = syncRequestEntries[index][1].PivotModel.constructor
+    const PivotClass = syncRequest.PivotModel.constructor
     const pivotRepo = useRepo<Model>(PivotClass)
     // Persisting to the store
     // On Success
     if (syncResponse.success) {
+      //
+
       const destroyIds = syncResponse.detached?.map<string>(record => {
+        // // get the foreignKey and primaryKey of ModelClass.{relationshipName}
+        // const foreignPivotKey = piniaOrmRelationships[relatedKey].foreignPivotKey
+        // const relatedPivotKey = piniaOrmRelationships[relatedKey].relatedPivotKey
+        // console.log('foreignPivotKey', foreignPivotKey)
+        // console.log('relatedPivotKey', relatedPivotKey)
+        // console.log('record', record)
+        // // const foundPivot = pivotRepo.where(foreignPivotKey, syncRequest.foreignId)
+        // //   .where(relatedPivotKey, )
+        // //   .first(relatedPivotKey, ) ?? ''
+        // // console.log('foundPivot', foundPivot)
+
         return getRecordPrimaryKey(PivotClass, record) ?? ''
       })
+
+      console.log('destroyIds', destroyIds)
+      console.log('syncResponse', syncResponse)
+      console.log('index', index)
+
       pivotRepo.destroy(destroyIds)
       pivotRepo.save(syncResponse.attached)
       pivotRepo.save(syncResponse.updated)

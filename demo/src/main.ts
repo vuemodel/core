@@ -1,10 +1,14 @@
 import { createApp } from 'vue'
+import { Quasar, Dialog } from 'quasar'
 import { createPinia } from 'pinia'
-import { createVueModel } from '@vuemodel/core'
-import { createPiniaLocalStorage, piniaLocalVueModelDriver } from '@vuemodel/pinia-local-storage'
+import { createVueModel, useModelDriver } from '@vuemodel/core'
+import { createPiniaLocalStorage, piniaLocalVueModelDriver } from '@vuemodel/indexeddb'
 
 import App from './App.vue'
 import router from './router'
+
+import '@quasar/extras/material-icons/material-icons.css'
+import 'quasar/src/css/index.sass'
 
 const pinia = createPinia()
 
@@ -15,7 +19,10 @@ const vueModel = createVueModel({
   },
   drivers: {
     local: {
-      driver: piniaLocalVueModelDriver,
+      driver: {
+        ...piniaLocalVueModelDriver,
+        useModel: useModelDriver,
+      },
       config: {
         optimistic: true,
         pinia,
@@ -46,5 +53,8 @@ app.use(pinia)
 app.use(router)
 app.use(vueModel)
 app.use(piniaLocalStorage)
+app.use(Quasar, {
+  plugins: { Dialog }, // import Quasar plugins and add here
+})
 
 app.mount('#app')

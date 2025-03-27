@@ -3,7 +3,7 @@ import { useBulkUpdater, useIndexer } from '@vuemodel/core'
 import { populateRecords, User } from '@vuemodel/sample-data'
 import { clear } from 'idb-keyval'
 import UpdateUsersForms from './UpdateUsersForms.vue'
-import { piniaLocalStorageState } from '@vuemodel/pinia-local-storage'
+import { piniaLocalStorageState } from '@vuemodel/indexeddb'
 
 const usersIndexer = useIndexer(User)
 async function setUsers () {

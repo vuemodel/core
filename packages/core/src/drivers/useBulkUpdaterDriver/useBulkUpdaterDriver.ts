@@ -20,6 +20,7 @@ import { IndexWiths } from '../../contracts/crud/index/IndexWiths'
 import { getDriverKey } from '../../utils/getDriverKey'
 import { onSyncPersist } from '../../broadcasting/makeChannel'
 import { useCallbacks } from '../../utils/useCallbacks'
+import { applyWiths } from '../../utils/applyWiths'
 
 const defaultOptions = {
   persist: true,
@@ -120,7 +121,7 @@ export function useBulkUpdaterDriver<
 
   const indexerWith = () => {
     const optionsWithsResolved: UseIndexerOptions<T>['with'] = toValue(options.indexer?.with ?? {})
-    const result: Record<string, any> = {}
+    const result: Record<string, any> = optionsWithsResolved
 
     Object.entries(piniaOrmRelationships).forEach((entry) => {
       const relatedInfo = entry[1] as RelationshipDefinition
@@ -256,10 +257,12 @@ export function useBulkUpdaterDriver<
       //   .map((formsWithMeta) => {
       //     return formsWithMeta
       //   }
+      const query = repo.query()
+      applyWiths(ModelClass, query, toValue(indexerWith))
 
       return {
         id,
-        record: repo.find(id),
+        record: query.find(id),
         form: form as BulkUpdateForm<InstanceType<T>>,
         // ...relatedForms,
         ...(meta.value[id] as BulkUpdateMeta<T>),

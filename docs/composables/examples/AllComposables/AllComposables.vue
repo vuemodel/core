@@ -3,7 +3,7 @@ import { useCreator, useDestroyer, useFinder, useIndexer, useUpdater } from '@vu
 import { Post, User } from '@vuemodel/sample-data'
 import { ref } from 'vue'
 import CreatePanel from './CreatePanel.vue'
-import { piniaLocalStorageState } from '@vuemodel/pinia-local-storage'
+import { piniaLocalStorageState } from '@vuemodel/indexeddb'
 import IndexPanel from './IndexPanel.vue'
 import FindPanel from './FindPanel.vue'
 import UpdatePanel from './UpdatePanel.vue'
@@ -151,8 +151,8 @@ const mockLatencyMs = ref(0)
           v-model:id="targetId"
           v-model:withs="withs"
           v-model:form="postUpdater.form.value"
-          v-model:autoUpdate="autoUpdate"
-          v-model:autoUpdateDebounce="autoUpdateDebounce"
+          v-model:auto-update="autoUpdate"
+          v-model:auto-update-debounce="autoUpdateDebounce"
           :users="usersIndexer.records.value"
           name="postUpdater"
           :response="postUpdater.response.value"

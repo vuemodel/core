@@ -1,0 +1,8 @@
+{
+  "@vuemodel/vuemodel": {
+    "provider": {
+      "identifier": "indexeddb",
+      "packageName": "@vueauth/indexeddb"
+    }
+  }
+}

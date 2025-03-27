@@ -1,5 +1,5 @@
 import { createVueModel } from '@vuemodel/core'
-import { createPiniaLocalStorage, piniaLocalVueModelDriver } from '@vuemodel/pinia-local-storage'
+import { createPiniaLocalStorage, piniaLocalVueModelDriver } from '@vuemodel/indexeddb'
 import { createPinia } from 'pinia'
 import 'fake-indexeddb/auto' // node doesn't have indexeddb, so we fake it for this example
 

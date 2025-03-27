@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { useCreator } from '@vuemodel/core'
 import { User } from '@vuemodel/sample-data'
-import { piniaLocalStorageState } from '@vuemodel/pinia-local-storage'
+import { piniaLocalStorageState } from '@vuemodel/indexeddb'
 
 const userCreator = useCreator(User)
 

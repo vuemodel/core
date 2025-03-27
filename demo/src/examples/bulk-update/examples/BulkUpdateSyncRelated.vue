@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { useBulkUpdater, useIndexer } from '@vuemodel/core'
-import { deleteDatabases } from '@vuemodel/pinia-local-storage'
+import { deleteDatabases } from '@vuemodel/indexeddb'
 import { Tag, populateRecords, Photo } from '@vuemodel/sample-data'
 
 const photosIndexer = useIndexer(Photo, {

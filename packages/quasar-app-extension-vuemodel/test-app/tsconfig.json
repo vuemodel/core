@@ -1,0 +1,9 @@
+{
+  "extends": "./.quasar/tsconfig.json",
+  "compilerOptions": {
+    "experimentalDecorators": true
+  },
+  "exclude": [
+    "stubs"
+  ]
+}

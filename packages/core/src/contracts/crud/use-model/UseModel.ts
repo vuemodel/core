@@ -1,5 +1,5 @@
 import { Model, Repository } from 'pinia-orm'
-import { MaybeRefOrGetter, Reactive, Ref } from 'vue'
+import { MaybeRefOrGetter, Ref } from 'vue'
 import { PiniaOrmForm } from 'pinia-orm-helpers'
 import { CreateResponse, UpdateResponse } from '../../../types/Response'
 import { UseBulkUpdaterOptions, UseBulkUpdaterReturn } from '../../bulk-update/UseBulkUpdater'
@@ -13,7 +13,7 @@ export interface UseModelOptions<T extends typeof Model> {
   /**
    * Options passed to `useBulkUpdater`
    */
-  bulkUpdate?: UseBulkUpdaterOptions<T>
+  update?: UseBulkUpdaterOptions<T>
 
   /**
    * Options passed to `useCreator`
@@ -110,9 +110,15 @@ export interface UseModelReturn<T extends typeof Model> {
 
     formsKeyed: UseBulkUpdaterReturn<T>['forms']
 
+    form: Ref<PiniaOrmForm<InstanceType<T>> | null>
+
     forms: UseBulkUpdaterReturn<T>['formsWithMeta']
 
     update: UseBulkUpdaterReturn<T>['update'],
+
+    updating: UseBulkUpdaterReturn<T>['updating'],
+
+    meta: UseBulkUpdaterReturn<T>['meta'],
 
     /**
      * Either false, or the id of the record to be updated
@@ -180,4 +186,4 @@ export interface UseModelReturn<T extends typeof Model> {
 export type UseModel<T extends typeof Model> = (
   ModelClass: T,
   options?: UseModelOptions<T>
-) => Reactive<UseModelReturn<T>>
+) => UseModelReturn<T>

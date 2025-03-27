@@ -1,19 +1,25 @@
 <script lang="ts" setup>
-import { useBulkUpdater, useIndexer } from '@vuemodel/core'
+import { useBulkUpdater } from '@vuemodel/core'
 import { populateRecords, User } from '@vuemodel/sample-data'
 import { clear } from 'idb-keyval'
 import UpdateUsersForms from './UpdateUsersForms.vue'
 
-const usersIndexer = useIndexer(User)
 async function setUsers () {
   await clear()
   await populateRecords('users')
-  await usersIndexer.index()
-  usersBulkUpdater.makeForms()
+  await populateRecords('posts')
+  await usersBulkUpdater.index()
+  await usersBulkUpdater.makeForms()
 }
 setUsers()
 
-const usersBulkUpdater = useBulkUpdater(User)
+const usersBulkUpdater = useBulkUpdater(User, {
+  indexer: {
+    with: {
+      posts: {},
+    },
+  },
+})
 </script>
 
 <template>
@@ -24,6 +30,8 @@ const usersBulkUpdater = useBulkUpdater(User)
 
     <UpdateUsersForms v-model="usersBulkUpdater.forms.value" />
 
-    <pre>{{ usersBulkUpdater.records.value }}</pre>
+    <button @click="usersBulkUpdater.makeForms()" />
+
+    <pre>{{ usersBulkUpdater.formsWithMeta.value }}</pre>
   </div>
 </template>
