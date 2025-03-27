@@ -1,6 +1,6 @@
 {
   "name": "@vuemodel/indexeddb",
-  "version": "0.0.29",
+  "version": "0.0.1",
   "scripts": {
     "build": "unbuild",
     "stub": "unbuild --stub",
@@ -42,9 +42,7 @@
     "model"
   ],
   "dependencies": {
-    "idb-keyval": "^6.2.1",
     "just-clone": "^6.2.0",
-    "just-index": "^4.2.0",
     "pinia-orm-helpers": "^0.0.16"
   },
   "peerDependencies": {
