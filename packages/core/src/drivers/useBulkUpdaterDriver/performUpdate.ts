@@ -251,7 +251,6 @@ export async function performUpdate<
   let hasManyToManyError = false
 
   syncResponses.forEach((syncResponse, index) => {
-    console.log('syncRequestEntries[index]', syncRequestEntries[index])
     const syncRequest = syncRequestEntries[index][1]
     /** @ts-expect-error ... */
     const relatedKey = syncRequest.relatedKey
@@ -261,26 +260,9 @@ export async function performUpdate<
     // Persisting to the store
     // On Success
     if (syncResponse.success) {
-      //
-
       const destroyIds = syncResponse.detached?.map<string>(record => {
-        // // get the foreignKey and primaryKey of ModelClass.{relationshipName}
-        // const foreignPivotKey = piniaOrmRelationships[relatedKey].foreignPivotKey
-        // const relatedPivotKey = piniaOrmRelationships[relatedKey].relatedPivotKey
-        // console.log('foreignPivotKey', foreignPivotKey)
-        // console.log('relatedPivotKey', relatedPivotKey)
-        // console.log('record', record)
-        // // const foundPivot = pivotRepo.where(foreignPivotKey, syncRequest.foreignId)
-        // //   .where(relatedPivotKey, )
-        // //   .first(relatedPivotKey, ) ?? ''
-        // // console.log('foundPivot', foundPivot)
-
         return getRecordPrimaryKey(PivotClass, record) ?? ''
       })
-
-      console.log('destroyIds', destroyIds)
-      console.log('syncResponse', syncResponse)
-      console.log('index', index)
 
       pivotRepo.destroy(destroyIds)
       pivotRepo.save(syncResponse.attached)

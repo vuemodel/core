@@ -72,8 +72,6 @@ export function resolveScopes (
     appliedDriversEntityScopes = difference(appliedDriversEntityScopes, toValue(options.withoutEntityGlobalScopes))
   }
 
-  console.log('appliedGlobalScopes', appliedGlobalScopes)
-
   const scopesToApply = [
     ...appliedGlobalScopes,
     ...appliedEntityScopes,
