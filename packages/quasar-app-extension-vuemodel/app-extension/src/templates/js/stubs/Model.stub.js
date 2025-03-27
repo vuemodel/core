@@ -10,11 +10,11 @@ export class {{ resourceClass }} extends Model {
       updated_at: this.string(null),
 
       // Fields
-      user_id: this.attr('user_id'),
+      owner_id: this.attr('owner_id'),
       some_field: this.attr(''), // 🤿
 
       // Relationships
-      user: this.belongsTo(User, 'user_id'),
+      owner: this.belongsTo(User, 'owner_id'),
       // target_models: this.hasMany(TargetModel, '{{ resourceUnderscore }}_id'),
     }
   }

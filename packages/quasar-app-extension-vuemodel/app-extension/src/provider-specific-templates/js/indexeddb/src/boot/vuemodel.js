@@ -43,18 +43,18 @@ export default boot(({ app, store }) => {
             },
 
             /**
-             * This scope checks if the resource has a `user_id` field. If it
+             * This scope checks if the resource has a `owner_id` field. If it
              * does, we filter the request to the authenticated user
              */
             scopeToUser (context) {
               const authId = localStorage.getItem('authenticatedUserId')
               const ModelClass = context?.ModelClass
-              const hasProjectIdField = ModelClass ? !!(new ModelClass()).$fields().user_id : false
+              const hasProjectIdField = ModelClass ? !!(new ModelClass()).$fields().owner_id : false
 
               if (hasProjectIdField) {
                 return {
                   filters: {
-                    user_id: { equals: authId ?? '' },
+                    owner_id: { equals: authId ?? '' },
                   },
                 }
               }
@@ -79,10 +79,10 @@ export default boot(({ app, store }) => {
               },
               ({ ModelClass, form }) => {
                 const authId = localStorage.getItem('authenticatedUserId')
-                const hasUserIdField = ModelClass ? !!(new ModelClass()).$fields().user_id : false
+                const hasUserIdField = ModelClass ? !!(new ModelClass()).$fields().owner_id : false
 
                 if (hasUserIdField && authId) {
-                  form.user_id = authId
+                  form.owner_id = authId
                 }
               },
             ],

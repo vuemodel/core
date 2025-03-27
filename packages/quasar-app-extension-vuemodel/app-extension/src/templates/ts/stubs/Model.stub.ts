@@ -10,10 +10,10 @@ export class {{ resourceClass }} extends Model {
   @Attr(null) declare updated_at: string
 
   // Fields
-  @Attr() declare user_id: string
+  @Attr() declare owner_id: string
   @Attr() declare some_field: string | null // 🤿
 
   // Relationships
-  @BelongsTo(() => User, 'user_id') declare user: User | null
+  @BelongsTo(() => User, 'owner_id') declare owner: User | null
   // @HasMany(() => TargetModel, '{{ resourceUnderscore }}_id') declare target_models: TargetModel[]
 }
