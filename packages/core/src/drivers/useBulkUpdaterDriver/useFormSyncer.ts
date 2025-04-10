@@ -2,7 +2,7 @@ import { Model } from 'pinia-orm'
 import { getRecordPrimaryKey } from '../../utils/getRecordPrimaryKey'
 import { UseBulkUpdaterOptions, UseBulkUpdaterReturn } from '../../contracts/bulk-update/UseBulkUpdater'
 import { OnCreatePersistMessage, OnDestroyPersistMessage, OnFindPersistMessage, OnIndexPersistMessage, OnUpdatePersistMessage } from '../../broadcasting/BroadcastMessages'
-import { onBeforeUnmount, toValue, watch } from 'vue'
+import { getCurrentScope, onScopeDispose, toValue, watch } from 'vue'
 import { UseIndexerReturn } from '../../contracts/crud/index/UseIndexer'
 import { makeChannel } from '../../broadcasting/makeChannel'
 
@@ -110,9 +110,11 @@ export function useFormSyncer<
     })
   }, { immediate: true })
 
-  onBeforeUnmount(() => {
-    Object.values(channels).forEach(channel => channel.channel.close())
-  })
+  if (getCurrentScope()) {
+    onScopeDispose(() => {
+      Object.values(channels).forEach(channel => channel.channel.close())
+    }, true)
+  }
 
   return {
     //

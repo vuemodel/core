@@ -1,7 +1,7 @@
 import { Collection, Model, Relation, useRepo } from 'pinia-orm'
 import { BulkUpdateForm, BulkUpdateMeta, UseBulkUpdaterOptions, UseBulkUpdaterReturn, UseBulkUpdateUpdateOptions } from '../../contracts/bulk-update/UseBulkUpdater'
 import { DeclassifyPiniaOrmModel, FilterPiniaOrmModelToFieldTypes, FilterPiniaOrmModelToRelationshipTypes, getClassRelationships, RelationshipDefinition } from 'pinia-orm-helpers'
-import { computed, onBeforeUnmount, ref, toValue, WatchStopHandle } from 'vue'
+import { computed, getCurrentScope, onScopeDispose, ref, toValue, WatchStopHandle } from 'vue'
 import { BulkUpdateErrorResponse, BulkUpdateResponse, BulkUpdateSuccessResponse, SyncResponse } from '../../types/Response'
 import { getMergedDriverConfig } from '../../utils/getMergedDriverConfig'
 import { Constructor } from '../../types/Constructor'
@@ -200,13 +200,16 @@ export function useBulkUpdaterDriver<
     return repo.find(response.value?.records?.map(record => getRecordPrimaryKey(ModelClass, record) ?? '') ?? [])
   })
 
-  onBeforeUnmount(() => {
-    Object.values(formWatchers).forEach(unwatch => {
-      unwatch()
-    })
-  })
+  if (getCurrentScope()) {
+    onScopeDispose(() => {
+      Object.values(formWatchers).forEach(unwatch => {
+        unwatch()
+      })
+    }, true)
+  }
 
   function removeForm (recordId: string) {
+    console.log('remove form')
     formWatchers[recordId]()
     delete changes.value[recordId]
     delete meta.value[recordId]
