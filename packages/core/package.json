@@ -1,6 +1,6 @@
 {
   "name": "@vuemodel/core",
-  "version": "0.0.59",
+  "version": "0.0.60",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "stub": "unbuild --stub",
