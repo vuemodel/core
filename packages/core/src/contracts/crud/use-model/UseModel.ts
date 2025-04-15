@@ -157,6 +157,8 @@ export interface UseModelReturn<T extends typeof Model> {
     showConfirmId: Ref<LoosePrimaryKey | false>
   }
 
+  indexer: UseIndexerReturn<T>
+
   updateOrCreate: (filter: IndexFilters<InstanceType<T>>, data: PiniaOrmForm<InstanceType<T>>) => Promise<UpdateResponse<T> | CreateResponse<T>>
 
   /**

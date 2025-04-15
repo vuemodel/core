@@ -35,6 +35,7 @@ export function useModelDriver<
   bulkUpdater.onSuccess(() => {
     showUpdateFormId.value = false
   })
+
   const creator = useCreator(driverKey, ModelClass, options.create)
   creator.onSuccess(response => {
     showCreateForm.value = false
@@ -139,6 +140,12 @@ export function useModelDriver<
       updating: bulkUpdater.updating,
       meta: bulkUpdater.meta,
     },
+
+    /**
+     * Indexer
+     */
+
+    indexer: bulkUpdater.indexer,
 
     /**
      * Destroyer
