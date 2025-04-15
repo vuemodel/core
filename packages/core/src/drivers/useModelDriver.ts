@@ -113,6 +113,8 @@ export function useModelDriver<
       form: creator.form,
       create: creator.create,
       creating: creator.creating,
+      standardErrors: creator.standardErrors,
+      validationErrors: creator.validationErrors,
     },
 
     /**
@@ -139,13 +141,31 @@ export function useModelDriver<
       records: bulkUpdater.records,
       updating: bulkUpdater.updating,
       meta: bulkUpdater.meta,
+      standardErrors: bulkUpdater.standardErrors,
+      validationErrors: bulkUpdater.validationErrors,
     },
 
     /**
      * Indexer
      */
 
-    indexer: bulkUpdater.indexer,
+    indexer: {
+      cancel: bulkUpdater.indexer.cancel,
+      index: bulkUpdater.indexer.index,
+      indexing: bulkUpdater.indexer.indexing,
+      isFirstPage: bulkUpdater.indexer.isFirstPage,
+      isLastPage: bulkUpdater.indexer.isLastPage,
+      makeQuery: bulkUpdater.indexer.makeQuery,
+      next: bulkUpdater.indexer.next,
+      pagination: bulkUpdater.indexer.pagination,
+      previous: bulkUpdater.indexer.previous,
+      records: bulkUpdater.indexer.records,
+      standardErrors: bulkUpdater.indexer.standardErrors,
+      toFirstPage: bulkUpdater.indexer.toFirstPage,
+      toLastPage: bulkUpdater.indexer.toLastPage,
+      toPage: bulkUpdater.indexer.toPage,
+      validationErrors: bulkUpdater.indexer.validationErrors,
+    },
 
     /**
      * Destroyer
@@ -155,6 +175,7 @@ export function useModelDriver<
       destroy: destroyer.destroy,
       destroying: destroyer.destroying,
       showConfirmId: showDestroyConfirmId,
+      standardErrors: destroyer.standardErrors,
     },
 
     /**

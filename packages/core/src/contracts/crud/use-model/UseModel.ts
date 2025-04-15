@@ -88,6 +88,16 @@ export interface UseModelReturn<T extends typeof Model> {
      * A boolean you may choose to use for displaying the form.
      */
     showForm: Ref<boolean>
+
+    /**
+     * Standard "non validation" errors
+     */
+    standardErrors: UseCreatorReturn<T>['standardErrors']
+
+    /**
+     * Validation errors, keyed by field name
+     */
+    validationErrors: UseCreatorReturn<T>['validationErrors']
   }
 
   updater: {
@@ -146,6 +156,16 @@ export interface UseModelReturn<T extends typeof Model> {
     currentPageIds: UseBulkUpdaterReturn<T>['currentPageIds']
     isFirstPage: UseBulkUpdaterReturn<T>['isFirstPage']
     isLastPage: UseBulkUpdaterReturn<T>['isLastPage']
+
+    /**
+     * Standard "non validation" errors
+     */
+    standardErrors: UseBulkUpdaterReturn<T>['standardErrors']
+
+    /**
+     * Validation errors, keyed by the records id
+     */
+    validationErrors: UseBulkUpdaterReturn<T>['validationErrors']
   }
 
   destroyer: {
@@ -155,9 +175,27 @@ export interface UseModelReturn<T extends typeof Model> {
      * Either false, or the id of the record to be destroyed
      */
     showConfirmId: Ref<LoosePrimaryKey | false>
+
+    standardErrors: UseDestroyerReturn<T>['standardErrors']
   }
 
-  indexer: UseIndexerReturn<T>
+  indexer: {
+    records: UseIndexerReturn<T>['records'],
+    index: UseIndexerReturn<T>['index'],
+    validationErrors: UseIndexerReturn<T>['validationErrors'],
+    standardErrors: UseIndexerReturn<T>['standardErrors'],
+    indexing: UseIndexerReturn<T>['indexing'],
+    makeQuery: UseIndexerReturn<T>['makeQuery'],
+    pagination: UseIndexerReturn<T>['pagination'],
+    cancel: UseIndexerReturn<T>['cancel'],
+    next: UseIndexerReturn<T>['next'],
+    previous: UseIndexerReturn<T>['previous'],
+    toPage: UseIndexerReturn<T>['toPage'],
+    toFirstPage: UseIndexerReturn<T>['toFirstPage'],
+    toLastPage: UseIndexerReturn<T>['toLastPage'],
+    isFirstPage: UseIndexerReturn<T>['isFirstPage'],
+    isLastPage: UseIndexerReturn<T>['isLastPage'],
+  },
 
   updateOrCreate: (filter: IndexFilters<InstanceType<T>>, data: PiniaOrmForm<InstanceType<T>>) => Promise<UpdateResponse<T> | CreateResponse<T>>
 
