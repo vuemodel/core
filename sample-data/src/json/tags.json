@@ -1,22 +1,27 @@
 [
   {
     "id": "1",
-    "name": "Vue"
+    "name": "Vue",
+    "color": "green"
   },
   {
     "id": "2",
-    "name": "Quasar"
+    "name": "Quasar",
+    "color": "blue"
   },
   {
     "id": "3",
-    "name": "Javascript"
+    "name": "Javascript",
+    "color": "yellow-8"
   },
   {
     "id": "4",
-    "name": "Laravel"
+    "name": "Laravel",
+    "color": "orange"
   },
   {
     "id": "5",
-    "name": "Supabase"
+    "name": "Supabase",
+    "color": "green-7"
   }
 ]

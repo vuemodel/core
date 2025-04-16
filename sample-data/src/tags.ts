@@ -11,6 +11,7 @@ export class Tag extends Model {
   @Uid() declare id: string
 
   @Attr() declare name: string
+  @Attr() declare color: string
 
   @BelongsToMany(() => Photo, () => PhotoTag, 'tag_id', 'photo_id') declare photos: Photo[]
 }

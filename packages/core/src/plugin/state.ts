@@ -12,11 +12,11 @@ export type ErrorNotifyErrors = {
   standardErrors: StandardErrors
 }
 export type NotifyErrorsWithValidation = {
-  validationErrors: FormValidationErrors<typeof Model>
+  validationErrors: FormValidationErrors<Model>
 } & ErrorNotifyErrors
 
 export type NotifyErrorsWithBulkValidation = {
-  validationErrors: Record<string, FormValidationErrors<typeof Model>>
+  validationErrors: Record<string, FormValidationErrors<Model>>
 } & ErrorNotifyErrors
 
 export type ErrorNotifier = (options: { model: typeof Model, errors: ErrorNotifyErrors }) => void

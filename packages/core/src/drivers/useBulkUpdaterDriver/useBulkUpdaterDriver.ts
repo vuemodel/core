@@ -20,7 +20,6 @@ import { IndexWiths } from '../../contracts/crud/index/IndexWiths'
 import { getDriverKey } from '../../utils/getDriverKey'
 import { onSyncPersist } from '../../broadcasting/makeChannel'
 import { useCallbacks } from '../../utils/useCallbacks'
-import { applyWiths } from '../../utils/applyWiths'
 
 const defaultOptions = {
   persist: true,
@@ -61,9 +60,9 @@ export function useBulkUpdaterDriver<
   const onStandardErrorCallbacks = useCallbacks<[BulkUpdateErrorResponse<T>]>([options.onStandardError])
   const onValidationErrorCallbacks = useCallbacks<[BulkUpdateErrorResponse<T>]>([options.onValidationError])
 
-  const forms = ref<Record<string, BulkUpdateForm<InstanceType<T>>>>(options.forms ?? {})
+  const formsKeyed = ref<Record<string, BulkUpdateForm<InstanceType<T>>>>(options.forms ?? {})
   const changes = ref<Record<string, BulkUpdateForm<InstanceType<T>>>>({})
-  const meta = ref<Record<string, BulkUpdateMeta<T>>>({})
+  const meta = ref<Record<string, BulkUpdateMeta<InstanceType<T>>>>({})
   const updating = ref(false)
   const activeRequests = ref<Record<string | number, {
     request: Promise<BulkUpdateResponse<T>> & { cancel(): void }
@@ -166,15 +165,33 @@ export function useBulkUpdaterDriver<
     .map(entry => entry[0]) as (keyof FilterPiniaOrmModelToFieldTypes<InstanceType<T>>)[]
 
   const formWatchers: Record<string, WatchStopHandle> = {}
+  const recordWatchers: Record<string, WatchStopHandle> = {}
 
   const {
     pause: pauseAutoUpdater,
     resume: resumeAutoUpdater,
-  } = watchPausable(forms, () => {
+  } = watchPausable(formsKeyed, () => {
     if (toValue(options?.autoUpdate)) {
       updateDebounced.value()
     }
   }, { deep: true })
+
+  const withBulkUpdaters = Object.fromEntries(Object.keys(toValue(options.indexer?.with) ?? {}).map(withField => {
+    const relationshipsInfo = (piniaOrmRelationships as any)[withField]
+    const relatedClass = relationshipsInfo.related.constructor
+
+    return [withField, {
+      composable: useBulkUpdaterDriver(relatedClass, {
+        autoUpdate: true,
+        immediatelyMakeForms: true,
+        indexer: {
+          /** @ts-expect-error hard to type, not worth it */
+          with: () => toValue(indexerWith)[withField] as IndexWiths<Model>,
+        },
+      }),
+      isMany: ['HasMany', 'BelongsToMany'].includes(relationshipsInfo.kind),
+    }]
+  }))
 
   const formMaker = useFormMaker({
     belongsToManyRelationshipKeys,
@@ -182,8 +199,9 @@ export function useBulkUpdaterDriver<
     piniaOrmRelationships,
     changes,
     fieldKeys,
-    forms,
+    formsKeyed,
     formWatchers,
+    recordWatchers,
     meta,
     pauseAutoUpdater,
     primaryKeyField,
@@ -192,6 +210,9 @@ export function useBulkUpdaterDriver<
     resumeAutoUpdater,
     indexer,
     driver: driverKey,
+    indexerWith,
+    updaterOptions: options,
+    withBulkUpdaters,
   })
 
   if (options.forms) formMaker.addRawForms(options.forms)
@@ -205,15 +226,18 @@ export function useBulkUpdaterDriver<
       Object.values(formWatchers).forEach(unwatch => {
         unwatch()
       })
+      Object.values(recordWatchers).forEach(unwatch => {
+        unwatch()
+      })
     }, true)
   }
 
   function removeForm (recordId: string) {
-    console.log('remove form')
     formWatchers[recordId]()
+    recordWatchers[recordId]()
     delete changes.value[recordId]
     delete meta.value[recordId]
-    delete forms.value[recordId]
+    delete formsKeyed.value[recordId]
   }
 
   const response = ref<BulkUpdateResponse<T>>()
@@ -238,46 +262,16 @@ export function useBulkUpdaterDriver<
     return response.value?.standardErrors ?? []
   })
 
-  // const withBulkUpdater = Object.entries(Object.values(options.with).map(withField => {
-  //   const relatedClass = ModelClass.getRelatedClass(withField)
-  //   return [withField, useBulkUpdaterDriver(relatedClass)]
-  // }))
-
-  // const allRelatedForms = {
-  //   posts: { 'some-user-id': formsWithMeta },
-  // }
-
-  const formsWithMeta = computed(() => {
+  const forms = computed(() => {
     const currentPageForms: Record<string, BulkUpdateForm<InstanceType<T>>> = {}
     currentPageIds.value.forEach(recordId => {
-      if (forms.value[recordId ?? '']) {
-        currentPageForms[recordId] = forms.value[recordId ?? '']
+      if (formsKeyed.value[recordId ?? '']) {
+        currentPageForms[recordId] = formsKeyed.value[recordId ?? '']
       }
     })
 
-    return Object.entries(currentPageForms).map(([id, form]) => {
-      // const relatedForms = allRelatedForms?.formsGroupedById?.[id] ?? {})
-      //   .map((formsWithMeta) => {
-      //     return formsWithMeta
-      //   }
-      const query = repo.query()
-      applyWiths(
-        ModelClass,
-        query,
-        toValue(indexerWith),
-        {
-          withoutEntityGlobalScopes: options.indexer?.withoutEntityGlobalScopes,
-          withoutGlobalScopes: options.indexer?.withoutGlobalScopes,
-        },
-      )
-
-      return {
-        id,
-        record: query.find(id),
-        form: form as BulkUpdateForm<InstanceType<T>>,
-        // ...relatedForms,
-        ...(meta.value[id] as BulkUpdateMeta<T>),
-      }
+    return Object.entries(currentPageForms).map(([id]) => {
+      return (meta.value[id] as BulkUpdateMeta<InstanceType<T>>)
     })
   })
 
@@ -315,7 +309,7 @@ export function useBulkUpdaterDriver<
       activeRequest,
       activeRequests,
       changes,
-      forms,
+      formsKeyed,
       meta,
       ModelClass,
       options,
@@ -409,7 +403,7 @@ export function useBulkUpdaterDriver<
 
   return {
     update,
-    forms,
+    formsKeyed,
     changes,
     makeForms: formMaker.makeForms,
     removeForm,
@@ -423,7 +417,7 @@ export function useBulkUpdaterDriver<
     activeRequests,
     belongsToManyResponses,
     activeBelongsToManyRequests,
-    formsWithMeta,
+    forms,
     composableId,
     ModelClass,
 

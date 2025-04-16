@@ -8,19 +8,24 @@ import { UseIndexerOptions, UseIndexerReturn } from '../crud/index/UseIndexer'
 import { PiniaOrmManyRelationsForm } from '../../types/PiniaOrmManyRelationsForm'
 import { Form } from '../..'
 import { Callback } from '../../utils/useCallbacks'
+import { FilterPiniaOrmModelToManyRelationshipTypes } from '../../types/FilterPiniaOrmModelToManyRelationshipTypes'
+import { FilterPiniaOrmModelToHasOneRelationshipTypes } from '../../types/FilterPiniaOrmModelToHasOneRelationshipTypes'
 
 type UnwrapType<T> =
   T extends Array<infer U> ? U :
   T extends (infer U) | null ? U :
   never;
 
+export type AppendFormsSuffix<T extends string> = `${T}_forms`
+export type AppendFormSuffix<T extends string> = `${T}_form`
+
 export type BulkUpdateForm<T extends Model> = PiniaOrmForm<T> & PiniaOrmManyRelationsForm<T>
 
-export type UseBulkUpdateFormValidationErrors<T extends typeof Model> = Record<
+export type UseBulkUpdateFormValidationErrors<T extends Model> = Record<
   string,
   FormValidationErrors<T> &
   {
-    [RelationKey in keyof FilterPiniaOrmModelToRelationshipTypes<InstanceType<T>>]: Record<string, {
+    [RelationKey in keyof FilterPiniaOrmModelToRelationshipTypes<T>]: Record<string, {
       [K in keyof Form<T[RelationKey]>]: string[]
     } & {
       [key: string]: string[]
@@ -28,17 +33,20 @@ export type UseBulkUpdateFormValidationErrors<T extends typeof Model> = Record<
   }
 >
 
-export interface BulkUpdateMeta<T extends typeof Model> {
+export type BulkUpdateMeta<T extends Model = Model> = {
+  id: string
+  form: BulkUpdateForm<T>
+  record: Item<T>
   changed: boolean
-  initialValues: BulkUpdateForm<InstanceType<T>>
+  initialValues: BulkUpdateForm<T>
   makingForm: boolean
   updating: boolean
   failed: boolean
-  changes: BulkUpdateForm<InstanceType<T>>
+  changes: BulkUpdateForm<T>
   standardErrors: StandardErrors,
   validationErrors: UseBulkUpdateFormValidationErrors<T>,
   fields: {
-    [K in keyof FilterPiniaOrmModelToFieldTypes<InstanceType<T>>]: {
+    [K in keyof FilterPiniaOrmModelToFieldTypes<T>]: {
       errors: string[],
       changed: boolean
       updating: boolean
@@ -46,13 +54,17 @@ export interface BulkUpdateMeta<T extends typeof Model> {
       initialValue: UnwrapType<T[K]>
     }
   }
+} & {
+  [K in keyof FilterPiniaOrmModelToManyRelationshipTypes<T> as AppendFormsSuffix<Extract<K, string>>]:
+    BulkUpdateMeta<
+      UnwrapType<
+          FilterPiniaOrmModelToManyRelationshipTypes<T>[K]
+      >
+    >[]
+} & {
+  [K in keyof FilterPiniaOrmModelToHasOneRelationshipTypes<T> as AppendFormSuffix<Extract<K, string>>]:
+    BulkUpdateMeta<NonNullable<FilterPiniaOrmModelToHasOneRelationshipTypes<T>[K]>>
 }
-
-export type FormWithMeta<T extends typeof Model> = {
-  id: string
-  form: BulkUpdateForm<InstanceType<T>>
-  record: Item<InstanceType<T>>
-} & BulkUpdateMeta<T>
 
 export interface UseBulkUpdateUpdateOptions<T extends typeof Model> {
   forms?: Record<string, BulkUpdateForm<InstanceType<T>>>
@@ -197,7 +209,7 @@ export interface UseBulkUpdaterReturn<
 > {
   update(options?: UseBulkUpdateUpdateOptions<T>): Promise<BulkUpdateResponse<T>>
 
-  forms: Ref<Record<string, BulkUpdateForm<InstanceType<T>>>>
+  formsKeyed: Ref<Record<string, BulkUpdateForm<InstanceType<T>>>>
 
   /**
    * All changes since the last bulk update
@@ -238,7 +250,7 @@ export interface UseBulkUpdaterReturn<
   /**
    * Validation errors, keyed by the records id
    */
-  validationErrors: ComputedRef<UseBulkUpdateFormValidationErrors<T>>
+  validationErrors: ComputedRef<UseBulkUpdateFormValidationErrors<InstanceType<T>>>
 
   /**
    * All non-validation errors
@@ -248,7 +260,7 @@ export interface UseBulkUpdaterReturn<
   /**
    * Meta information for all forms and their fields, keyed by id
    */
-  meta: Ref<Record<string, BulkUpdateMeta<T>>>
+  meta: Ref<Record<string, BulkUpdateMeta<InstanceType<T>>>>
 
   /**
    * The PiniaORM repo
@@ -290,12 +302,12 @@ export interface UseBulkUpdaterReturn<
   >
 
   /**
-   * An array of the current pages forms. Use `formsWithMeta`
-   * to easily model your forms on the frontend, while
+   * An array of the current pages forms. Use `forms` to
+   * easily model your forms on the frontend, while
    * having access to everything you need to
    * communicate the state of the form
    */
-  formsWithMeta: ComputedRef<FormWithMeta<T>[]>
+  forms: ComputedRef<BulkUpdateMeta<InstanceType<T>>[]>
 
   /**
    * Every composable gets an id. Used internally

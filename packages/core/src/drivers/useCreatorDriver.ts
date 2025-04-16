@@ -38,8 +38,8 @@ export function useCreatorDriver<T extends typeof Model> (
 
   const onSuccessCallbacks = useCallbacks<[CreateSuccessResponse<T>]>([options.onSuccess])
   const onStandardErrorCallbacks = useCallbacks<[CreateErrorResponse<T>]>([options.onStandardError])
-  const onValidationErrorCallbacks = useCallbacks<[CreateValidationErrorResponse<T>, FormValidationErrors<T>]>([options.onValidationError])
-  const onErrorCallbacks = useCallbacks<[CreateErrorResponse<T>, FormValidationErrors<T>]>([options.onError])
+  const onValidationErrorCallbacks = useCallbacks<[CreateValidationErrorResponse<T>, FormValidationErrors<InstanceType<T>>]>([options.onValidationError])
+  const onErrorCallbacks = useCallbacks<[CreateErrorResponse<T>, FormValidationErrors<InstanceType<T>>]>([options.onError])
 
   const driverConfig = getMergedDriverConfig(options.driver)
   const repo = useRepo<InstanceType<T>>(
@@ -63,7 +63,7 @@ export function useCreatorDriver<T extends typeof Model> (
   const creating = ref(false)
 
   const validationErrors = computed(() => {
-    return response.value?.validationErrors ?? {} as FormValidationErrors<T>
+    return response.value?.validationErrors ?? {} as FormValidationErrors<InstanceType<T>>
   })
   const standardErrors = computed(() => {
     return response.value?.standardErrors ?? [] as StandardErrors

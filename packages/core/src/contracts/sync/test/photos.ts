@@ -16,5 +16,5 @@ export class Photo extends Model {
   @Attr() declare album_id: string
   @BelongsTo(() => Album, 'album_id') declare album: Album | null
   @HasMany(() => PhotoTag, 'photo_id') declare photo_tags: PhotoTag | null
-  @BelongsToMany(() => Tag, () => PhotoTag, 'photo_id', 'tag_id') declare photos: Photo[]
+  @BelongsToMany(() => Tag, () => PhotoTag, 'photo_id', 'tag_id') declare tags: Tag[]
 }

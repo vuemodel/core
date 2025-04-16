@@ -122,7 +122,7 @@ export interface UseModelReturn<T extends typeof Model> {
 
     form: Ref<PiniaOrmForm<InstanceType<T>> | null>
 
-    forms: UseBulkUpdaterReturn<T>['formsWithMeta']
+    forms: UseBulkUpdaterReturn<T>['forms']
 
     update: UseBulkUpdaterReturn<T>['update'],
 

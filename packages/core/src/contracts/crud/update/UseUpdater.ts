@@ -169,7 +169,7 @@ export interface UseUpdaterReturn<T extends typeof Model> {
    * </div>
    * ```
    */
-  validationErrors: ComputedRef<FormValidationErrors<T>>
+  validationErrors: ComputedRef<FormValidationErrors<InstanceType<T>>>
 
   /**
    * Standard errors recieved from the latest request

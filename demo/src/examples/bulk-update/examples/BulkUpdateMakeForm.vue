@@ -3,10 +3,11 @@ import { useBulkUpdater, useIndexer } from '@vuemodel/core'
 import { populateRecords, User } from '@vuemodel/sample-data'
 import { clear } from 'idb-keyval'
 import { ref } from 'vue'
+import { clearIndexedDb } from '../clearIndexedDb'
 
 const usersIndexer = useIndexer(User)
 async function setUsers () {
-  await clear()
+  await clearIndexedDb()
   await populateRecords('users')
   usersIndexer.index()
 }

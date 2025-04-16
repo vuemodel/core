@@ -30,6 +30,7 @@ export function useModelDriver<
   const bulkUpdater = useBulkUpdater(driverKey, ModelClass, {
     immediatelyMakeForms: true,
     ...options.update,
+    indexer: options.index,
   })
   const updateForm: Ref<PiniaOrmForm<InstanceType<T>> | null> = ref(null)
   bulkUpdater.onSuccess(() => {
@@ -44,7 +45,7 @@ export function useModelDriver<
     const primaryKey = getRecordPrimaryKey(ModelClass, response.record)
     if (!primaryKey) return
     const recordsPerPage = bulkUpdater.pagination.value.recordsPerPage
-    const numberOfRecords = bulkUpdater.formsWithMeta.value.length
+    const numberOfRecords = bulkUpdater.forms.value.length
     if (!recordsPerPage || (numberOfRecords < recordsPerPage)
     ) {
       bulkUpdater.currentPageIds.value.push(primaryKey)
@@ -63,7 +64,7 @@ export function useModelDriver<
   watch(showUpdateFormId, async (newId) => {
     if (newId) {
       bulkUpdater.makeForms([String(newId)]).then(() => {
-        updateForm.value = bulkUpdater.forms.value?.[String(newId)]
+        updateForm.value = (bulkUpdater.forms.value as any)?.[String(newId)]
       })
     } else {
       updateForm.value = null
@@ -124,7 +125,7 @@ export function useModelDriver<
     updater: {
       showFormId: showUpdateFormId,
       form: updateForm,
-      forms: bulkUpdater.formsWithMeta,
+      forms: bulkUpdater.forms,
       formsKeyed: bulkUpdater.forms,
       update: bulkUpdater.update,
       index: bulkUpdater.index,

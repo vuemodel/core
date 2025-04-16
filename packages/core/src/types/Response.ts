@@ -31,7 +31,7 @@ export type FormValidationSuccessResponse = BaseSuccessResponse & {
 }
 
 export type FormValidationErrorResponse<T extends typeof Model> = BaseErrorResponse & {
-  validationErrors: FormValidationErrors<T>
+  validationErrors: FormValidationErrors<InstanceType<T>>
 }
 
 export type BulkFormValidationSuccessResponse = BaseSuccessResponse & {
@@ -39,7 +39,7 @@ export type BulkFormValidationSuccessResponse = BaseSuccessResponse & {
 }
 
 export type BulkFormValidationErrorResponse<T extends typeof Model> = BaseErrorResponse & {
-  validationErrors: UseBulkUpdateFormValidationErrors<T>
+  validationErrors: UseBulkUpdateFormValidationErrors<InstanceType<T>>
 }
 
 export type SingleRecordResponse<T extends typeof Model> = {

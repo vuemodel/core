@@ -38,7 +38,7 @@ export interface UseCreatorOptions<T extends typeof Model> {
   /**
    * Callback called when an error occurs (including validation error).
    */
-  onError?: (response: CreateErrorResponse<T>, validationErrors?: FormValidationErrors<T>) => void
+  onError?: (response: CreateErrorResponse<T>, validationErrors?: FormValidationErrors<InstanceType<T>>) => void
 
   /**
    * Callback called when an error occurs (NOT including validation error).
@@ -50,7 +50,7 @@ export interface UseCreatorOptions<T extends typeof Model> {
    * likely won't need to use this callback as all validation
    * errors exist within the "validationErrors" computed ref.
    */
-  onValidationError?: (response: CreateValidationErrorResponse<T>, validationErrors: FormValidationErrors<T>) => void
+  onValidationError?: (response: CreateValidationErrorResponse<T>, validationErrors: FormValidationErrors<InstanceType<T>>) => void
 
   /**
    * Should the retrieved data be persisted to the store?
@@ -118,7 +118,7 @@ export interface UseCreatorReturn<T extends typeof Model> {
    * </div>
    * ```
    */
-  validationErrors: ComputedRef<FormValidationErrors<T>>
+  validationErrors: ComputedRef<FormValidationErrors<InstanceType<T>>>
 
   /**
    * Standard errors recieved from the latest request.
@@ -194,7 +194,7 @@ export interface UseCreatorReturn<T extends typeof Model> {
   /**
    * Callback called when an error occurs (including validation error).
    */
-  onError: (callback: Callback<[CreateErrorResponse<T>, FormValidationErrors<T>]>) => void
+  onError: (callback: Callback<[CreateErrorResponse<T>, FormValidationErrors<InstanceType<T>>]>) => void
 
   /**
    * Callback called when an error occurs (NOT including validation error).
@@ -206,7 +206,7 @@ export interface UseCreatorReturn<T extends typeof Model> {
    * likely won't need to use this callback as all validation
    * errors exist within the "validationErrors" computed ref.
    */
-  onValidationError: (callback: Callback<[CreateValidationErrorResponse<T>, FormValidationErrors<T>]>) => void
+  onValidationError: (callback: Callback<[CreateValidationErrorResponse<T>, FormValidationErrors<InstanceType<T>>]>) => void
 }
 
 export type UseCreator<T extends typeof Model> = (

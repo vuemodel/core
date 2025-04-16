@@ -1,4 +1,4 @@
-import { toValue, UnwrapRef } from 'vue'
+import { toValue } from 'vue'
 import { UseBulkUpdaterOptions, UseBulkUpdaterReturn, UseBulkUpdateUpdateOptions } from '../../contracts/bulk-update/UseBulkUpdater'
 import { BulkUpdateResponse, BulkUpdateErrorResponse, SyncResponse, BulkUpdateSuccessResponse } from '../../types/Response'
 import { getDriverKey } from '../../utils/getDriverKey'
@@ -32,7 +32,7 @@ export async function performUpdate<
     activeRequests: R['activeRequests']
     updating: R['updating']
     repo: R['repo']
-    forms: R['forms']
+    formsKeyed: R['formsKeyed']
     bulkUpdatePersistHooks: ((payload: BulkUpdatePersistHookPayload) => Promise<void> | void)[]
     syncPersistHooks: ((payload: SyncPersistHookPayload) => Promise<void> | void)[]
     formMaker: ReturnType<typeof useFormMaker>
@@ -81,7 +81,7 @@ export async function performUpdate<
     activeRequest,
     activeRequests,
     updating,
-    forms,
+    formsKeyed,
     repo,
     formMaker,
     belongsToManyRelationshipKeys,
@@ -105,7 +105,7 @@ export async function performUpdate<
   const missingPremadeFormIds: string[] = []
   if (optionsParam.forms) {
     Object.keys(optionsParam.forms).forEach(recordId => {
-      if (!forms.value[recordId]) {
+      if (!formsKeyed.value[recordId]) {
         missingPremadeFormIds.push(recordId)
       }
     })
@@ -129,7 +129,7 @@ export async function performUpdate<
 
       if (!changes.value[formId]) { changes.value[formId] = {} }
       Object.assign(changes.value[formId], changedValues)
-      Object.assign(forms.value[formId], form)
+      Object.assign(formsKeyed.value[formId], form)
     })
   }
 
@@ -219,7 +219,7 @@ export async function performUpdate<
 
   const requestId = generateRandomString(5)
 
-  activeRequest.value = { forms: forms.value, request }
+  activeRequest.value = { forms: formsKeyed.value, request }
   activeRequests.value[requestId] = activeRequest.value
 
   updating.value = true

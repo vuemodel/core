@@ -75,7 +75,7 @@ export function useUpdaterDriver<T extends typeof Model> (
   const makingForm = ref<string | number | string[] | number[] | false>(false)
 
   const validationErrors = computed(() => {
-    return response.value?.validationErrors ?? {} as FormValidationErrors<T>
+    return response.value?.validationErrors ?? {} as FormValidationErrors<InstanceType<T>>
   })
   const standardErrors = computed(() => {
     return response.value?.standardErrors ?? [] as StandardErrors
@@ -233,7 +233,7 @@ export function useUpdaterDriver<T extends typeof Model> (
         record: undefined,
         standardErrors: [{ message: '', name: 'no id' }],
         success: false,
-        validationErrors: {} as FormValidationErrors<T>,
+        validationErrors: {} as FormValidationErrors<InstanceType<T>>,
         entity: ModelClass.entity,
       }
       return response.value

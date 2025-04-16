@@ -1,4 +1,4 @@
-import { create } from '@vuemodel/core'
+import { create, find, getRecordPrimaryKey } from '@vuemodel/core'
 import { exampleDataMap } from '../src'
 
 export async function populateRecords (
@@ -13,10 +13,19 @@ export async function populateRecords (
   }
 
   for (let index = 0; index < numberOfRecords; index++) {
-    await create(
-      exampleData.modelClass,
-      exampleData.records[index],
-      createOptions,
-    )
+    try {
+      const ModelClass = exampleData.modelClass
+      if (!ModelClass) continue
+      /** @ts-expect-error This error baffles me */
+      const response = await find(ModelClass, getRecordPrimaryKey(ModelClass, exampleData.records[index]))
+      if (response.record) continue
+      await create(
+        exampleData.modelClass,
+        exampleData.records[index],
+        createOptions,
+      )
+    } catch (e) {
+      console.warn(e)
+    }
   }
 }

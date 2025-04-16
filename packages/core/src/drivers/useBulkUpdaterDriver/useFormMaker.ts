@@ -1,14 +1,16 @@
 import clone from 'just-clone'
 import { Collection, Model } from 'pinia-orm'
 import { FilterPiniaOrmModelToFieldTypes, FilterPiniaOrmModelToRelationshipTypes, getClassRelationships, PiniaOrmForm } from 'pinia-orm-helpers'
-import { nextTick, watch, WatchStopHandle } from 'vue'
-import { BulkUpdateForm, BulkUpdateMeta, UseBulkUpdaterReturn } from '../../contracts/bulk-update/UseBulkUpdater'
+import { computed, nextTick, toValue, watch, WatchStopHandle } from 'vue'
+import { BulkUpdateForm, BulkUpdateMeta, UseBulkUpdaterOptions, UseBulkUpdaterReturn } from '../../contracts/bulk-update/UseBulkUpdater'
 import { getFormsChangedValues } from './getFormsChangedValues'
 import deepEqual from 'deep-equal'
 import { IndexFilters } from '../../contracts/crud/index/IndexFilters'
 import { getRecordPrimaryKey } from '../../utils/getRecordPrimaryKey'
 import { FilterPiniaOrmModelToManyRelationshipTypes } from '../../types/FilterPiniaOrmModelToManyRelationshipTypes'
 import { getPivotModelIdField } from '../../utils/getPivotModelIdField'
+import { applyWiths } from '../../utils/applyWiths'
+import { IndexWiths } from '@vuemodel/core'
 
 export function useFormMaker<
   T extends typeof Model,
@@ -20,20 +22,24 @@ export function useFormMaker<
     piniaOrmRelationships: ReturnType<typeof getClassRelationships>,
     repo: R['repo']
     changes: R['changes']
+    indexerWith: () => IndexWiths<InstanceType<T>>
     pauseAutoUpdater: () => void
     resumeAutoUpdater: () => void
     primaryKeyField: string | string[]
-    forms: R['forms']
+    formsKeyed: R['formsKeyed']
     fieldKeys: (keyof FilterPiniaOrmModelToFieldTypes<InstanceType<T>>)[]
     meta: R['meta']
     formWatchers: Record<string, WatchStopHandle>
+    recordWatchers: Record<string, WatchStopHandle>
     indexer: R['indexer']
     pivotClasses: Record<string, Model>
     driver: string
+    updaterOptions: UseBulkUpdaterOptions<T>,
+    withBulkUpdaters: Record<string, { composable: UseBulkUpdaterReturn, isMany: boolean }>
   },
 ) {
   const {
-    forms,
+    formsKeyed,
     pivotClasses,
     belongsToManyRelationshipKeys,
     piniaOrmRelationships,
@@ -42,12 +48,19 @@ export function useFormMaker<
     fieldKeys,
     meta,
     formWatchers,
+    recordWatchers,
     resumeAutoUpdater,
     changes,
     repo,
     indexer,
     driver,
+    indexerWith,
+    updaterOptions,
+    ModelClass,
+    withBulkUpdaters,
   } = options
+
+  // const formRecordWatchers: any = {}
 
   // belongsToManyRelationshipKeys
 
@@ -97,24 +110,51 @@ export function useFormMaker<
     }),
   )
 
-  const defaultMeta: BulkUpdateMeta<T> = {
-    changed: false,
-    failed: false,
-    changes: {},
-    standardErrors: [],
-    validationErrors: {},
-    fields: {
-      ...defaultFieldMetas,
-      ...defaultBelongsToManyMetas,
-    },
-    initialValues: {},
-    makingForm: false,
-    updating: false,
+  function makeDefaultMeta (id: string): BulkUpdateMeta<InstanceType<T>> {
+    const defaultMeta = {
+      changed: false,
+      failed: false,
+      changes: {},
+      standardErrors: [],
+      validationErrors: {},
+      fields: {
+        ...defaultFieldMetas,
+        ...defaultBelongsToManyMetas,
+      },
+      initialValues: {},
+      makingForm: false,
+      updating: false,
+      form: {},
+      record: computed(() => {
+        const query = repo.query()
+        applyWiths(
+          ModelClass,
+          query,
+          toValue(indexerWith),
+          {
+            withoutEntityGlobalScopes: updaterOptions.indexer?.withoutEntityGlobalScopes,
+            withoutGlobalScopes: updaterOptions.indexer?.withoutGlobalScopes,
+          },
+        )
+        return query.find(id)
+      }),
+      id: '',
+    }
+
+    if (!recordWatchers[id]) {
+      recordWatchers[id] = watch(defaultMeta.record, () => {
+        makeForms([id])
+      })
+    }
+
+    return defaultMeta
   }
 
   function addRawForm (id: string, form: PiniaOrmForm<InstanceType<T>>) {
-    meta.value[id] = structuredClone(defaultMeta)
+    meta.value[id] = makeDefaultMeta(id)
     meta.value[id].initialValues = clone(form)
+    meta.value[id].id = id
+    meta.value[id].form = formsKeyed.value[id]
   }
 
   function addRawForms (forms: Record<string, PiniaOrmForm<InstanceType<T>>>) {
@@ -126,8 +166,8 @@ export function useFormMaker<
     for (const model of models) {
       const id = model[primaryKeyField as string] as string
 
-      if (!forms.value[id]) {
-        forms.value[id] = {}
+      if (!formsKeyed.value[id]) {
+        formsKeyed.value[id] = {}
       }
 
       fieldKeys.forEach(field => {
@@ -136,7 +176,7 @@ export function useFormMaker<
           if (typeof model[field] === 'object') {
             initialFieldValue = clone(model[field])
           }
-          forms.value[id][field] = initialFieldValue
+          formsKeyed.value[id][field] = initialFieldValue
 
           meta.value[id].fields[field] = {
             changed: false,
@@ -161,7 +201,7 @@ export function useFormMaker<
         })
 
         const initialFieldValue = relatedsIds
-        forms.value[id][field] = initialFieldValue as any
+        formsKeyed.value[id][field] = initialFieldValue as any
 
         meta.value[id].fields[field] = {
           changed: false,
@@ -173,7 +213,7 @@ export function useFormMaker<
       })
 
       if (!formWatchers[id]) {
-        formWatchers[id] = watch(() => forms.value[id], (newValues) => {
+        formWatchers[id] = watch(() => formsKeyed.value[id], (newValues) => {
           const changedValues = getFormsChangedValues({
             piniaOrmRelationships,
             id,
@@ -193,7 +233,7 @@ export function useFormMaker<
           Object.entries(meta.value[id].fields).forEach(changeEntry => {
             const field = changeEntry[0]
             /* @ts-expect-error hard to type, no benefit */
-            const formsFieldValue = forms.value[id][field]
+            const formsFieldValue = formsKeyed.value[id][field]
             /* @ts-expect-error hard to type, no benefit */
             const initialValue = meta.value[id].fields[field].initialValue
             /* @ts-expect-error hard to type, no benefit */
@@ -202,8 +242,53 @@ export function useFormMaker<
         }, { deep: true })
       }
 
-      meta.value[id].initialValues = clone(forms.value[id])
+      // if (!formRecordWatchers[id]) {
+      //   formRecordWatchers[id] = watch(() => meta.value[id].record.value, () => {
+      //     makeForms([id])
+      //   }, { deep: true })
+      // }
+
+      meta.value[id].initialValues = clone(formsKeyed.value[id])
       meta.value[id].changed = false
+
+      meta.value[id].id = id
+      meta.value[id].form = formsKeyed.value[id]
+
+      // meta.value[id].record = computed(() => {
+      //   const query = repo.query()
+      //   applyWiths(
+      //     ModelClass,
+      //     query,
+      //     toValue(indexerWith),
+      //     {
+      //       withoutEntityGlobalScopes: updaterOptions.indexer?.withoutEntityGlobalScopes,
+      //       withoutGlobalScopes: updaterOptions.indexer?.withoutGlobalScopes,
+      //     },
+      //   )
+      //   return query.find(id)
+      // })
+
+      Object.entries(withBulkUpdaters).forEach(([relationshipKey, { composable, isMany }]) => {
+        if (isMany) {
+          const primaryKeyField = String(composable.ModelClass.primaryKey)
+
+          const forms = (meta.value[id].record as any)?.[relationshipKey]
+            ?.map((relatedRecord: any) => {
+              return composable.meta.value?.[relatedRecord[primaryKeyField]] ?? null as BulkUpdateMeta | null
+            }) ?? []
+
+          /** @ts-expect-error hard to type, not worth it */
+          meta.value[id][relationshipKey + '_forms'] = forms
+        } else {
+          const primaryKeyField = String(composable.ModelClass.primaryKey)
+          const primaryKey = (meta.value[id].record as any)[relationshipKey]?.[primaryKeyField]
+
+          const form = composable.meta.value?.[primaryKey] ?? null as BulkUpdateMeta | null
+
+          /** @ts-expect-error hard to type, not worth it */
+          meta.value[id][relationshipKey + '_form'] = form
+        }
+      })
     }
     nextTick(() => resumeAutoUpdater())
   }
@@ -219,7 +304,7 @@ export function useFormMaker<
 
     for (const targetId of targetIds) {
       if (!meta.value[targetId]) {
-        meta.value[targetId] = structuredClone(defaultMeta)
+        meta.value[targetId] = makeDefaultMeta(targetId)
       }
 
       const foundModel = indexer.makeQuery({
@@ -237,7 +322,7 @@ export function useFormMaker<
 
     if (missingModelIds.length) {
       // missingModelIds.forEach(id => {
-      //   meta.value[id] = structuredClone(defaultMeta)
+      //   meta.value[id] = makeDefaultMeta(id)
       // })
 
       const indexFilters: IndexFilters<InstanceType<T>> = {}
