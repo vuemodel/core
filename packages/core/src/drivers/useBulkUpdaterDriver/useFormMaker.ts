@@ -30,7 +30,6 @@ export function useFormMaker<
     fieldKeys: (keyof FilterPiniaOrmModelToFieldTypes<InstanceType<T>>)[]
     meta: R['meta']
     formWatchers: Record<string, WatchStopHandle>
-    recordWatchers: Record<string, WatchStopHandle>
     indexer: R['indexer']
     pivotClasses: Record<string, Model>
     driver: string
@@ -48,7 +47,6 @@ export function useFormMaker<
     fieldKeys,
     meta,
     formWatchers,
-    recordWatchers,
     resumeAutoUpdater,
     changes,
     repo,
@@ -138,14 +136,14 @@ export function useFormMaker<
         )
         return query.find(id)
       }),
-      id: '',
+      id,
     }
 
-    if (!recordWatchers[id]) {
-      recordWatchers[id] = watch(defaultMeta.record, () => {
-        makeForms([id])
-      })
-    }
+    // if (!recordWatchers[id]) {
+    //   recordWatchers[id] = watch(defaultMeta.record, () => {
+    //     makeForms([id])
+    //   })
+    // }
 
     return defaultMeta
   }
@@ -242,51 +240,39 @@ export function useFormMaker<
         }, { deep: true })
       }
 
-      // if (!formRecordWatchers[id]) {
-      //   formRecordWatchers[id] = watch(() => meta.value[id].record.value, () => {
-      //     makeForms([id])
-      //   }, { deep: true })
-      // }
-
       meta.value[id].initialValues = clone(formsKeyed.value[id])
       meta.value[id].changed = false
 
       meta.value[id].id = id
       meta.value[id].form = formsKeyed.value[id]
 
-      // meta.value[id].record = computed(() => {
-      //   const query = repo.query()
-      //   applyWiths(
-      //     ModelClass,
-      //     query,
-      //     toValue(indexerWith),
-      //     {
-      //       withoutEntityGlobalScopes: updaterOptions.indexer?.withoutEntityGlobalScopes,
-      //       withoutGlobalScopes: updaterOptions.indexer?.withoutGlobalScopes,
-      //     },
-      //   )
-      //   return query.find(id)
-      // })
-
+      // Make forms for related records
       Object.entries(withBulkUpdaters).forEach(([relationshipKey, { composable, isMany }]) => {
         if (isMany) {
           const primaryKeyField = String(composable.ModelClass.primaryKey)
 
-          const forms = (meta.value[id].record as any)?.[relationshipKey]
-            ?.map((relatedRecord: any) => {
-              return composable.meta.value?.[relatedRecord[primaryKeyField]] ?? null as BulkUpdateMeta | null
-            }) ?? []
-
           /** @ts-expect-error hard to type, not worth it */
-          meta.value[id][relationshipKey + '_forms'] = forms
+          if (!meta.value[id][relationshipKey + '_forms']) {
+          /** @ts-expect-error hard to type, not worth it */
+            meta.value[id][relationshipKey + '_forms'] = computed(() => {
+              return (meta.value[id].record as any)?.[relationshipKey]
+                ?.map((relatedRecord: any) => {
+                  return composable.meta.value?.[relatedRecord[primaryKeyField]] ?? null as BulkUpdateMeta | null
+                }) ?? []
+            })
+          }
         } else {
           const primaryKeyField = String(composable.ModelClass.primaryKey)
-          const primaryKey = (meta.value[id].record as any)[relationshipKey]?.[primaryKeyField]
-
-          const form = composable.meta.value?.[primaryKey] ?? null as BulkUpdateMeta | null
 
           /** @ts-expect-error hard to type, not worth it */
-          meta.value[id][relationshipKey + '_form'] = form
+          if (!meta.value[id][relationshipKey + '_form']) {
+          /** @ts-expect-error hard to type, not worth it */
+            meta.value[id][relationshipKey + '_form'] = computed(() => {
+              const primaryKey = (meta.value[id].record as any)[relationshipKey]?.[primaryKeyField]
+
+              return composable.meta.value?.[primaryKey] ?? null as BulkUpdateMeta | null
+            })
+          }
         }
       })
     }
@@ -321,10 +307,6 @@ export function useFormMaker<
     }
 
     if (missingModelIds.length) {
-      // missingModelIds.forEach(id => {
-      //   meta.value[id] = makeDefaultMeta(id)
-      // })
-
       const indexFilters: IndexFilters<InstanceType<T>> = {}
       /* @ts-expect-error hard to type, no benefit */
       indexFilters[primaryKeyField] = { in: missingModelIds }

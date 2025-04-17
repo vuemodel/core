@@ -165,7 +165,6 @@ export function useBulkUpdaterDriver<
     .map(entry => entry[0]) as (keyof FilterPiniaOrmModelToFieldTypes<InstanceType<T>>)[]
 
   const formWatchers: Record<string, WatchStopHandle> = {}
-  const recordWatchers: Record<string, WatchStopHandle> = {}
 
   const {
     pause: pauseAutoUpdater,
@@ -201,7 +200,6 @@ export function useBulkUpdaterDriver<
     fieldKeys,
     formsKeyed,
     formWatchers,
-    recordWatchers,
     meta,
     pauseAutoUpdater,
     primaryKeyField,
@@ -226,15 +224,11 @@ export function useBulkUpdaterDriver<
       Object.values(formWatchers).forEach(unwatch => {
         unwatch()
       })
-      Object.values(recordWatchers).forEach(unwatch => {
-        unwatch()
-      })
     }, true)
   }
 
   function removeForm (recordId: string) {
     formWatchers[recordId]()
-    recordWatchers[recordId]()
     delete changes.value[recordId]
     delete meta.value[recordId]
     delete formsKeyed.value[recordId]

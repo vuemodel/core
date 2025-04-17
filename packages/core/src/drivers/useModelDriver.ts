@@ -12,7 +12,7 @@ import { useIndexer } from '../composables/useIndexer'
 import { DeclassifyPiniaOrmModel, PiniaOrmForm } from 'pinia-orm-helpers'
 import { getRecordPrimaryKey } from '../utils/getRecordPrimaryKey'
 import { LoosePrimaryKey } from '../types/LoosePrimaryKey'
-import { deepmerge } from 'deepmerge-ts/*'
+import { deepmerge } from 'deepmerge-ts'
 
 const defaultOptions = {
 
