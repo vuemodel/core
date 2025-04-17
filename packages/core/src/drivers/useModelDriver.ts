@@ -24,20 +24,26 @@ export function useModelDriver<
   ModelClass: T,
   options?: UseModelOptions<T>,
 ): UseModelReturn<T> {
-  options = Object.assign({}, defaultOptions, options)
+  options = deepmerge(defaultOptions, options ?? {})
   const composableId = generateRandomString(8)
   const driverKey = getDriverKey(options.driver)
 
-  const bulkUpdater = useBulkUpdater(driverKey, ModelClass, {
+  const bulkUpdater = useBulkUpdater(driverKey, ModelClass, deepmerge({
     immediatelyMakeForms: true,
-    ...deepmerge(options.update, { indexer: options.index }),
-  })
+  },
+  options.update ?? {},
+  { indexer: options.index }),
+  )
   const updateForm: Ref<PiniaOrmForm<InstanceType<T>> | null> = ref(null)
   bulkUpdater.onSuccess(() => {
     showUpdateFormId.value = false
   })
 
-  const creator = useCreator(driverKey, ModelClass, options.create)
+  const creator = useCreator(
+    driverKey,
+    ModelClass,
+    deepmerge({ optimistic: options.optimistic }, options.create ?? {}),
+  )
   creator.onSuccess(response => {
     showCreateForm.value = false
 
@@ -52,7 +58,11 @@ export function useModelDriver<
     }
   })
 
-  const destroyer = useDestroyer(driverKey, ModelClass, options.destroy)
+  const destroyer = useDestroyer(
+    driverKey,
+    ModelClass,
+    deepmerge({ optimistic: options.optimistic }, options.destroy ?? {}),
+  )
 
   const updateOrCreateIndexer = useIndexer(driverKey, ModelClass)
   const updateOrCreateUpdater = useUpdater(driverKey, ModelClass)

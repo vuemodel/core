@@ -8,6 +8,7 @@ export const usePostStore = defineStore('post', () => {
 
   return {
     ...useModel(Post, {
+      optimistic: true,
       update: {
         pagination: { recordsPerPage: 5 },
         indexer: {
