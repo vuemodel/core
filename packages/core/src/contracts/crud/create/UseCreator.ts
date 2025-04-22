@@ -5,13 +5,17 @@ import { PiniaOrmForm } from 'pinia-orm-helpers'
 import { StandardErrors } from '../../errors/StandardErrors'
 import { CreateErrorResponse, CreateResponse, CreateSuccessResponse, CreateValidationErrorResponse } from '../../../types/Response'
 import { Callback } from '../../../utils/useCallbacks'
+import { CreateFormValidationErrorResponse } from '../../..'
+import { PiniaOrmManyRelationsForm } from '../../../types/PiniaOrmManyRelationsForm'
+
+export type CreateForm<T extends Model> = PiniaOrmForm<T> & PiniaOrmManyRelationsForm<T>
 
 export interface UseCreatorOptions<T extends typeof Model> {
   /**
    * Form used to create the resource. If not provided,
    * one will be created for us.
    */
-  form?: MaybeRef<PiniaOrmForm<InstanceType<T>>>,
+  form?: MaybeRef<CreateForm<InstanceType<T>>>,
 
   /**
    * Fields to be merged into the form every time a record is created.
@@ -28,7 +32,7 @@ export interface UseCreatorOptions<T extends typeof Model> {
    *  }
    * })
    */
-  merge?: MaybeRefOrGetter<PiniaOrmForm<InstanceType<T>>>,
+  merge?: MaybeRefOrGetter<CreateForm<InstanceType<T>>>,
 
   /**
    * Callback called after a successful request.
@@ -50,7 +54,7 @@ export interface UseCreatorOptions<T extends typeof Model> {
    * likely won't need to use this callback as all validation
    * errors exist within the "validationErrors" computed ref.
    */
-  onValidationError?: (response: CreateValidationErrorResponse<T>, validationErrors: FormValidationErrors<InstanceType<T>>) => void
+  onValidationError?: (response: CreateFormValidationErrorResponse<T>, validationErrors: FormValidationErrors<InstanceType<T>>) => void
 
   /**
    * Should the retrieved data be persisted to the store?
@@ -96,14 +100,14 @@ export interface UseCreatorReturn<T extends typeof Model> {
     /**
      * OPTIONAL! Fields of this form will have the highest precedence.
      */
-    form?: PiniaOrmForm<InstanceType<T>>
+    form?: CreateForm<InstanceType<T>>
   ) => Promise<CreateResponse<T>>
 
   /**
    * A ref of the form used to create the resource. We'll
    * likely want to model fields of this form in the UI.
    */
-  form: Ref<PiniaOrmForm<InstanceType<T>>>
+  form: Ref<CreateForm<InstanceType<T>>>
 
   /**
    * Validation errors recieved from the latest request.
@@ -118,7 +122,9 @@ export interface UseCreatorReturn<T extends typeof Model> {
    * </div>
    * ```
    */
-  validationErrors: ComputedRef<FormValidationErrors<InstanceType<T>>>
+  validationErrors: ComputedRef<
+    FormValidationErrors<InstanceType<T>>
+  >
 
   /**
    * Standard errors recieved from the latest request.
@@ -162,7 +168,7 @@ export interface UseCreatorReturn<T extends typeof Model> {
    */
   activeRequests: Ref<Record<string | number, {
     request: Promise<CreateResponse<T>> & { cancel(): void }
-    form: PiniaOrmForm<InstanceType<T>>
+    form: CreateForm<InstanceType<T>>
   }>>
 
   /**

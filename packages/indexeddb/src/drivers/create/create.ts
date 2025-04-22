@@ -1,4 +1,4 @@
-import { CreateOptions, CreateResponse, FormValidationErrors, getMergedDriverConfig, getRecordPrimaryKey, getDriverKey } from '@vuemodel/core'
+import { CreateOptions, CreateResponse, FormValidationErrors, getMergedDriverConfig, getRecordPrimaryKey, getDriverKey, CreateFormValidationErrorResponse } from '@vuemodel/core'
 import { Model } from 'pinia-orm'
 import { PiniaOrmForm, getClassAttributes } from 'pinia-orm-helpers'
 import { pick } from '../../utils/pick'
@@ -33,7 +33,7 @@ export async function create<T extends typeof Model> (
         }],
         action: 'create',
         success: false,
-        validationErrors: {} as FormValidationErrors<T>,
+        validationErrors: {} as CreateFormValidationErrorResponse<T>,
         record: undefined,
         entity: ModelClass.entity,
       })
@@ -47,7 +47,7 @@ export async function create<T extends typeof Model> (
         }],
         action: 'create',
         success: false,
-        validationErrors: {} as FormValidationErrors<T>,
+        validationErrors: {} as FormValidationErrors<InstanceType<T>>,
         record: undefined,
         entity: ModelClass.entity,
       })
@@ -80,7 +80,7 @@ export async function create<T extends typeof Model> (
         record: undefined,
         standardErrors: [{ name: 'primary key unknown', message: 'could not discover the records primary key' }],
         success: false,
-        validationErrors: {} as FormValidationErrors<T>,
+        validationErrors: {} as FormValidationErrors<InstanceType<T>>,
         entity: ModelClass.entity,
       })
     }

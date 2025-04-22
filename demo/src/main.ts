@@ -41,6 +41,7 @@ const vueModel = createVueModel({
 
 const indexedDbStorage = createIndexedDb({
   frontStore: pinia,
+  mockLatencyMs: 500,
   // mockStandardErrors: [{
   //   message: 'sdfg',
   //   name: 'sgfsf'

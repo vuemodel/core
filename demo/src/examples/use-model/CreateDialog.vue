@@ -1,7 +1,8 @@
 <script lang="ts" setup>
-import { usePostStore } from './usePostStore'
+import PhotoFormFields from './PhotoFormFields.vue'
+import { usePhotoStore } from './usePhotoStore'
 
-const postStore = usePostStore()
+const photoStore = usePhotoStore()
 </script>
 
 <template>
@@ -10,19 +11,10 @@ const postStore = usePostStore()
       <q-card-section>
         <q-form
           class="q-gutter-y-md"
-          @submit.prevent="postStore.creator.create()"
+          @submit.prevent="photoStore.creator.create()"
         >
-          <q-input
-            v-model="postStore.creator.form.title"
-            label="Title"
-            filled
-          />
-          <q-input
-            v-model="postStore.creator.form.body"
-            type="textarea"
-            label="Body"
-            filled
-          />
+          <PhotoFormFields v-model:form="photoStore.creator.form" />
+
           <q-btn
             type="submit"
             label="Create"

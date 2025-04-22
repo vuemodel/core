@@ -1,10 +1,11 @@
 import { Model } from 'pinia-orm'
-import { DeclassifyPiniaOrmModel } from 'pinia-orm-helpers'
+import { DeclassifyPiniaOrmModel, FilterPiniaOrmModelToRelationshipTypes } from 'pinia-orm-helpers'
 import { StandardErrors } from '../contracts/errors/StandardErrors'
 import { QueryValidationErrors } from '../contracts/errors/QueryValidationErrors'
 import { FormValidationErrors } from '../contracts/errors/FormValidationErrors'
 import { PaginationDetails } from '../contracts/crud/index/PaginationDetails'
 import { UseBulkUpdateFormValidationErrors } from '../contracts/bulk-update/UseBulkUpdater'
+import { Form } from '..'
 
 export type BaseSuccessResponse = {
   standardErrors: undefined
@@ -34,6 +35,17 @@ export type FormValidationErrorResponse<T extends typeof Model> = BaseErrorRespo
   validationErrors: FormValidationErrors<InstanceType<T>>
 }
 
+export type CreateFormValidationErrorResponse<T extends typeof Model> = BaseErrorResponse & {
+  validationErrors: FormValidationErrors<InstanceType<T>> &
+  {
+    [RelationKey in keyof FilterPiniaOrmModelToRelationshipTypes<InstanceType<T>>]: Record<string, {
+      [K in keyof Form<T[RelationKey]>]: string[]
+    } & {
+      [key: string]: string[]
+    }>
+  }
+}
+
 export type BulkFormValidationSuccessResponse = BaseSuccessResponse & {
   validationErrors: undefined
 }
@@ -54,10 +66,10 @@ export type PaginationResponse = {
   pagination?: PaginationDetails
 }
 
-export type CreateValidationErrorResponse<T extends typeof Model> = { action: 'create' } & (FormValidationErrorResponse<T>) & SingleRecordResponse<T>
+export type CreateValidationErrorResponse<T extends typeof Model> = { action: 'create' } & (CreateFormValidationErrorResponse<T>) & SingleRecordResponse<T>
 
 export type CreateSuccessResponse<T extends typeof Model> = { action: 'create' } & FormValidationSuccessResponse & SingleRecordResponse<T>
-export type CreateErrorResponse<T extends typeof Model> = { action: 'create' } & FormValidationErrorResponse<T> & SingleRecordResponse<T>
+export type CreateErrorResponse<T extends typeof Model> = { action: 'create' } & CreateFormValidationErrorResponse<T> & SingleRecordResponse<T>
 export type CreateResponse<T extends typeof Model> = CreateSuccessResponse<T> | CreateErrorResponse<T>
 
 export type FindSuccessResponse<T extends typeof Model> = { action: 'find' } & QueryValidationSuccessResponse & SingleRecordResponse<T>

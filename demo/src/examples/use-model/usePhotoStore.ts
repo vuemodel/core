@@ -1,23 +1,23 @@
 import { useModel } from '@vuemodel/core'
-import { Post } from '@vuemodel/sample-data'
+import { Photo } from '@vuemodel/sample-data'
 import { useLocalStorage } from '@vueuse/core'
 import { defineStore } from 'pinia'
 
-export const usePostStore = defineStore('post', () => {
+export const usePhotoStore = defineStore('photo', () => {
   const autoUpdate = useLocalStorage('useModel:autoUpdate', false)
 
   return {
-    ...useModel(Post, {
+    ...useModel(Photo, {
       optimistic: true,
       update: {
-        pagination: { recordsPerPage: 5 },
-        indexer: {
-          paginateImmediate: true,
-          with: {
-            comments: {},
-          },
-        },
         autoUpdate,
+      },
+      index: {
+        paginateImmediate: true,
+        with: {
+          tags: {},
+          album: {},
+        },
       },
     }),
     autoUpdate,

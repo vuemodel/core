@@ -28,12 +28,18 @@ export function useModelDriver<
   const composableId = generateRandomString(8)
   const driverKey = getDriverKey(options.driver)
 
-  const bulkUpdater = useBulkUpdater(driverKey, ModelClass, deepmerge({
-    immediatelyMakeForms: true,
-  },
-  options.update ?? {},
-  { indexer: options.index }),
+  const bulkUpdater = useBulkUpdater(
+    driverKey,
+    ModelClass,
+    deepmerge(
+      {
+        immediatelyMakeForms: true,
+      },
+      options.update ?? {},
+      { indexer: options.index },
+    ),
   )
+
   const updateForm: Ref<PiniaOrmForm<InstanceType<T>> | null> = ref(null)
   bulkUpdater.onSuccess(() => {
     showUpdateFormId.value = false

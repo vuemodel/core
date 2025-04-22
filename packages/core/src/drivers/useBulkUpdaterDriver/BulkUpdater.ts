@@ -314,7 +314,6 @@ export class BulkUpdater<T extends typeof Model> {
       .setDriverConfig()
       .setRepo()
       .setPrimaryKeyField()
-      .setWithBulkUpdaters()
       .setDriverKey()
       .setFormsKeyed()
       .setPiniaOrmRelationships()
@@ -322,6 +321,7 @@ export class BulkUpdater<T extends typeof Model> {
       .setBelongsToManyRelationships()
       .setFields()
       .setFieldKeys()
+      .setWithBulkUpdaters()
       .setIndexer()
       // Setup categories of properties
       .setupBroadcastChannels()
