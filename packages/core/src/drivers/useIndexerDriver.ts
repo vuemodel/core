@@ -12,7 +12,6 @@ import { applyOrderBys } from '../utils/applyOrderBys'
 import { getMergedDriverConfig } from '../utils/getMergedDriverConfig'
 import { PaginationDetails } from '../contracts/crud/index/PaginationDetails'
 import { hasProperty } from '../utils/hasProperty'
-import { watchPausable } from '@vueuse/core'
 import { resolveScopes } from './resolveScopes'
 import { vueModelState } from '../plugin/state'
 import { deepmerge } from 'deepmerge-ts'
@@ -29,6 +28,7 @@ import { generateRandomString } from '../utils/generateRandomString'
 import clone from 'just-clone'
 import { removeFunctions } from '../utils/removeFunctions'
 import { useCallbacks } from '../utils/useCallbacks'
+import { watchPausable } from '../utils/watchPausable'
 
 const defaultOptions = {
   persist: true,

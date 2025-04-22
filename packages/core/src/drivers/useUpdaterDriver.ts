@@ -12,7 +12,6 @@ import debounce from 'debounce'
 import { getRecordPrimaryKey } from '../utils/getRecordPrimaryKey'
 import { getFirstDefined } from '../utils/getFirstDefined'
 import clone from 'just-clone'
-import { watchPausable } from '@vueuse/core'
 import deepEqual from 'deep-equal'
 import { generateRandomString } from '../utils/generateRandomString'
 import { update as updateResource } from '../actions/update'
@@ -21,6 +20,7 @@ import { useFinder } from '../composables/useFinder'
 import { OnUpdateOptimisticPersistMessage, OnUpdatePersistMessage } from '../broadcasting/BroadcastMessages'
 import { deepmerge } from 'deepmerge-ts'
 import { useCallbacks } from '../utils/useCallbacks'
+import { watchPausable } from '../utils/watchPausable'
 
 const defaultOptions = {
   persist: true,

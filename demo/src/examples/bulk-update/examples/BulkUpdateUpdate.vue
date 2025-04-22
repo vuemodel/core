@@ -1,19 +1,11 @@
 <script lang="ts" setup>
-import { useBulkUpdater, useIndexer } from '@vuemodel/core'
+import { useBulkUpdater } from '@vuemodel/core'
 import { populateRecords, User } from '@vuemodel/sample-data'
 import { clear } from 'idb-keyval'
-
-const usersIndexer = useIndexer(User)
 
 async function resetUserData () {
   await clear()
   await populateRecords('users')
-  usersIndexer.index()
-}
-
-async function makeForms () {
-  await usersIndexer.index()
-  await usersBulkUpdater.makeForms()
 }
 
 const usersBulkUpdater = useBulkUpdater(User)
@@ -29,7 +21,11 @@ const usersBulkUpdater = useBulkUpdater(User)
       Reset User Data
     </button>
 
-    <button @click="makeForms()">
+    <button @click="usersBulkUpdater.index()">
+      Index
+    </button>
+
+    <button @click="usersBulkUpdater.makeForms()">
       Make Forms
     </button>
 
@@ -39,25 +35,25 @@ const usersBulkUpdater = useBulkUpdater(User)
 
     <div style="display: flex; flex-direction: row; max-width: 900px; flex-wrap: wrap;">
       <div
-        v-for="formEntry in Object.entries(usersBulkUpdater.forms.value)"
-        :key="formEntry[0]"
+        v-for="form in usersBulkUpdater.forms.value"
+        :key="form.id"
         style="border: 2px solid black; padding: 8px; max-width: 400px"
       >
         <label>
           Name
           <input
-            v-model="usersBulkUpdater.forms.value[formEntry[0]].name"
+            v-model="form.form.name"
             placeholder="Name"
           >
         </label>
         <label>
           Email
           <input
-            v-model="formEntry[1].email"
+            v-model="form.form.email"
             placeholder="Email"
           >
         </label>
-        <pre>{{ usersBulkUpdater.changes.value?.[formEntry[0]] }}</pre>
+        <pre>{{ form.changes }}</pre>
       </div>
     </div>
   </div>

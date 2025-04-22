@@ -155,9 +155,10 @@ const postPagination = bindQTablePagination(toRef(updater, 'pagination'))
       </div>
     </div>
 
-    <pre>{{ updater.showFormId }}</pre>
-
-    <q-dialog :model-value="!!updater.showFormId">
+    <q-dialog
+      :model-value="!!updater.showFormId"
+      @hide="updater.showFormId = ''"
+    >
       <q-card v-if="updater.form">
         <q-card-section>
           <q-form @submit.prevent="updater.update()">

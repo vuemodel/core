@@ -1,8 +1,8 @@
 import clone from 'just-clone'
-import { Collection, Model } from 'pinia-orm'
-import { FilterPiniaOrmModelToFieldTypes, FilterPiniaOrmModelToRelationshipTypes, getClassRelationships, PiniaOrmForm } from 'pinia-orm-helpers'
-import { computed, nextTick, toValue, watch, WatchStopHandle } from 'vue'
-import { BulkUpdateForm, BulkUpdateMeta, UseBulkUpdaterOptions, UseBulkUpdaterReturn } from '../../contracts/bulk-update/UseBulkUpdater'
+import { Collection, Item, Model } from 'pinia-orm'
+import { PiniaOrmForm } from 'pinia-orm-helpers'
+import { computed, nextTick, toValue, watch } from 'vue'
+import { BulkUpdateForm, BulkUpdateMeta } from '../../contracts/bulk-update/UseBulkUpdater'
 import { getFormsChangedValues } from './getFormsChangedValues'
 import deepEqual from 'deep-equal'
 import { IndexFilters } from '../../contracts/crud/index/IndexFilters'
@@ -10,54 +10,11 @@ import { getRecordPrimaryKey } from '../../utils/getRecordPrimaryKey'
 import { FilterPiniaOrmModelToManyRelationshipTypes } from '../../types/FilterPiniaOrmModelToManyRelationshipTypes'
 import { getPivotModelIdField } from '../../utils/getPivotModelIdField'
 import { applyWiths } from '../../utils/applyWiths'
-import { IndexWiths } from '@vuemodel/core'
+import { BulkUpdater } from './BulkUpdater'
 
 export function useFormMaker<
   T extends typeof Model,
-  R extends UseBulkUpdaterReturn<T>
-> (
-  options: {
-    ModelClass: T,
-    belongsToManyRelationshipKeys: (keyof FilterPiniaOrmModelToRelationshipTypes<InstanceType<T>>)[],
-    piniaOrmRelationships: ReturnType<typeof getClassRelationships>,
-    repo: R['repo']
-    changes: R['changes']
-    indexerWith: () => IndexWiths<InstanceType<T>>
-    pauseAutoUpdater: () => void
-    resumeAutoUpdater: () => void
-    primaryKeyField: string | string[]
-    formsKeyed: R['formsKeyed']
-    fieldKeys: (keyof FilterPiniaOrmModelToFieldTypes<InstanceType<T>>)[]
-    meta: R['meta']
-    formWatchers: Record<string, WatchStopHandle>
-    indexer: R['indexer']
-    pivotClasses: Record<string, Model>
-    driver: string
-    updaterOptions: UseBulkUpdaterOptions<T>,
-    withBulkUpdaters: Record<string, { composable: UseBulkUpdaterReturn, isMany: boolean }>
-  },
-) {
-  const {
-    formsKeyed,
-    pivotClasses,
-    belongsToManyRelationshipKeys,
-    piniaOrmRelationships,
-    pauseAutoUpdater,
-    primaryKeyField,
-    fieldKeys,
-    meta,
-    formWatchers,
-    resumeAutoUpdater,
-    changes,
-    repo,
-    indexer,
-    driver,
-    indexerWith,
-    updaterOptions,
-    ModelClass,
-    withBulkUpdaters,
-  } = options
-
+> (ModelClass: T, bulkUpdater: BulkUpdater<T>) {
   // const formRecordWatchers: any = {}
 
   // belongsToManyRelationshipKeys
@@ -70,7 +27,7 @@ export function useFormMaker<
     initialValue: any
     errors: string[]
   }>(
-    fieldKeys.map(field => {
+    bulkUpdater.fieldKeys.map(field => {
       return [
         field,
         {
@@ -93,7 +50,7 @@ export function useFormMaker<
     initialValue: any
     errors: string[]
   }>(
-    belongsToManyRelationshipKeys.map(field => {
+    bulkUpdater.belongsToManyRelationshipKeys!.map(field => {
       return [
         field,
         {
@@ -124,35 +81,29 @@ export function useFormMaker<
       updating: false,
       form: {},
       record: computed(() => {
-        const query = repo.query()
+        const query = bulkUpdater.repo.query()
         applyWiths(
           ModelClass,
           query,
-          toValue(indexerWith),
+          toValue(bulkUpdater.indexerWith),
           {
-            withoutEntityGlobalScopes: updaterOptions.indexer?.withoutEntityGlobalScopes,
-            withoutGlobalScopes: updaterOptions.indexer?.withoutGlobalScopes,
+            withoutEntityGlobalScopes: bulkUpdater.options.indexer?.withoutEntityGlobalScopes,
+            withoutGlobalScopes: bulkUpdater.options.indexer?.withoutGlobalScopes,
           },
         )
-        return query.find(id)
+        return query.find(id) as Item<InstanceType<T>>
       }),
       id,
     }
-
-    // if (!recordWatchers[id]) {
-    //   recordWatchers[id] = watch(defaultMeta.record, () => {
-    //     makeForms([id])
-    //   })
-    // }
 
     return defaultMeta
   }
 
   function addRawForm (id: string, form: PiniaOrmForm<InstanceType<T>>) {
-    meta.value[id] = makeDefaultMeta(id)
-    meta.value[id].initialValues = clone(form)
-    meta.value[id].id = id
-    meta.value[id].form = formsKeyed.value[id]
+    bulkUpdater.meta.value[id] = makeDefaultMeta(id)
+    bulkUpdater.meta.value[id].initialValues = clone(form)
+    bulkUpdater.meta.value[id].id = id
+    bulkUpdater.meta.value[id].form = bulkUpdater.formsKeyed.value[id]
   }
 
   function addRawForms (forms: Record<string, PiniaOrmForm<InstanceType<T>>>) {
@@ -160,23 +111,23 @@ export function useFormMaker<
   }
 
   function makeFromModels (models: Collection<Model>) {
-    pauseAutoUpdater()
+    bulkUpdater.pauseAutoUpdater!()
     for (const model of models) {
-      const id = model[primaryKeyField as string] as string
+      const id = model[bulkUpdater.primaryKeyField as string] as string
 
-      if (!formsKeyed.value[id]) {
-        formsKeyed.value[id] = {}
+      if (!bulkUpdater.formsKeyed.value[id]) {
+        bulkUpdater.formsKeyed.value[id] = {}
       }
 
-      fieldKeys.forEach(field => {
-        if (field !== primaryKeyField) {
+      bulkUpdater.fieldKeys.forEach(field => {
+        if (field !== bulkUpdater.primaryKeyField) {
           let initialFieldValue = model[field]
           if (typeof model[field] === 'object') {
             initialFieldValue = clone(model[field])
           }
-          formsKeyed.value[id][field] = initialFieldValue
+          bulkUpdater.formsKeyed.value[id][field] = initialFieldValue
 
-          meta.value[id].fields[field] = {
+          bulkUpdater.meta.value[id].fields[field] = {
             changed: false,
             updating: false,
             failed: false,
@@ -186,22 +137,22 @@ export function useFormMaker<
         }
       })
 
-      belongsToManyRelationshipKeys.forEach((field: keyof FilterPiniaOrmModelToManyRelationshipTypes<InstanceType<T>>) => {
-        if (pivotClasses[field]) return
-        const RelatedModel = piniaOrmRelationships[field].related
+      bulkUpdater.belongsToManyRelationshipKeys!.forEach((field: keyof FilterPiniaOrmModelToManyRelationshipTypes<InstanceType<T>>) => {
+        if (bulkUpdater.pivotClasses[field]) return
+        const RelatedModel = bulkUpdater.piniaOrmRelationships[field].related
 
         const relatedsIds: string[] = []
         model[field]?.forEach((relatedRecord: Model) => {
-          const relatedId = pivotClasses[field]
-            ? relatedRecord[getPivotModelIdField(pivotClasses[field], { driver })]
+          const relatedId = bulkUpdater.pivotClasses[field]
+            ? relatedRecord[getPivotModelIdField(bulkUpdater.pivotClasses[field], { driver: bulkUpdater.driverKey })]
             : getRecordPrimaryKey(RelatedModel, relatedRecord)
           if (relatedId) relatedsIds.push(relatedId)
         })
 
         const initialFieldValue = relatedsIds
-        formsKeyed.value[id][field] = initialFieldValue as any
+        bulkUpdater.formsKeyed.value[id][field] = initialFieldValue as any
 
-        meta.value[id].fields[field] = {
+        bulkUpdater.meta.value[id].fields[field] = {
           changed: false,
           updating: false,
           failed: false,
@@ -210,52 +161,52 @@ export function useFormMaker<
         }
       })
 
-      if (!formWatchers[id]) {
-        formWatchers[id] = watch(() => formsKeyed.value[id], (newValues) => {
+      if (!bulkUpdater.formWatchers[id]) {
+        bulkUpdater.formWatchers[id] = watch(() => bulkUpdater.formsKeyed.value[id], (newValues) => {
           const changedValues = getFormsChangedValues({
-            piniaOrmRelationships,
+            piniaOrmRelationships: bulkUpdater.piniaOrmRelationships,
             id,
             newValues,
-            repo,
-            belongsToManyRelationshipKeys,
-            pivotClasses,
-            driver: options.driver,
+            repo: bulkUpdater.repo,
+            belongsToManyRelationshipKeys: bulkUpdater.belongsToManyRelationshipKeys,
+            pivotClasses: bulkUpdater.pivotClasses,
+            driver: bulkUpdater.driverKey,
           })
           const hasChanges = !!Object.values(changedValues).length
           if (hasChanges) {
-            changes.value[id] = changedValues
+            bulkUpdater.changes.value[id] = changedValues
           } else {
-            delete changes.value[id]
+            delete bulkUpdater.changes.value[id]
           }
-          meta.value[id].changed = hasChanges
-          Object.entries(meta.value[id].fields).forEach(changeEntry => {
+          bulkUpdater.meta.value[id].changed = hasChanges
+          Object.entries(bulkUpdater.meta.value[id].fields).forEach(changeEntry => {
             const field = changeEntry[0]
             /* @ts-expect-error hard to type, no benefit */
-            const formsFieldValue = formsKeyed.value[id][field]
+            const formsFieldValue = bulkUpdater.formsKeyed.value[id][field]
             /* @ts-expect-error hard to type, no benefit */
-            const initialValue = meta.value[id].fields[field].initialValue
+            const initialValue = bulkUpdater.meta.value[id].fields[field].initialValue
             /* @ts-expect-error hard to type, no benefit */
-            meta.value[id].fields[field].changed = !deepEqual(formsFieldValue, initialValue)
+            bulkUpdater.meta.value[id].fields[field].changed = !deepEqual(formsFieldValue, initialValue)
           })
         }, { deep: true })
       }
 
-      meta.value[id].initialValues = clone(formsKeyed.value[id])
-      meta.value[id].changed = false
+      bulkUpdater.meta.value[id].initialValues = clone(bulkUpdater.formsKeyed.value[id])
+      bulkUpdater.meta.value[id].changed = false
 
-      meta.value[id].id = id
-      meta.value[id].form = formsKeyed.value[id]
+      bulkUpdater.meta.value[id].id = id
+      bulkUpdater.meta.value[id].form = bulkUpdater.formsKeyed.value[id]
 
       // Make forms for related records
-      Object.entries(withBulkUpdaters).forEach(([relationshipKey, { composable, isMany }]) => {
+      Object.entries(bulkUpdater.withBulkUpdaters!).forEach(([relationshipKey, { composable, isMany }]) => {
         if (isMany) {
           const primaryKeyField = String(composable.ModelClass.primaryKey)
 
           /** @ts-expect-error hard to type, not worth it */
-          if (!meta.value[id][relationshipKey + '_forms']) {
+          if (!bulkUpdater.meta.value[id][relationshipKey + '_forms']) {
           /** @ts-expect-error hard to type, not worth it */
-            meta.value[id][relationshipKey + '_forms'] = computed(() => {
-              return (meta.value[id].record as any)?.[relationshipKey]
+            bulkUpdater.meta.value[id][relationshipKey + '_forms'] = computed(() => {
+              return (bulkUpdater.meta.value[id].record as any)?.[relationshipKey]
                 ?.map((relatedRecord: any) => {
                   return composable.meta.value?.[relatedRecord[primaryKeyField]] ?? null as BulkUpdateMeta | null
                 }) ?? []
@@ -265,10 +216,10 @@ export function useFormMaker<
           const primaryKeyField = String(composable.ModelClass.primaryKey)
 
           /** @ts-expect-error hard to type, not worth it */
-          if (!meta.value[id][relationshipKey + '_form']) {
+          if (!bulkUpdater.meta.value[id][relationshipKey + '_form']) {
           /** @ts-expect-error hard to type, not worth it */
-            meta.value[id][relationshipKey + '_form'] = computed(() => {
-              const primaryKey = (meta.value[id].record as any)[relationshipKey]?.[primaryKeyField]
+            bulkUpdater.meta.value[id][relationshipKey + '_form'] = computed(() => {
+              const primaryKey = (bulkUpdater.meta.value[id].record as any)[relationshipKey]?.[primaryKeyField]
 
               return composable.meta.value?.[primaryKey] ?? null as BulkUpdateMeta | null
             })
@@ -276,7 +227,7 @@ export function useFormMaker<
         }
       })
     }
-    nextTick(() => resumeAutoUpdater())
+    nextTick(() => bulkUpdater.resumeAutoUpdater!())
   }
 
   async function makeForms (
@@ -285,15 +236,15 @@ export function useFormMaker<
     const missingModelIds: string[] = []
 
     if (!targetIds) {
-      targetIds = repo.all().map(record => record.id)
+      targetIds = bulkUpdater.repo.all().map(record => record.id)
     }
 
     for (const targetId of targetIds) {
-      if (!meta.value[targetId]) {
-        meta.value[targetId] = makeDefaultMeta(targetId)
+      if (!bulkUpdater.meta.value[targetId]) {
+        bulkUpdater.meta.value[targetId] = makeDefaultMeta(targetId)
       }
 
-      const foundModel = indexer.makeQuery({
+      const foundModel = bulkUpdater.indexer.makeQuery({
         omitFilters: true,
         omitOrderBy: true,
         omitWhereIdFilter: true,
@@ -309,15 +260,15 @@ export function useFormMaker<
     if (missingModelIds.length) {
       const indexFilters: IndexFilters<InstanceType<T>> = {}
       /* @ts-expect-error hard to type, no benefit */
-      indexFilters[primaryKeyField] = { in: missingModelIds }
+      indexFilters[bulkUpdater.primaryKeyField] = { in: missingModelIds }
 
-      await indexer.index({ filters: indexFilters })
+      await bulkUpdater.indexer.index({ filters: indexFilters })
 
       makeFromModels(
-        indexer.makeQuery().whereId(missingModelIds).get(),
+        bulkUpdater.indexer.makeQuery().whereId(missingModelIds).get(),
       )
       missingModelIds.forEach(id => {
-        meta.value[id].makingForm = false
+        bulkUpdater.meta.value[id].makingForm = false
       })
     }
 

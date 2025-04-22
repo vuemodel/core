@@ -36,7 +36,7 @@ export type UseBulkUpdateFormValidationErrors<T extends Model> = Record<
 export type BulkUpdateMeta<T extends Model = Model> = {
   id: string
   form: BulkUpdateForm<T>
-  record: Item<T>
+  record: ComputedRef<Item<T>>
   changed: boolean
   initialValues: BulkUpdateForm<T>
   makingForm: boolean

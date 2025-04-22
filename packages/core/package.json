@@ -40,7 +40,6 @@
   ],
   "dependencies": {
     "@vuemodel/core": "^0.0.38",
-    "@vueuse/core": "^10.11.1",
     "debounce": "^1.2.1",
     "deep-equal": "^2.2.3",
     "deepmerge-ts": "^5.1.0",
@@ -50,8 +49,7 @@
     "just-omit": "^2.2.0",
     "just-safe-set": "^4.2.1",
     "pinia-orm-helpers": "^0.0.16",
-    "uuid": "^9.0.1",
-    "vue-demi": "^0.12.5"
+    "uuid": "^9.0.1"
   },
   "peerDependencies": {
     "pinia": "^2.x",
@@ -70,7 +68,7 @@
     "jiti": "^2.4.2",
     "nodemon": "^3.1.9",
     "tslib": "^2.8.1",
-    "typescript": "~5.5.4",
+    "typescript": "~5.8.3",
     "unbuild": "^3.3.1"
   }
 }

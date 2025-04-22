@@ -1,54 +1,24 @@
 import { toValue } from 'vue'
-import { UseBulkUpdaterOptions, UseBulkUpdaterReturn, UseBulkUpdateUpdateOptions } from '../../contracts/bulk-update/UseBulkUpdater'
-import { BulkUpdateResponse, BulkUpdateErrorResponse, SyncResponse, BulkUpdateSuccessResponse } from '../../types/Response'
+import { UseBulkUpdateUpdateOptions } from '../../contracts/bulk-update/UseBulkUpdater'
+import { BulkUpdateResponse, BulkUpdateErrorResponse, SyncResponse } from '../../types/Response'
 import { getDriverKey } from '../../utils/getDriverKey'
 import { bulkUpdate as bulkUpdateRecords } from '../../actions/bulkUpdate'
 import { Model, useRepo } from 'pinia-orm'
 import { generateRandomString } from '../../utils/generateRandomString'
-import { useFormMaker } from './useFormMaker'
 import { getFormsChangedValues } from './getFormsChangedValues'
 import clone from 'just-clone'
 import { sync } from '../../actions/sync'
-import { FilterPiniaOrmModelToRelationshipTypes, RelationshipDefinition } from 'pinia-orm-helpers'
+import { FilterPiniaOrmModelToRelationshipTypes } from 'pinia-orm-helpers'
 import { getRecordPrimaryKey } from '../../utils/getRecordPrimaryKey'
 import { OnBulkUpdatePersistMessage, OnSyncPersistMessage } from '../../broadcasting/BroadcastMessages'
-import { BulkUpdatePersistHookPayload, SyncPersistHookPayload } from '../../hooks/Hooks'
-import { UseCallbacksReturn } from '../../utils/useCallbacks'
-// (Promise<SyncResponse<T>> & { cancel(): void })
+import { BulkUpdater } from './BulkUpdater'
 
 export async function performUpdate<
   T extends typeof Model,
-  R extends UseBulkUpdaterReturn<T>,
   RelationshipTypes = FilterPiniaOrmModelToRelationshipTypes<InstanceType<T>>
 > (
   optionsParam: UseBulkUpdateUpdateOptions<T>,
-  composableOptions: {
-    response: R['response']
-    options: UseBulkUpdaterOptions<T> | undefined
-    ModelClass: T
-    changes: R['changes']
-    meta: R['meta']
-    activeRequest: R['activeRequest']
-    activeRequests: R['activeRequests']
-    updating: R['updating']
-    repo: R['repo']
-    formsKeyed: R['formsKeyed']
-    bulkUpdatePersistHooks: ((payload: BulkUpdatePersistHookPayload) => Promise<void> | void)[]
-    syncPersistHooks: ((payload: SyncPersistHookPayload) => Promise<void> | void)[]
-    formMaker: ReturnType<typeof useFormMaker>
-    belongsToManyRelationshipKeys: (keyof RelationshipTypes)[]
-    piniaOrmRelationships: Record<string, RelationshipDefinition>
-    pivotClasses: Record<string, Model>
-    belongsToManyResponses: R['belongsToManyResponses']
-    bulkUpdatePersistChannel: BroadcastChannel,
-    bulkUpdatePersistEntityChannel: BroadcastChannel,
-    syncPersistChannel: BroadcastChannel,
-    syncPersistEntityChannel: BroadcastChannel,
-    onSuccessCallbacks: UseCallbacksReturn<[BulkUpdateSuccessResponse<T>]>,
-    onErrorCallbacks: UseCallbacksReturn<[BulkUpdateErrorResponse<T>]>,
-    onStandardErrorCallbacks: UseCallbacksReturn<[BulkUpdateErrorResponse<T>]>,
-    onValidationErrorCallbacks: UseCallbacksReturn<[BulkUpdateErrorResponse<T>]>,
-  },
+  bulkUpdater: BulkUpdater<T>,
 ): Promise<BulkUpdateResponse<T>> {
   type SyncRequests = Record<
     keyof RelationshipTypes,
@@ -61,10 +31,10 @@ export async function performUpdate<
   >
   type Request = Promise<BulkUpdateResponse<T>> & { cancel(): void }
 
-  if (!Object.keys(composableOptions.changes.value).length) {
+  if (!Object.keys(bulkUpdater.changes.value).length) {
     return {
       action: 'bulk-update',
-      entity: composableOptions.ModelClass.entity,
+      entity: bulkUpdater.entity,
       records: [],
       success: true,
       standardErrors: undefined,
@@ -72,47 +42,19 @@ export async function performUpdate<
     }
   }
 
-  const {
-    response,
-    options,
-    ModelClass,
-    changes,
-    meta,
-    activeRequest,
-    activeRequests,
-    updating,
-    formsKeyed,
-    repo,
-    formMaker,
-    belongsToManyRelationshipKeys,
-    belongsToManyResponses,
-    piniaOrmRelationships,
-    pivotClasses,
-    bulkUpdatePersistChannel,
-    bulkUpdatePersistEntityChannel,
-    bulkUpdatePersistHooks,
-    syncPersistHooks,
-    syncPersistChannel,
-    syncPersistEntityChannel,
-    onSuccessCallbacks,
-    onErrorCallbacks,
-    onStandardErrorCallbacks,
-    onValidationErrorCallbacks,
-  } = composableOptions
-
-  const driverKey = getDriverKey(options?.driver)
+  const driverKey = getDriverKey(bulkUpdater.options?.driver)
 
   const missingPremadeFormIds: string[] = []
   if (optionsParam.forms) {
     Object.keys(optionsParam.forms).forEach(recordId => {
-      if (!formsKeyed.value[recordId]) {
+      if (!bulkUpdater.formsKeyed.value[recordId]) {
         missingPremadeFormIds.push(recordId)
       }
     })
   }
 
   if (missingPremadeFormIds.length) {
-    await formMaker.makeForms(missingPremadeFormIds)
+    await bulkUpdater.formMaker?.makeForms(missingPremadeFormIds)
   }
 
   if (optionsParam.forms) {
@@ -121,41 +63,40 @@ export async function performUpdate<
         skipBelongsToMany: true,
         id: formId,
         newValues: form,
-        repo,
+        repo: bulkUpdater.repo,
         driver: driverKey,
-        piniaOrmRelationships,
-        pivotClasses,
+        piniaOrmRelationships: bulkUpdater.piniaOrmRelationships,
+        pivotClasses: bulkUpdater.pivotClasses,
       })
 
-      if (!changes.value[formId]) { changes.value[formId] = {} }
-      Object.assign(changes.value[formId], changedValues)
-      Object.assign(formsKeyed.value[formId], form)
+      if (!bulkUpdater.changes.value[formId]) { bulkUpdater.changes.value[formId] = {} }
+      Object.assign(bulkUpdater.changes.value[formId], changedValues)
+      Object.assign(bulkUpdater.formsKeyed.value[formId], form)
     })
   }
 
-  const changesWithoutBelongsToMany = clone(changes.value)
+  const changesWithoutBelongsToMany = clone(bulkUpdater.changes.value)
 
-  belongsToManyRelationshipKeys.forEach(relationshipKey => {
+  bulkUpdater.belongsToManyRelationshipKeys?.forEach(relationshipKey => {
     Object.keys(changesWithoutBelongsToMany).forEach((id) => {
-      /** @ts-expect-error difficult to type, no benefit */
       delete changesWithoutBelongsToMany[id][relationshipKey]
     })
   })
 
-  response.value = undefined
-  belongsToManyResponses.value = {}
+  bulkUpdater.response.value = undefined
+  bulkUpdater.belongsToManyResponses.value = {}
 
-  const persist = !!toValue(options?.persist)
+  const persist = !!toValue(bulkUpdater.options?.persist)
 
   const controller = new AbortController()
   const signal = controller.signal
 
   const request = bulkUpdateRecords?.(
-    ModelClass,
+    bulkUpdater.ModelClass,
     changesWithoutBelongsToMany,
     {
       driver: driverKey,
-      notifyOnError: !!options?.notifyOnError,
+      notifyOnError: !!bulkUpdater.options?.notifyOnError,
       signal,
       throw: false,
     },
@@ -163,49 +104,48 @@ export async function performUpdate<
 
   const syncRequests: SyncRequests = {} as SyncRequests
 
-  for (const entry of Object.entries(changes.value)) {
+  for (const entry of Object.entries(bulkUpdater.changes.value)) {
     const parentPrimaryKey = entry[0] as keyof RelationshipTypes
     const recordChanges = entry[1]
 
     // Relationships
-    for (const relatedKey of belongsToManyRelationshipKeys) {
+    for (const relatedKey of bulkUpdater.belongsToManyRelationshipKeys ?? []) {
       const relatedChange = (recordChanges as any)[relatedKey]
       if (relatedChange) {
-        const request = sync(ModelClass, parentPrimaryKey as string, relatedKey as any, relatedChange) as Promise<SyncResponse<T>> & { cancel(): void }
+        const request = sync(bulkUpdater.ModelClass, parentPrimaryKey as string, relatedKey as any, relatedChange) as Promise<SyncResponse<T>> & { cancel(): void }
         request.cancel = () => {
           controller.abort()
         }
         syncRequests[parentPrimaryKey] = {
-          PivotModel: piniaOrmRelationships[relatedKey].pivot,
+          PivotModel: ((bulkUpdater.piniaOrmRelationships as any)[relatedKey]).pivot,
           relatedKey,
           foreignId: String(parentPrimaryKey),
           request: request.then(response => {
-            (belongsToManyResponses.value as any)[parentPrimaryKey] = response
+            (bulkUpdater.belongsToManyResponses.value as any)[parentPrimaryKey] = response
 
             return response
           }) as any,
         }
-        // await syncRequests[parentPrimaryKey]
       }
     }
   }
 
   const fieldNewValueMap = new Map()
 
-  const changedRecordMetas = Object.entries(changes.value).map(changeEntry => {
-    const recordMeta = meta.value[changeEntry[0]]
+  const changedRecordMetas = Object.entries(bulkUpdater.changes.value).map(changeEntry => {
+    const recordMeta = bulkUpdater.meta.value[changeEntry[0]]
     recordMeta.updating = true
     recordMeta.changes = changeEntry[1]
     return recordMeta
   })
 
-  const fields = Object.entries(changes.value).flatMap(changeEntry => {
+  const fields = Object.entries(bulkUpdater.changes.value).flatMap(changeEntry => {
     const id = changeEntry[0]
     const changeForm = changeEntry[1]
-    meta.value[id].updating = true
+    bulkUpdater.meta.value[id].updating = true
     return Object.keys(changeForm).map(fieldKey => {
     /* @ts-expect-error hard to type, no benefit */
-      const field = meta.value[id].fields[fieldKey]
+      const field = bulkUpdater.meta.value[id].fields[fieldKey]
       field.updating = true
       /* @ts-expect-error hard to type, no benefit */
       fieldNewValueMap.set(field, changeForm[fieldKey])
@@ -219,20 +159,20 @@ export async function performUpdate<
 
   const requestId = generateRandomString(5)
 
-  activeRequest.value = { forms: formsKeyed.value, request }
-  activeRequests.value[requestId] = activeRequest.value
+  bulkUpdater.activeRequest.value = { forms: bulkUpdater.formsKeyed.value, request }
+  bulkUpdater.activeRequests.value[requestId] = bulkUpdater.activeRequest.value
 
-  updating.value = true
+  bulkUpdater.updating.value = true
 
   const [thisResponse, ...syncResponses] = await Promise.all([
     request,
     ...(Object.values(syncRequests).map((context: any) => context.request) as SyncResponse<typeof Model>[]),
   ])
 
-  updating.value = false
+  bulkUpdater.updating.value = false
 
-  activeRequest.value = undefined
-  response.value = thisResponse
+  bulkUpdater.activeRequest.value = undefined
+  bulkUpdater.response.value = thisResponse
 
   fields.forEach(field => {
     field.updating = false
@@ -252,8 +192,6 @@ export async function performUpdate<
 
   syncResponses.forEach((syncResponse, index) => {
     const syncRequest = syncRequestEntries[index][1]
-    /** @ts-expect-error ... */
-    const relatedKey = syncRequest.relatedKey
     /** @ts-expect-error PivotModel doesn't exist for some reason */
     const PivotClass = syncRequest.PivotModel.constructor
     const pivotRepo = useRepo<Model>(PivotClass)
@@ -270,20 +208,20 @@ export async function performUpdate<
 
       if (syncResponse.success) {
         const syncPersistMessage: OnSyncPersistMessage = clone({
-          entity: ModelClass.entity,
+          entity: bulkUpdater.ModelClass.entity,
           response: syncResponse,
           related: PivotClass.entity,
         })
 
-        syncPersistHooks.forEach(async hook => await hook({
-          ModelClass,
-          entity: ModelClass.entity,
+        bulkUpdater.syncPersistHooks.forEach(async hook => await hook({
+          ModelClass: bulkUpdater.ModelClass,
+          entity: bulkUpdater.entity,
           response: syncResponse,
           related: PivotClass.entity,
         }))
 
-        syncPersistChannel.postMessage(syncPersistMessage)
-        syncPersistEntityChannel.postMessage(syncPersistMessage)
+        bulkUpdater.syncPersistChannel.postMessage(syncPersistMessage)
+        bulkUpdater.syncPersistEntityChannel.postMessage(syncPersistMessage)
       }
     }
 
@@ -302,22 +240,22 @@ export async function performUpdate<
 
   // Persisting to the store
   if (persist && thisResponse.success) {
-    repo.save(thisResponse?.records ?? [])
+    bulkUpdater.repo.save(thisResponse?.records ?? [])
 
     if (thisResponse.success) {
       const bulkUpdatePersistMessage: OnBulkUpdatePersistMessage<T> = clone({
-        entity: ModelClass.entity,
+        entity: bulkUpdater.entity,
         response: thisResponse,
       })
 
-      bulkUpdatePersistHooks.forEach(async hook => await hook({
-        ModelClass,
-        entity: ModelClass.entity,
+      bulkUpdater.bulkUpdatePersistHooks.forEach(async hook => await hook({
+        ModelClass: bulkUpdater.ModelClass,
+        entity: bulkUpdater.entity,
         response: thisResponse,
       }))
 
-      bulkUpdatePersistChannel.postMessage(bulkUpdatePersistMessage)
-      bulkUpdatePersistEntityChannel.postMessage(bulkUpdatePersistMessage)
+      bulkUpdater.bulkUpdatePersistChannel.postMessage(bulkUpdatePersistMessage)
+      bulkUpdater.bulkUpdatePersistEntityChannel.postMessage(bulkUpdatePersistMessage)
     }
   }
 
@@ -344,9 +282,10 @@ export async function performUpdate<
           Object.keys(syncResponse?.validationErrors)?.length
         ) {
           const syncRequest = syncRequestEntries[index]
-          // const PivotClass = syncRequest[1].PivotModel
           const relatedKey = syncRequest[0]
-          thisResponse.validationErrors[relatedKey] = syncResponse.validationErrors
+          if (thisResponse.validationErrors) {
+            thisResponse.validationErrors[relatedKey] = syncResponse.validationErrors as any
+          }
         }
       })
     }
@@ -361,25 +300,25 @@ export async function performUpdate<
       recordMeta.standardErrors = []
     })
 
-    changes.value = {}
-    onSuccessCallbacks.run(thisResponse)
+    bulkUpdater.changes.value = {}
+    bulkUpdater.onSuccessCallbacks.run(thisResponse)
   }
 
   // On validation error
   if (thisResponse.validationErrors) {
-    onValidationErrorCallbacks.run(thisResponse as BulkUpdateErrorResponse<T>)
+    bulkUpdater.onValidationErrorCallbacks.run(thisResponse as BulkUpdateErrorResponse<T>)
   }
 
   // On standard error
   if (thisResponse.standardErrors) {
-    onStandardErrorCallbacks.run(thisResponse)
+    bulkUpdater.onStandardErrorCallbacks.run(thisResponse)
   }
 
   // On Error (any error)
   if (thisResponse.validationErrors || thisResponse.standardErrors) {
-    onErrorCallbacks.run(thisResponse as BulkUpdateErrorResponse<T>)
+    bulkUpdater.onErrorCallbacks.run(thisResponse as BulkUpdateErrorResponse<T>)
 
-    const rollbacksResolved = toValue(options?.rollbacks)
+    const rollbacksResolved = toValue(bulkUpdater.options?.rollbacks)
 
     // if we have rollbcks, "changes" need to be reset
     changedRecordMetas.forEach(recordMeta => {
@@ -389,25 +328,25 @@ export async function performUpdate<
       recordMeta.failed = true
     })
 
-    Object.keys(changes.value).forEach(id => {
-      meta.value[id].standardErrors = thisResponse.standardErrors
-      meta.value[id].validationErrors = thisResponse.validationErrors
+    Object.keys(bulkUpdater.changes.value).forEach(id => {
+      bulkUpdater.meta.value[id].standardErrors = thisResponse.standardErrors
+      bulkUpdater.meta.value[id].validationErrors = thisResponse.validationErrors
 
       const validationErrorEntries = Object.entries(thisResponse.validationErrors)
       if (validationErrorEntries.length) {
         validationErrorEntries.forEach(([field, errors]) => {
           /* @ts-expect-error validation error keys will always be in metas fields */
-          meta.value[id][field] = errors
+          bulkUpdater.meta.value[id][field] = errors
         })
       }
     })
 
     if (rollbacksResolved) {
-      formMaker.makeForms(Object.keys(changes.value))
+      bulkUpdater.formMaker.makeForms(Object.keys(bulkUpdater.changes.value))
     }
   }
 
-  delete activeRequests.value[requestId]
+  delete bulkUpdater.activeRequests.value[requestId]
 
   return thisResponse
 }

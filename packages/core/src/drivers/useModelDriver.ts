@@ -74,7 +74,7 @@ export function useModelDriver<
   watch(showUpdateFormId, async (newId) => {
     if (newId) {
       bulkUpdater.makeForms([String(newId)]).then(() => {
-        updateForm.value = (bulkUpdater.forms.value as any)?.[String(newId)]
+        updateForm.value = (bulkUpdater.formsKeyed.value as any)?.[String(newId)]
       })
     } else {
       updateForm.value = null

@@ -5,7 +5,7 @@
     "target": "ESNext",
     "experimentalDecorators": true,
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "strict": true,
     "noImplicitAny": true /* Raise error on expressions and declarations with an implied 'any' type. */,
