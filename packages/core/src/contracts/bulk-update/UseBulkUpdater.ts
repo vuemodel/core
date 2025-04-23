@@ -384,8 +384,8 @@ export interface UseBulkUpdaterReturn<
 
   /**
    * When indexing and paginating records, we store the current pages
-   * ids to filter out `formsWithMeta`. Feel free to add
-   * ids to this array when new records are added.
+   * ids to filter out `forms`. Feel free to add ids to this
+   * array when new records are added.
    */
   currentPageIds: Ref<string[]>
 
