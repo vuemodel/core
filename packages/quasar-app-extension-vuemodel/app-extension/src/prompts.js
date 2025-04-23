@@ -21,5 +21,18 @@ export default () => {
         },
       ],
     },
+    {
+      message: 'Automatic Setup',
+      type: 'checkbox',
+      name: 'setup',
+      choices: [
+        {
+          name: 'register boot file (quasar.conf)',
+          description: 'injects the "vuemodel" boot file into quasar.conf > boot',
+          value: 'registerBootFile',
+          checked: true,
+        },
+      ],
+    },
   ]
 }
