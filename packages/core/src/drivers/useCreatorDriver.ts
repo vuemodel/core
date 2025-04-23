@@ -222,6 +222,8 @@ export function useCreatorDriver<T extends typeof Model> (
 
       for (const relatedKey of belongsToManyRelationshipKeys ?? []) {
         const pivotRecords = (form.value as any)?.[relatedKey]
+        if (!pivotRecords) continue
+
         if (Object.values(pivotRecords)?.length) {
           const request = sync(ModelClass, parentPrimaryKey as string, relatedKey as any, pivotRecords) as Promise<SyncResponse<T>> & { cancel(): void }
           request.cancel = () => {
@@ -252,10 +254,7 @@ export function useCreatorDriver<T extends typeof Model> (
     const syncRequestEntries = Object.entries(syncRequests)
 
     syncResponses.forEach((syncResponse, index) => {
-      console.log(syncResponse, index)
-
       const syncRequest = syncRequestEntries[index][1]
-      console.log('syncRequest', syncRequest)
       /** @ts-expect-error PivotModel doesn't exist for some reason */
       const PivotClass = syncRequest.PivotModel.constructor
       const pivotRepo = useRepo<Model>(PivotClass)
@@ -374,12 +373,10 @@ export function useCreatorDriver<T extends typeof Model> (
     }
 
     // On Error
-    console.log('thisResponse', thisResponse)
     if (
       !thisResponse?.success
     ) {
       if (optimistic && thisOptimisticRecord) {
-        console.log('destroy from store')
         repo.destroy(requestId)
       }
       onErrorCallbacks.run(thisResponse, thisResponse.validationErrors)
