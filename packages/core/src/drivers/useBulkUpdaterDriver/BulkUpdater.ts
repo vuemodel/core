@@ -134,7 +134,7 @@ export class BulkUpdater<T extends typeof Model> {
           immediatelyMakeForms: this.options.immediatelyMakeForms ?? false,
           indexer: {
             /** @ts-expect-error hard to type, not worth it */
-            with: () => toValue(this.indexerWith)[withField] as IndexWiths<Model>,
+            with: toValue(this.options?.indexer?.with ?? {})[withField] as IndexWiths<Model>,
           },
         }),
         isMany: ['HasMany', 'BelongsToMany'].includes(relationshipsInfo.kind),
@@ -236,7 +236,7 @@ export class BulkUpdater<T extends typeof Model> {
   }
 
   setBelongsToManyRelationshipKeys () {
-    const withsResolved = toValue(this.indexerWith)
+    const withsResolved = toValue(this.options.indexer?.with ?? {})
     this.belongsToManyRelationshipKeys = Object.entries(this.piniaOrmRelationships)
       .filter(entry => {
         if (!withsResolved[entry[0]]) return false
@@ -262,7 +262,7 @@ export class BulkUpdater<T extends typeof Model> {
   }
 
   setHasManyRelationshipKeys () {
-    const withsResolved = toValue(this.indexerWith)
+    const withsResolved = toValue(this.options.indexer?.with ?? {})
     this.hasManyRelationshipKeys = Object.entries(this.piniaOrmRelationships)
       .filter(entry => {
         if (!withsResolved[entry[0]]) return false
@@ -295,7 +295,7 @@ export class BulkUpdater<T extends typeof Model> {
           },
           omit(this.options.indexer ?? {}, ['with']),
         ),
-        with: this.indexerWith,
+        with: this.indexerWith(),
       },
     )
 
@@ -429,6 +429,7 @@ export class BulkUpdater<T extends typeof Model> {
         result[relatedKey] = {}
       }
     })
+
     return result as IndexWiths<InstanceType<T>>
   }
 

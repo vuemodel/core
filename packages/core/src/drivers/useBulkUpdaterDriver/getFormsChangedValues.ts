@@ -5,6 +5,7 @@ import { BulkUpdateForm, UseBulkUpdaterReturn } from '../../contracts/bulk-updat
 import { conformManyRelationIdArraysToObjectSyntax } from './conformManyRelationIdArraysToObjectSyntax'
 import { conformBelongsToManyRelationsToObjectSyntax } from './conformBelongsToManyRelationsToObjectSyntax'
 import { getRecordPrimaryKey } from '../../utils/getRecordPrimaryKey'
+import clone from 'just-clone'
 
 export function getFormsChangedValues<
   T extends typeof Model,
@@ -59,7 +60,7 @@ export function getFormsChangedValues<
   }) ?? [])
 
   const oldRecord = { ...repo.find(id), ...oldBelongsToManyRecordRelateds, ...oldHasManyRecordRelateds }
-  const newRecord = newValues
+  const newRecord = clone(newValues)
   if (belongsToManyRelationshipKeys && !skipBelongsToMany) {
     Object.assign(newRecord, conformManyRelationIdArraysToObjectSyntax(newValues, belongsToManyRelationshipKeys))
   }
