@@ -3,7 +3,7 @@ import { Model, useRepo } from 'pinia-orm'
 import { getClassRelationships } from 'pinia-orm-helpers'
 import { BulkUpdateForm, UseBulkUpdaterReturn } from '../../contracts/bulk-update/UseBulkUpdater'
 import { conformManyRelationIdArraysToObjectSyntax } from './conformManyRelationIdArraysToObjectSyntax'
-import { conformManyRelationsToObjectSyntax } from './conformManyRelationsToObjectSyntax'
+import { conformBelongsToManyRelationsToObjectSyntax } from './conformBelongsToManyRelationsToObjectSyntax'
 import { getRecordPrimaryKey } from '../../utils/getRecordPrimaryKey'
 
 export function getFormsChangedValues<
@@ -12,11 +12,13 @@ export function getFormsChangedValues<
 > (
   options: {
     skipBelongsToMany?: boolean
+    skipHasMany?: boolean
     id: string
     newValues: Record<string, any>
     repo: R['repo']
     driver: string
     belongsToManyRelationshipKeys?: string[]
+    hasManyRelationshipKeys?: string[]
     pivotClasses: Record<string, Model>
     piniaOrmRelationships: ReturnType<typeof getClassRelationships>,
   },
@@ -26,30 +28,44 @@ export function getFormsChangedValues<
     newValues,
     repo,
     belongsToManyRelationshipKeys,
+    hasManyRelationshipKeys,
     pivotClasses,
     driver,
     piniaOrmRelationships,
     skipBelongsToMany,
+    skipHasMany,
   } = options
 
   const oldRecordQuery = repo.query()
   if (!skipBelongsToMany) {
     belongsToManyRelationshipKeys?.forEach(related => oldRecordQuery.with(related))
   }
+  if (!skipHasMany) {
+    hasManyRelationshipKeys?.forEach(related => oldRecordQuery.with(related))
+  }
 
-  const oldRecordRelateds = belongsToManyRelationshipKeys ? conformManyRelationsToObjectSyntax(
-    oldRecordQuery.find(id) ?? {},
+  const foundOldRecord = oldRecordQuery.find(id) ?? {}
+
+  const oldBelongsToManyRecordRelateds = belongsToManyRelationshipKeys ? conformBelongsToManyRelationsToObjectSyntax(
+    foundOldRecord,
     belongsToManyRelationshipKeys,
     pivotClasses,
     driver,
-  ) : repo.find(id) ?? {}
+  ) : {}
 
-  const oldRecord = { ...repo.find(id), ...oldRecordRelateds }
-  const newRecord = (belongsToManyRelationshipKeys && !skipBelongsToMany) ? Object.assign(
-    {},
-    newValues,
-    conformManyRelationIdArraysToObjectSyntax(newValues, belongsToManyRelationshipKeys),
-  ) : newValues
+  const oldHasManyRecordRelateds = Object.fromEntries(hasManyRelationshipKeys?.map(key => {
+    const records = foundOldRecord[key] ?? []
+    return [key, records.map(record => getRecordPrimaryKey(piniaOrmRelationships[key].related, record))]
+  }) ?? [])
+
+  const oldRecord = { ...repo.find(id), ...oldBelongsToManyRecordRelateds, ...oldHasManyRecordRelateds }
+  const newRecord = newValues
+  if (belongsToManyRelationshipKeys && !skipBelongsToMany) {
+    Object.assign(newRecord, conformManyRelationIdArraysToObjectSyntax(newValues, belongsToManyRelationshipKeys))
+  }
+  // if (hasManyRelationshipKeys && !skipHasMany) {
+  //   Object.assign(newRecord, conformManyRelationIdArraysToObjectSyntax(newValues, hasManyRelationshipKeys))
+  // }
 
   const recordChangedValuesOnly: BulkUpdateForm<InstanceType<T>> = {}
 
@@ -61,6 +77,7 @@ export function getFormsChangedValues<
     const key = entry[0] as keyof BulkUpdateForm<InstanceType<T>>
     const value = entry[1] as BulkUpdateForm<InstanceType<T>>
 
+    // Handle Belongs To Many
     if (!skipBelongsToMany && belongsToManyRelationshipKeys?.includes(key)) {
       // if it's the pivot, skip it
       if (pivotClasses[key]) return
@@ -108,6 +125,18 @@ export function getFormsChangedValues<
 
       if (idsAreTheSame && !hasPivotWithValues) {
         delete recordChangedValuesOnly[key]
+      }
+      // Handle many to many
+    } else if (!skipHasMany && hasManyRelationshipKeys?.includes(key)) {
+      const newIds = newRecord[key] ?? []
+      const oldIds = oldHasManyRecordRelateds[key] ?? []
+
+      const idsAreTheSame = JSON.stringify(newIds.sort()) === JSON.stringify(oldIds.sort())
+
+      if (idsAreTheSame) {
+        delete recordChangedValuesOnly[key]
+      } else {
+        recordChangedValuesOnly[key] = newIds
       }
     } else if (!deepEqual(oldRecord[key], newRecord[key])) {
       recordChangedValuesOnly[key] = value as any

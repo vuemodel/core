@@ -65,16 +65,45 @@ export function useFormMaker<
     }),
   )
 
+  const defaultHasManyMetas = Object.fromEntries<{
+    changed: boolean
+    changes: BulkUpdateForm<InstanceType<T>>
+    updating: boolean
+    failed: boolean
+    initialValue: any
+    errors: string[]
+  }>(
+    bulkUpdater.hasManyRelationshipKeys!.map(field => {
+      return [
+        field,
+        {
+          changed: false,
+          updating: false,
+          failed: false,
+          initialValue: null,
+          changes: {},
+          errors: [],
+        },
+      ]
+    }),
+  )
+
   function makeDefaultMeta (id: string): BulkUpdateMeta<InstanceType<T>> {
     const defaultMeta = {
       changed: false,
       failed: false,
-      changes: {},
+      changes: computed(() => {
+        if (bulkUpdater.changes.value) {
+          return bulkUpdater.changes.value
+        }
+        return {} as BulkUpdateForm<InstanceType<T>>
+      }),
       standardErrors: [],
       validationErrors: {},
       fields: {
         ...defaultFieldMetas,
         ...defaultBelongsToManyMetas,
+        ...defaultHasManyMetas,
       },
       initialValues: {},
       makingForm: false,
@@ -137,8 +166,33 @@ export function useFormMaker<
         }
       })
 
-      bulkUpdater.belongsToManyRelationshipKeys!.forEach((field: keyof FilterPiniaOrmModelToManyRelationshipTypes<InstanceType<T>>) => {
+      // Belongs to many
+      bulkUpdater.belongsToManyRelationshipKeys.forEach((field: keyof FilterPiniaOrmModelToManyRelationshipTypes<InstanceType<T>>) => {
         if (bulkUpdater.pivotClasses[field]) return
+        const RelatedModel = bulkUpdater.piniaOrmRelationships[field].related
+
+        const relatedsIds: string[] = []
+        model[field]?.forEach((relatedRecord: Model) => {
+          const relatedId = bulkUpdater.pivotClasses[field]
+            ? relatedRecord[getPivotModelIdField(bulkUpdater.pivotClasses[field], { driver: bulkUpdater.driverKey })]
+            : getRecordPrimaryKey(RelatedModel, relatedRecord)
+          if (relatedId) relatedsIds.push(relatedId)
+        })
+
+        const initialFieldValue = relatedsIds
+        bulkUpdater.formsKeyed.value[id][field] = initialFieldValue as any
+
+        bulkUpdater.meta.value[id].fields[field] = {
+          changed: false,
+          updating: false,
+          failed: false,
+          errors: [],
+          initialValue: initialFieldValue as any,
+        }
+      })
+
+      // Has Many
+      bulkUpdater.hasManyRelationshipKeys.forEach((field: keyof FilterPiniaOrmModelToManyRelationshipTypes<InstanceType<T>>) => {
         const RelatedModel = bulkUpdater.piniaOrmRelationships[field].related
 
         const relatedsIds: string[] = []
@@ -169,6 +223,7 @@ export function useFormMaker<
             newValues,
             repo: bulkUpdater.repo,
             belongsToManyRelationshipKeys: bulkUpdater.belongsToManyRelationshipKeys,
+            hasManyRelationshipKeys: bulkUpdater.hasManyRelationshipKeys,
             pivotClasses: bulkUpdater.pivotClasses,
             driver: bulkUpdater.driverKey,
           })

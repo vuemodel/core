@@ -42,7 +42,7 @@ export type BulkUpdateMeta<T extends Model = Model> = {
   makingForm: boolean
   updating: boolean
   failed: boolean
-  changes: BulkUpdateForm<T>
+  changes: ComputedRef<BulkUpdateForm<T>>
   standardErrors: StandardErrors,
   validationErrors: UseBulkUpdateFormValidationErrors<T>,
   fields: {

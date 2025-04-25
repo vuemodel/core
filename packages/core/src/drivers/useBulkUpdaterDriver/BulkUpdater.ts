@@ -98,6 +98,8 @@ export class BulkUpdater<T extends typeof Model> {
   pivotClasses: Record<string, Model> = {}
   belongsToManyRelationshipKeys!: (keyof FilterPiniaOrmModelToRelationshipTypes<InstanceType<T>>)[]
   belongsToManyRelationships!: Record<string, RelationshipDefinition>[]
+  hasManyRelationshipKeys!: (keyof FilterPiniaOrmModelToRelationshipTypes<InstanceType<T>>)[]
+  hasManyRelationships!: Record<string, RelationshipDefinition>[]
 
   indexer!: UseIndexerReturn<T>
   fieldKeys!: (keyof FilterPiniaOrmModelToFieldTypes<InstanceType<T>>)[]
@@ -128,8 +130,8 @@ export class BulkUpdater<T extends typeof Model> {
 
       return [withField, {
         composable: useBulkUpdaterDriver(relatedClass, {
-          autoUpdate: true,
-          immediatelyMakeForms: true,
+          autoUpdate: this.options.autoUpdate ?? false,
+          immediatelyMakeForms: this.options.immediatelyMakeForms ?? false,
           indexer: {
             /** @ts-expect-error hard to type, not worth it */
             with: () => toValue(this.indexerWith)[withField] as IndexWiths<Model>,
@@ -234,8 +236,10 @@ export class BulkUpdater<T extends typeof Model> {
   }
 
   setBelongsToManyRelationshipKeys () {
+    const withsResolved = toValue(this.indexerWith)
     this.belongsToManyRelationshipKeys = Object.entries(this.piniaOrmRelationships)
       .filter(entry => {
+        if (!withsResolved[entry[0]]) return false
         const relatedInfo = entry[1] as RelationshipDefinition & { pivot?: Model }
         const PivotModel = relatedInfo.pivot
         if (PivotModel) {
@@ -252,6 +256,28 @@ export class BulkUpdater<T extends typeof Model> {
 
   setBelongsToManyRelationships () {
     this.belongsToManyRelationships = this.belongsToManyRelationshipKeys.map((key: string) => {
+      return (this.piniaOrmRelationships as any)[key]
+    })
+    return this
+  }
+
+  setHasManyRelationshipKeys () {
+    const withsResolved = toValue(this.indexerWith)
+    this.hasManyRelationshipKeys = Object.entries(this.piniaOrmRelationships)
+      .filter(entry => {
+        if (!withsResolved[entry[0]]) return false
+        const relatedInfo = entry[1] as RelationshipDefinition
+        return relatedInfo.kind === 'HasMany'
+      })
+      .map(entry => {
+        return entry[0] as keyof DeclassifyPiniaOrmModel<InstanceType<T>>
+      })
+
+    return this
+  }
+
+  setHasManyRelationships () {
+    this.hasManyRelationships = this.hasManyRelationshipKeys.map((key: string) => {
       return (this.piniaOrmRelationships as any)[key]
     })
     return this
@@ -319,6 +345,8 @@ export class BulkUpdater<T extends typeof Model> {
       .setPiniaOrmRelationships()
       .setBelongsToManyRelationshipKeys()
       .setBelongsToManyRelationships()
+      .setHasManyRelationshipKeys()
+      .setHasManyRelationships()
       .setFields()
       .setFieldKeys()
       .setWithBulkUpdaters()

@@ -2,15 +2,15 @@ import { Model } from 'pinia-orm'
 import { getPivotModelIdField } from '../../utils/getPivotModelIdField'
 import keyBy from 'just-index'
 
-export function conformManyRelationsToObjectSyntax (
+export function conformBelongsToManyRelationsToObjectSyntax (
   record: Record<string, any>,
-  manyRelationshipKeys: string[],
+  belongsToManyRelationshipKeys: string[],
   pivotClasses: Record<string, Model>,
   driver: string,
 ) {
   const result: Record<string, any> = {}
   // for each many field
-  manyRelationshipKeys.forEach(manyKey => {
+  belongsToManyRelationshipKeys.forEach(manyKey => {
     // if the field is not an array, do nothing
     const PivotClass = pivotClasses[manyKey]
     if (!PivotClass) {

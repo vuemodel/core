@@ -29,9 +29,19 @@ export async function performUpdate<
       PivotModel: Model
     }
   >
+
+  type HasManyRequests = Record<
+    keyof RelationshipTypes,
+    {
+      request: (Promise<SyncResponse<T>> & { cancel(): void }),
+      foreignId: string,
+      relatedKey: string,
+    }
+  >
+
   type Request = Promise<BulkUpdateResponse<T>> & { cancel(): void }
 
-  if (!Object.keys(bulkUpdater.changes.value).length) {
+  if (!Object.keys(bulkUpdater.changes.value).length && !Object.keys(optionsParam?.forms ?? {}).length) {
     return {
       action: 'bulk-update',
       entity: bulkUpdater.entity,
@@ -61,6 +71,7 @@ export async function performUpdate<
     Object.entries(optionsParam.forms).forEach(([formId, form]) => {
       const changedValues = getFormsChangedValues({
         skipBelongsToMany: true,
+        skipHasMany: true,
         id: formId,
         newValues: form,
         repo: bulkUpdater.repo,
@@ -75,11 +86,16 @@ export async function performUpdate<
     })
   }
 
-  const changesWithoutBelongsToMany = clone(bulkUpdater.changes.value)
+  const changesWithoutManyRelateds = clone(bulkUpdater.changes.value)
 
-  bulkUpdater.belongsToManyRelationshipKeys?.forEach(relationshipKey => {
-    Object.keys(changesWithoutBelongsToMany).forEach((id) => {
-      delete changesWithoutBelongsToMany[id][relationshipKey]
+  const hasManyKeys = [
+    ...bulkUpdater.belongsToManyRelationshipKeys,
+    ...bulkUpdater.hasManyRelationshipKeys,
+  ]
+
+  hasManyKeys.forEach(relationshipKey => {
+    Object.keys(changesWithoutManyRelateds).forEach((id) => {
+      delete changesWithoutManyRelateds[id][relationshipKey]
     })
   })
 
@@ -93,7 +109,7 @@ export async function performUpdate<
 
   const request = bulkUpdateRecords?.(
     bulkUpdater.ModelClass,
-    changesWithoutBelongsToMany,
+    changesWithoutManyRelateds,
     {
       driver: driverKey,
       notifyOnError: !!bulkUpdater.options?.notifyOnError,
@@ -103,12 +119,15 @@ export async function performUpdate<
   ) as Request
 
   const syncRequests: SyncRequests = {} as SyncRequests
+  const hasManyRequests: HasManyRequests = {} as HasManyRequests
 
   for (const entry of Object.entries(bulkUpdater.changes.value)) {
     const parentPrimaryKey = entry[0] as keyof RelationshipTypes
     const recordChanges = entry[1]
 
     // Relationships
+
+    // Belongs To Many
     for (const relatedKey of bulkUpdater.belongsToManyRelationshipKeys ?? []) {
       const relatedChange = (recordChanges as any)[relatedKey]
       if (relatedChange) {
@@ -128,6 +147,39 @@ export async function performUpdate<
         }
       }
     }
+
+    // Has Many
+    for (const relatedKey of (bulkUpdater.hasManyRelationshipKeys ?? []) as (keyof RelationshipTypes)[]) {
+      const relatedChange = (recordChanges as any)[relatedKey]
+      if (relatedChange) {
+        const intendedIds = relatedChange
+        const currentIds = bulkUpdater.meta.value[parentPrimaryKey].initialValues[relatedKey]
+
+        const foreignKey = (bulkUpdater.piniaOrmRelationships[relatedKey] as any).foreignKey
+
+        const { composable: relatedBulkUpdater } = bulkUpdater.withBulkUpdaters[relatedKey]
+
+        const uniqueIds = new Set([...intendedIds, ...currentIds])
+
+        const hasManyForms: Record<string, any> = {}
+
+        uniqueIds.forEach(id => {
+          if (intendedIds.includes(id) && !currentIds.includes(id)) {
+            hasManyForms[id] = { [foreignKey]: parentPrimaryKey }
+          } else if (currentIds.includes(id) && !intendedIds.includes(id)) {
+            hasManyForms[id] = { [foreignKey]: null }
+          }
+        })
+
+        const hasManyRequest = relatedBulkUpdater.update({ forms: hasManyForms })
+
+        hasManyRequests[relatedKey] = {
+          request: hasManyRequest,
+          foreignId: foreignKey,
+          relatedKey: String(relatedKey),
+        }
+      }
+    }
   }
 
   const fieldNewValueMap = new Map()
@@ -135,7 +187,6 @@ export async function performUpdate<
   const changedRecordMetas = Object.entries(bulkUpdater.changes.value).map(changeEntry => {
     const recordMeta = bulkUpdater.meta.value[changeEntry[0]]
     recordMeta.updating = true
-    recordMeta.changes = changeEntry[1]
     return recordMeta
   })
 
@@ -164,9 +215,10 @@ export async function performUpdate<
 
   bulkUpdater.updating.value = true
 
-  const [thisResponse, ...syncResponses] = await Promise.all([
+  const [thisResponse, syncResponses, hasManyResponses] = await Promise.all([
     request,
-    ...(Object.values(syncRequests).map((context: any) => context.request) as SyncResponse<typeof Model>[]),
+    Promise.all(Object.values(syncRequests).map((context: any) => context.request) as SyncResponse<typeof Model>[]),
+    Promise.all((Object.values(hasManyRequests).map((context: any) => context.request) as BulkUpdateResponse<typeof Model>[])),
   ])
 
   bulkUpdater.updating.value = false
@@ -182,13 +234,19 @@ export async function performUpdate<
   changedRecordMetas.forEach(recordMeta => {
     recordMeta.updating = false
     recordMeta.changed = false
+    recordMeta.initialValues = clone(recordMeta.form)
   })
 
   const syncRequestEntries = Object.entries(syncRequests)
+  const hasManyRequestEntries = Object.entries(hasManyRequests)
 
   let hasManyToManyValidationErrors = false
   let hasManyToManyStandardErrors = false
   let hasManyToManyError = false
+
+  let hasManyValidationErrors = false
+  let hasManyStandardErrors = false
+  let hasManyError = false
 
   syncResponses.forEach((syncResponse, index) => {
     const syncRequest = syncRequestEntries[index][1]
@@ -238,6 +296,20 @@ export async function performUpdate<
     }
   })
 
+  hasManyResponses.forEach((hasManyResponse, index) => {
+    if (!hasManyResponse.success) {
+      hasManyError = true
+
+      if (Object.values(hasManyResponse.validationErrors).length) {
+        hasManyValidationErrors = true
+      }
+
+      if (hasManyResponse.standardErrors.length) {
+        hasManyStandardErrors = true
+      }
+    }
+  })
+
   // Persisting to the store
   if (persist && thisResponse.success) {
     bulkUpdater.repo.save(thisResponse?.records ?? [])
@@ -259,7 +331,7 @@ export async function performUpdate<
     }
   }
 
-  // Merging has many errors into the response
+  // Merging many to many errors into the response
   if (hasManyToManyError) {
     thisResponse.success = false
     if (hasManyToManyStandardErrors) {
@@ -291,11 +363,42 @@ export async function performUpdate<
     }
   }
 
+  // Merging has many errors into response
+  if (hasManyError) {
+    thisResponse.success = false
+    if (hasManyStandardErrors) {
+      if (!thisResponse.standardErrors) {
+        thisResponse.standardErrors = undefined
+      }
+      hasManyResponses.forEach(hasManyResponse => {
+        if (hasManyResponse.standardErrors?.length) {
+          thisResponse.standardErrors?.push(...hasManyResponse.standardErrors)
+        }
+      })
+    }
+    if (hasManyValidationErrors) {
+      if (!thisResponse.validationErrors) {
+        thisResponse.validationErrors = {} as any
+      }
+      hasManyResponses.forEach((hasManyResponse, index) => {
+        if (
+          hasManyResponse.success === false &&
+          Object.keys(hasManyResponse?.validationErrors)?.length
+        ) {
+          const hasManyRequest = hasManyRequestEntries[index]
+          const relatedKey = hasManyRequest[0]
+          if (thisResponse.validationErrors) {
+            thisResponse.validationErrors[relatedKey] = hasManyResponse.validationErrors as any
+          }
+        }
+      })
+    }
+  }
+
   // On Success
   if (thisResponse?.success && !hasManyToManyError) {
     changedRecordMetas.forEach(recordMeta => {
       recordMeta.failed = false
-      recordMeta.changes = {}
       recordMeta.validationErrors = {}
       recordMeta.standardErrors = []
     })
@@ -322,9 +425,6 @@ export async function performUpdate<
 
     // if we have rollbcks, "changes" need to be reset
     changedRecordMetas.forEach(recordMeta => {
-      if (rollbacksResolved) {
-        recordMeta.changes = {}
-      }
       recordMeta.failed = true
     })
 
