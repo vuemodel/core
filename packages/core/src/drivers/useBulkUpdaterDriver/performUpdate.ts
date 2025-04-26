@@ -121,6 +121,13 @@ export async function performUpdate<
   const syncRequests: SyncRequests = {} as SyncRequests
   const hasManyRequests: HasManyRequests = {} as HasManyRequests
 
+  type HasManyTransfer = {
+    ids: []
+    parentPrimaryKey: string
+  }
+
+  const transferedHasManyIdsKeyedByRelationshipType: Record<keyof RelationshipTypes, HasManyTransfer> = {} as Record<keyof RelationshipTypes, HasManyTransfer>
+
   for (const entry of Object.entries(bulkUpdater.changes.value)) {
     const parentPrimaryKey = entry[0] as keyof RelationshipTypes
     const recordChanges = entry[1]
@@ -166,6 +173,13 @@ export async function performUpdate<
         uniqueIds.forEach(id => {
           if (intendedIds.includes(id) && !currentIds.includes(id)) {
             hasManyForms[id] = { [foreignKey]: parentPrimaryKey }
+            if (!transferedHasManyIdsKeyedByRelationshipType[relatedKey]) {
+              transferedHasManyIdsKeyedByRelationshipType[relatedKey] = {
+                ids: [],
+                parentPrimaryKey: String(parentPrimaryKey),
+              }
+            }
+            transferedHasManyIdsKeyedByRelationshipType[relatedKey].ids.push(id)
           } else if (currentIds.includes(id) && !intendedIds.includes(id)) {
             hasManyForms[id] = { [foreignKey]: null }
           }
@@ -309,6 +323,17 @@ export async function performUpdate<
       }
     }
   })
+
+  if (!hasManyError) {
+    Object.entries(transferedHasManyIdsKeyedByRelationshipType).forEach(([relatedKey, info]) => {
+      const idsOfFormsToRemake: string[] = []
+      bulkUpdater.forms.value.forEach(formDetails => {
+        if (formDetails.id === info.parentPrimaryKey) return
+        idsOfFormsToRemake.push(formDetails.id)
+      })
+      bulkUpdater.formMaker.makeForms(idsOfFormsToRemake)
+    })
+  }
 
   // Persisting to the store
   if (persist && thisResponse.success) {

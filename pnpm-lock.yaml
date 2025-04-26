@@ -235,6 +235,9 @@ importers:
       just-omit:
         specifier: ^2.2.0
         version: 2.2.0
+      just-remove:
+        specifier: ^3.2.0
+        version: 3.2.0
       just-safe-set:
         specifier: ^4.2.1
         version: 4.2.1
@@ -4879,6 +4882,9 @@ packages:
 
   just-omit@2.2.0:
     resolution: {integrity: sha512-Js7+HxDOGcB3RhI38Mird/RgyMf3t0DAJFda1QWqqlAKTa36NeSYIufJXxrZUbysFTRcTOFcoMCiFK5FwCoI7Q==}
+
+  just-remove@3.2.0:
+    resolution: {integrity: sha512-gR3EOFIkZapF3g0K4IRRqH4lM+czJEfaOFgrwZl5vNfVUeJqfke9/L67Mf3CgnT3j2HM46C+mdCRvqaCD77Nqg==}
 
   just-safe-set@4.2.1:
     resolution: {integrity: sha512-La5CP41Ycv52+E4g7w1sRV8XXk7Sp8a/TwWQAYQKn6RsQz1FD4Z/rDRRmqV3wJznS1MDF3YxK7BCudX1J8FxLg==}
@@ -12883,6 +12889,8 @@ snapshots:
   just-index@4.2.0: {}
 
   just-omit@2.2.0: {}
+
+  just-remove@3.2.0: {}
 
   just-safe-set@4.2.1: {}
 

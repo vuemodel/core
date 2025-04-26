@@ -294,6 +294,7 @@ export function useFormMaker<
       targetIds = bulkUpdater.repo.all().map(record => record.id)
     }
 
+    const foundModels: InstanceType<T>[] = []
     for (const targetId of targetIds) {
       if (!bulkUpdater.meta.value[targetId]) {
         bulkUpdater.meta.value[targetId] = makeDefaultMeta(targetId)
@@ -308,9 +309,10 @@ export function useFormMaker<
       if (!foundModel) {
         missingModelIds.push(targetId)
       } else {
-        makeFromModels([foundModel])
+        foundModels.push(foundModel)
       }
     }
+    if (foundModels.length) makeFromModels(foundModels)
 
     if (missingModelIds.length) {
       const indexFilters: IndexFilters<InstanceType<T>> = {}
