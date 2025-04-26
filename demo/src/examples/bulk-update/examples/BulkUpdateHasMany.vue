@@ -5,7 +5,7 @@ import { deleteDatabases } from '@vuemodel/indexeddb'
 
 async function resetData () {
   await deleteDatabases()
-  await populateRecords('users', 1)
+  await populateRecords('users', 2)
   await populateRecords('posts', 3)
   await init()
 }
@@ -43,13 +43,17 @@ init()
       Reset Data
     </button>
 
-    <q-card>
+    <button @click="usersBulkUpdater.makeForms()">
+      Make Forms
+    </button>
+
+    Forms
+    <q-card
+      v-for="form in usersBulkUpdater.forms.value"
+      :key="form.id"
+    >
       <q-card-section>
-        Forms
-        <div
-          v-for="form in usersBulkUpdater.forms.value"
-          :key="form.id"
-        >
+        <div>
           <q-input v-model="form.form.name" />
           <q-select
             v-model="form.form.posts"
