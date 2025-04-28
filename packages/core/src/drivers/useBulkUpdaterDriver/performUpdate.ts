@@ -181,7 +181,9 @@ export async function performUpdate<
             }
             transferedHasManyIdsKeyedByRelationshipType[relatedKey].ids.push(id)
           } else if (currentIds.includes(id) && !intendedIds.includes(id)) {
-            hasManyForms[id] = { [foreignKey]: null }
+            if (!bulkUpdater.assignedHasManyIds[relatedKey][id]) {
+              hasManyForms[id] = { [foreignKey]: null }
+            }
           }
         })
 
@@ -323,6 +325,9 @@ export async function performUpdate<
       }
     }
   })
+  if (!hasManyError) {
+    bulkUpdater.resetAssignedHasManyIds()
+  }
 
   if (!hasManyError) {
     Object.entries(transferedHasManyIdsKeyedByRelationshipType).forEach(([relatedKey, info]) => {

@@ -47,6 +47,7 @@
     "just-diff": "^6.0.2",
     "just-index": "^4.2.0",
     "just-omit": "^2.2.0",
+    "just-remove": "^3.2.0",
     "just-safe-set": "^4.2.1",
     "pinia-orm-helpers": "^0.0.16",
     "uuid": "^9.0.1"

@@ -67,6 +67,13 @@ export class BulkUpdater<T extends typeof Model> {
   meta = ref<Record<string, BulkUpdateMeta<InstanceType<T>>>>({})
   updating = ref<boolean>(false)
 
+  /**
+   * Has many ids, keyed by field, that have changed on the form
+   * We keep track of them, so that they aren't accidentally
+   * nulled when moved from one hasMany to another
+   */
+  assignedHasManyIds: Record<string, Record<string, boolean>> = {}
+
   // Requests
   activeRequests = ref<Record<string | number, {
     request: Promise<BulkUpdateResponse<T>> & { cancel(): void }
@@ -283,6 +290,14 @@ export class BulkUpdater<T extends typeof Model> {
     return this
   }
 
+  resetAssignedHasManyIds () {
+    this.hasManyRelationshipKeys.forEach(key => {
+      this.assignedHasManyIds[key] = {}
+    })
+
+    return this
+  }
+
   setIndexer () {
     this.indexer = useIndexer(
       this.ModelClass,
@@ -347,6 +362,7 @@ export class BulkUpdater<T extends typeof Model> {
       .setBelongsToManyRelationships()
       .setHasManyRelationshipKeys()
       .setHasManyRelationships()
+      .resetAssignedHasManyIds()
       .setFields()
       .setFieldKeys()
       .setWithBulkUpdaters()

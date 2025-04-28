@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { useBulkUpdater, useIndexer } from '@vuemodel/core'
+import { useBulkUpdater, useCreator, useDestroyer, useIndexer } from '@vuemodel/core'
 import { populateRecords, Post, User } from '@vuemodel/sample-data'
 import { deleteDatabases } from '@vuemodel/indexeddb'
 
@@ -13,10 +13,13 @@ async function resetData () {
 async function init () {
   await postsIndexer.index()
   await usersBulkUpdater.index()
+  await usersIndexer.index()
   await usersBulkUpdater.makeForms()
 }
 
 const postsIndexer = useIndexer(Post)
+const usersIndexer = useIndexer(User)
+const postDestroyer = useDestroyer(Post)
 
 const usersBulkUpdater = useBulkUpdater(User, {
   indexer: {
@@ -26,26 +29,70 @@ const usersBulkUpdater = useBulkUpdater(User, {
   },
 })
 
+const postCreator = useCreator(Post)
+
 init()
 </script>
 
 <template>
-  <div>
+  <div class="q-gutter-lg">
     <h1 style="flex: 0 0 100%;">
       Has Many Update
     </h1>
 
-    <button @click="usersBulkUpdater.update()">
-      Update
-    </button>
+    <q-card>
+      <q-card-section class="q-gutter-md">
+        <q-btn @click="usersBulkUpdater.update()">
+          Update
+        </q-btn>
+        <q-btn @click="resetData()">
+          Reset Data
+        </q-btn>
+        <q-btn @click="usersBulkUpdater.makeForms()">
+          Make Forms
+        </q-btn>
+      </q-card-section>
+    </q-card>
 
-    <button @click="resetData()">
-      Reset Data
-    </button>
+    <q-card>
+      Delete
+      <q-card-section class="q-gutter-md">
+        <q-btn
+          v-for="post in postsIndexer.repo.all()"
+          :key="post.id"
+          :label="post.title"
+          :loading="post.id === postDestroyer.destroying.value"
+          @click="postDestroyer.destroy(post.id)"
+        />
+      </q-card-section>
+    </q-card>
 
-    <button @click="usersBulkUpdater.makeForms()">
-      Make Forms
-    </button>
+    <q-card>
+      <q-card-section>
+        <q-input
+          v-model="postCreator.form.value.title"
+          label="Post Title"
+          filled
+        />
+
+        <q-select
+          v-model="postCreator.form.value.user_id"
+          filled
+          :options="usersIndexer.records.value"
+          option-label="name"
+          option-value="id"
+          emit-value
+          map-options
+          label="User"
+        />
+
+        <q-btn
+          :loading="postCreator.creating.value"
+          label="Create"
+          @click="postCreator.create()"
+        />
+      </q-card-section>
+    </q-card>
 
     Forms
     <q-card
@@ -54,10 +101,15 @@ init()
     >
       <q-card-section>
         <div>
-          <q-input v-model="form.form.name" />
+          <q-input
+            v-model="form.form.name"
+            filled
+          />
           <q-select
             v-model="form.form.posts"
-            :options="postsIndexer.records.value"
+            filled
+            label="Post"
+            :options="postsIndexer.repo.all()"
             option-label="title"
             option-value="id"
             multiple

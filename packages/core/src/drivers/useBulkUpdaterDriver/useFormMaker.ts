@@ -11,6 +11,10 @@ import { FilterPiniaOrmModelToManyRelationshipTypes } from '../../types/FilterPi
 import { getPivotModelIdField } from '../../utils/getPivotModelIdField'
 import { applyWiths } from '../../utils/applyWiths'
 import { BulkUpdater } from './BulkUpdater'
+import { makeChannel } from '../../broadcasting/makeChannel'
+import { OnCreatePersistMessage, OnDestroyPersistMessage } from '../../broadcasting/BroadcastMessages'
+import { getArrayExtraStrings } from '../../utils/arrayHasExtraStrings'
+import remove from 'just-remove'
 
 export function useFormMaker<
   T extends typeof Model,
@@ -193,7 +197,9 @@ export function useFormMaker<
 
       // Has Many
       bulkUpdater.hasManyRelationshipKeys.forEach((field: keyof FilterPiniaOrmModelToManyRelationshipTypes<InstanceType<T>>) => {
-        const RelatedModel = bulkUpdater.piniaOrmRelationships[field].related
+        const relationshipDetails = bulkUpdater.piniaOrmRelationships[field]
+        const RelatedModel = relationshipDetails.related
+        const foreignKey = relationshipDetails.foreignKey
 
         const relatedsIds: string[] = []
         model[field]?.forEach((relatedRecord: Model) => {
@@ -213,6 +219,59 @@ export function useFormMaker<
           errors: [],
           initialValue: initialFieldValue as any,
         }
+
+        const hasManyCreateChannel = makeChannel('createPersist', RelatedModel)
+        const hasManyDestroyChannel = makeChannel('destroyPersist', RelatedModel)
+        hasManyCreateChannel.onmessage = (event) => {
+          const { response } = event.data as OnCreatePersistMessage<T>
+          const relatedId = getRecordPrimaryKey(RelatedModel, response.record)
+          // User Form
+          const form = bulkUpdater.formsKeyed.value[id]
+
+          if (id === response.record[foreignKey]) {
+            if (!form[field].includes(relatedId)) {
+              form[field].push(relatedId)
+            }
+          }
+        }
+        hasManyDestroyChannel.onmessage = (event) => {
+          const { response } = event.data as OnDestroyPersistMessage<T>
+          // Post ID
+          const relatedId = getRecordPrimaryKey(RelatedModel, response.record)
+          // User Form
+          const form = bulkUpdater.formsKeyed.value[id]
+          // if user.id === post.user_id
+          if (id === response.record[foreignKey]) {
+            // Index of the post
+            const recordIndex = form[field].indexOf(relatedId)
+            if (recordIndex > -1) {
+              // Remove the post id from userForm.posts
+              form[field].splice(recordIndex, 1)
+            }
+          }
+        }
+
+        // When hasMany ids are updated, we need to ensure
+        // they're appropriately removed from other forms
+        watch(() => bulkUpdater.formsKeyed.value[id][field], (hasManyIds) => {
+          const oldHasManyIds = bulkUpdater.meta.value[id].initialValues[field]
+          const addedIds = getArrayExtraStrings(hasManyIds, oldHasManyIds)
+          addedIds.forEach(addedId => {
+            bulkUpdater.assignedHasManyIds[field][addedId] = true
+          })
+
+          if (!addedIds.length) return
+
+          for (const formDetails of bulkUpdater.forms.value) {
+            if (id === formDetails.id) continue
+            const relatedContainsIdsForRemoval = formDetails.form[field]?.some(relatedId => {
+              return addedIds.includes(relatedId)
+            })
+            if (!relatedContainsIdsForRemoval) continue
+
+            formDetails.form[field] = remove(formDetails.form[field], addedIds)
+          }
+        })
       })
 
       if (!bulkUpdater.formWatchers[id]) {
