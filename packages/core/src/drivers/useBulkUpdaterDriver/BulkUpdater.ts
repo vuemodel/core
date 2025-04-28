@@ -59,6 +59,7 @@ export class BulkUpdater<T extends typeof Model> {
   formsKeyed!: Ref<Record<string, BulkUpdateForm<InstanceType<T>>>>
   changes = ref<Record<string, BulkUpdateForm<InstanceType<T>>>>({})
   formWatchers: Record<string, WatchStopHandle> = {}
+  hasManyIdWatchers: Record<string, WatchStopHandle> = {}
   formMaker!: ReturnType<typeof useFormMaker>
 
   // Debouncing
@@ -73,6 +74,16 @@ export class BulkUpdater<T extends typeof Model> {
    * nulled when moved from one hasMany to another
    */
   assignedHasManyIds: Record<string, Record<string, boolean>> = {}
+
+  setAssignedHasManyIdsForField (hasManyField: string) {
+    this.forms.value.forEach(formDetails => {
+      formDetails.form[hasManyField].forEach(hasManyId => {
+        this.assignedHasManyIds[hasManyField][hasManyId] = true
+      })
+    })
+
+    return this
+  }
 
   // Requests
   activeRequests = ref<Record<string | number, {
@@ -333,6 +344,9 @@ export class BulkUpdater<T extends typeof Model> {
   private handleCleanup () {
     if (getCurrentScope()) {
       onScopeDispose(() => {
+        Object.values(this.hasManyIdWatchers).forEach(unwatch => {
+          unwatch()
+        })
         Object.values(this.formWatchers).forEach(unwatch => {
           unwatch()
         })
@@ -400,6 +414,7 @@ export class BulkUpdater<T extends typeof Model> {
   })
 
   removeForm (recordId: string) {
+    this.hasManyIdWatchers[recordId]?.()
     this.formWatchers[recordId]?.()
     delete this.changes.value[recordId]
     delete this.meta.value[recordId]

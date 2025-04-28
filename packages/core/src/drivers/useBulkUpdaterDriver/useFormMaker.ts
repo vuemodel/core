@@ -251,25 +251,17 @@ export function useFormMaker<
           }
         }
 
-        // When hasMany ids are updated, we need to ensure
-        // they're appropriately removed from other forms
-        watch(() => bulkUpdater.formsKeyed.value[id][field], (hasManyIds) => {
-          const oldHasManyIds = bulkUpdater.meta.value[id].initialValues[field]
-          const addedIds = getArrayExtraStrings(hasManyIds, oldHasManyIds)
-          addedIds.forEach(addedId => {
-            bulkUpdater.assignedHasManyIds[field][addedId] = true
-          })
-
-          if (!addedIds.length) return
+        bulkUpdater.hasManyIdWatchers[id] = watch(() => bulkUpdater.formsKeyed.value[id]?.[field], (hasManyIds) => {
+          if (!Array.isArray(hasManyIds)) return
 
           for (const formDetails of bulkUpdater.forms.value) {
             if (id === formDetails.id) continue
             const relatedContainsIdsForRemoval = formDetails.form[field]?.some(relatedId => {
-              return addedIds.includes(relatedId)
+              return hasManyIds.includes(relatedId)
             })
             if (!relatedContainsIdsForRemoval) continue
 
-            formDetails.form[field] = remove(formDetails.form[field], addedIds)
+            formDetails.form[field] = remove(formDetails.form[field], hasManyIds)
           }
         })
       })

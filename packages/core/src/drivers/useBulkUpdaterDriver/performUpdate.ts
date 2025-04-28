@@ -159,6 +159,8 @@ export async function performUpdate<
     for (const relatedKey of (bulkUpdater.hasManyRelationshipKeys ?? []) as (keyof RelationshipTypes)[]) {
       const relatedChange = (recordChanges as any)[relatedKey]
       if (relatedChange) {
+        bulkUpdater.setAssignedHasManyIdsForField(relatedKey)
+
         const intendedIds = relatedChange
         const currentIds = bulkUpdater.meta.value[parentPrimaryKey].initialValues[relatedKey]
 
