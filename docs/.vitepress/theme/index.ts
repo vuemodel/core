@@ -1,6 +1,6 @@
 import DefaultTheme from 'vitepress/theme'
 import { inBrowser } from 'vitepress'
-import { Quasar } from 'quasar'
+import { QBtn, QDialog, QTab, QTabPanel, QTabPanels, QTabs, Quasar, ClosePopup, QCard, QCardSection, QToolbar, QToolbarTitle, QSelect, QInput, QCheckbox, QTooltip, QForm, QIcon, QPagination, QSpinner, QList, QItem, QItemSection, QBanner } from 'quasar'
 import '@quasar/extras/material-icons/material-icons.css'
 import 'quasar/dist/quasar.css'
 import './styles.css'
@@ -43,6 +43,32 @@ export default {
     ctx.app.use(vueModel)
     ctx.app.use(indexedDb)
     ctx.app.use(piniaOrm)
+
+    ctx.app.component('QBtn', QBtn)
+    ctx.app.component('QTab', QTab)
+    ctx.app.component('QTabs', QTabs)
+    ctx.app.component('QTabPanel', QTabPanel)
+    ctx.app.component('QTabPanels', QTabPanels)
+    ctx.app.component('QDialog', QDialog)
+    ctx.app.component('QCard', QCard)
+    ctx.app.component('QCardSection', QCardSection)
+    ctx.app.component('QToolbar', QToolbar)
+    ctx.app.component('QToolbarTitle', QToolbarTitle)
+    ctx.app.component('QCheckbox', QCheckbox)
+    ctx.app.component('QInput', QInput)
+    ctx.app.component('QSelect', QSelect)
+    ctx.app.component('QTooltip', QTooltip)
+    ctx.app.component('QForm', QForm)
+    ctx.app.component('QPagination', QPagination)
+    ctx.app.component('QIcon', QIcon)
+    ctx.app.component('QSpinner', QSpinner)
+    ctx.app.component('QList', QList)
+    ctx.app.component('QItem', QItem)
+    ctx.app.component('QItemSection', QItemSection)
+    ctx.app.component('QBanner', QBanner)
+
+    ctx.app.directive('close-popup', ClosePopup)
+
     ctx.app.component('ExamplePanel', ExamplePanel)
     ctx.app.component('HighlightedCode', HighlightedCode)
 

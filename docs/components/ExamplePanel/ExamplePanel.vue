@@ -19,48 +19,46 @@ const showCode = ref(false)
 </script>
 
 <template>
-  <ClientOnly>
-    <q-card
-      square
-      flat
-      bordered
-      class="q-mt-lg"
-    >
-      <q-toolbar style="border-bottom: 1px solid rgb(212, 212, 212)">
-        <q-toolbar-title>{{ title }}</q-toolbar-title>
+  <q-card
+    square
+    flat
+    bordered
+    class="q-mt-lg"
+  >
+    <q-toolbar style="border-bottom: 1px solid rgb(212, 212, 212)">
+      <q-toolbar-title>{{ title }}</q-toolbar-title>
 
-        <q-btn
-          round
-          flat
-          :icon="mdiAlphaRBox"
-          @click="showReplDialog = true"
-        />
-
-        <q-btn
-          round
-          flat
-          :icon="mdiCodeTags"
-          @click="showCode = !showCode"
-        />
-
-        <ResetDataButton />
-      </q-toolbar>
-
-      <HighlightedCode
-        v-if="showCode"
-        :content="content"
+      <q-btn
+        round
+        flat
+        :icon="mdiAlphaRBox"
+        @click="showReplDialog = true"
       />
 
-      <div class="example-component-wrapper">
-        <component :is="exampleComponent" />
-      </div>
-
-      <ReplDialog
-        v-model="showReplDialog"
-        :content="content"
+      <q-btn
+        round
+        flat
+        :icon="mdiCodeTags"
+        @click="showCode = !showCode"
       />
-    </q-card>
-  </ClientOnly>
+
+      <ResetDataButton />
+    </q-toolbar>
+
+    <HighlightedCode
+      v-if="showCode"
+      :content="content"
+    />
+
+    <div class="example-component-wrapper">
+      <component :is="exampleComponent" />
+    </div>
+
+    <ReplDialog
+      v-model="showReplDialog"
+      :content="content"
+    />
+  </q-card>
 </template>
 
 <style>
