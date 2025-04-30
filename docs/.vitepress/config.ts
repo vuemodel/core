@@ -33,15 +33,16 @@ const sidebarComposables = makeSidebar(fastGlob.sync('composables/*.md'))
 const sidebarArchitecture = makeSidebar(fastGlob.sync('architecture/*.md'))
 
 export default defineConfig({
-  // vue: {
-  //   template: { transformAssetUrls }
-  // },
+  vue: {
+    template: { transformAssetUrls }
+  },
   vite: {
     plugins: [
       quasar({
         sassVariables: fileURLToPath(
           new URL('./src/quasar-variables.sass', import.meta.url)
-        )
+        ),
+        runMode: 'ssr-server'
       })
     ]
   },
