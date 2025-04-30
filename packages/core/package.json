@@ -39,7 +39,7 @@
   ],
   "dependencies": {
     "@vuemodel/core": "^0.0.38",
-    "debounce": "^1.2.1",
+    "debounce": "^2.2.0",
     "deep-equal": "^2.2.3",
     "deepmerge-ts": "^5.1.0",
     "just-clone": "^6.2.0",
@@ -57,7 +57,6 @@
     "vue": "^3.x"
   },
   "devDependencies": {
-    "@types/debounce": "^1.2.4",
     "@types/deep-equal": "^1.0.4",
     "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
