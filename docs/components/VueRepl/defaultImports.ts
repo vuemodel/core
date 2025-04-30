@@ -17,5 +17,9 @@ export const defaultImports = {
   '@pinia-orm/normalizr': 'https://cdn.jsdelivr.net/npm/@pinia-orm/normalizr@1.7.0/dist/index.mjs',
   'vue-demi': 'https://cdn.jsdelivr.net/npm/vue-demi@0.14.6/lib/index.mjs',
   '@vue/devtools-api': 'https://cdn.jsdelivr.net/npm/@vue/devtools-api@6.5.1/lib/esm/index.js',
-  'idb-keyval': 'https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/index.js',
+  'just-clone': 'https://cdn.jsdelivr.net/npm/just-clone/+esm',
+  'deep-equal': 'https://cdn.jsdelivr.net/npm/deep-equal/+esm',
+  'just-index': 'https://cdn.jsdelivr.net/npm/just-index/+esm',
+  'just-remove': 'https://cdn.jsdelivr.net/npm/just-remove/+esm',
+  'just-omit': 'https://cdn.jsdelivr.net/npm/just-omit/+esm',
 }

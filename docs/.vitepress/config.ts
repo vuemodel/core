@@ -1,6 +1,8 @@
 import { defineConfig } from 'vitepress'
 import fastGlob from 'fast-glob'
 import { capitalCase } from 'change-case'
+import { quasar, transformAssetUrls } from '@quasar/vite-plugin'
+import { fileURLToPath } from 'node:url'
 
 function sortByFileName(array) {
   return array.sort((a, b) => {
@@ -31,13 +33,19 @@ const sidebarComposables = makeSidebar(fastGlob.sync('composables/*.md'))
 const sidebarArchitecture = makeSidebar(fastGlob.sync('architecture/*.md'))
 
 export default defineConfig({
-  vue: {
-    script: {
-      defineModel: true
-    }
+  // vue: {
+  //   template: { transformAssetUrls }
+  // },
+  vite: {
+    plugins: [
+      quasar({
+        sassVariables: fileURLToPath(
+          new URL('./src/quasar-variables.sass', import.meta.url)
+        )
+      })
+    ]
   },
   title: 'VueModel',
-  head: [['script', { src: 'https://cdn.jsdelivr.net/npm/shiki' }]],
   base: '/core',
   themeConfig: {
     outline: [2,3],

@@ -1,6 +1,7 @@
 <script setup>
 import BasicExampleRaw from './examples/BasicExample.vue?raw'
 import BasicExample from './examples/BasicExample.vue'
+import { QBtn } from 'quasar'
 import { mdiAlphaRBox, mdiCodeTags } from '@quasar/extras/mdi-v7'
 </script>
 
@@ -43,13 +44,13 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { createORM } from 'pinia-orm'
 import { createVueModel } from '@vuemodel/core'
-import { createPiniaLocalStorage, piniaLocalVueModelDriver } from '@vuemodel/indexeddb'
+import { createIndexedDb, indexedDbVueModelDriver } from '@vuemodel/indexeddb'
 
 const pinia = createPinia()
 const piniaOrm = createORM()
 
 pinia.use(piniaOrm)
-const piniaLocalStorage = createPiniaLocalStorage({
+const indexedDb = createIndexedDb({
   frontStore: pinia,
 })
 
@@ -57,7 +58,7 @@ const vueModel = createVueModel({
   default: 'local',
   drivers: {
     local: {
-      driver: piniaLocalVueModelDriver,
+      driver: indexedDbVueModelDriver,
       config: { pinia }
     }
   },
@@ -67,17 +68,17 @@ const app = createApp({})
 
 app.use(pinia)
 app.use(vueModel)
-app.use(piniaLocalStorage)
+app.use(indexedDb)
 app.use(piniaOrm)
 ```
 
 ```ts [vue-model.ts (Quasar boot file)]
 import { boot } from 'quasar/wrappers'
 import { createVueModel } from '@vuemodel/core'
-import { createPiniaLocalStorage, piniaLocalVueModelDriver } from '@vuemodel/indexeddb'
+import { createIndexedDb, indexedDbVueModelDriver } from '@vuemodel/indexeddb'
 
 export default boot(({ app, store }) => {
-  const piniaLocalStorage = createPiniaLocalStorage({
+  const indexedDb = createIndexedDb({
     frontStore: store,
   })
 
@@ -85,14 +86,14 @@ export default boot(({ app, store }) => {
     default: 'local',
     drivers: {
       local: {
-        driver: piniaLocalVueModelDriver,
+        driver: indexedDbVueModelDriver,
         config: { pinia: store }
       }
     },
   })
 
   app.use(vueModel)
-  app.use(piniaLocalStorage)
+  app.use(indexedDb)
 })
 
 ```
@@ -103,9 +104,9 @@ Want to be able to test loading? If you're using "indexeddb", consider adding a 
 
 (add this to `main.ts`)
 ```ts
-import { piniaLocalStorageState } from '@vuemodel/indexeddb'
+import { indexedDbState } from '@vuemodel/indexeddb'
 
-piniaLocalStorageState.mockLatencyMs = 250 // add a 250ms delay to every request
+indexedDbState.mockLatencyMs = 250 // add a 250ms delay to every request
 ```
 
 ## Creating our first Model

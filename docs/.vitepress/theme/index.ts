@@ -6,10 +6,9 @@ import 'quasar/dist/quasar.css'
 import './styles.css'
 import { createVueModel } from '@vuemodel/core'
 import { createPinia } from 'pinia'
-import { createPiniaLocalStorage, piniaLocalStorageState, piniaLocalVueModelDriver } from '@vuemodel/pinia-local-storage'
+import { createIndexedDb, indexedDbVueModelDriver, indexedDbState } from '@vuemodel/indexeddb'
 import { createORM } from 'pinia-orm'
 import ExamplePanel from '../../components/ExamplePanel/ExamplePanel.vue'
-import { setCDN } from 'shiki'
 import { Notify } from 'quasar'
 import HighlightedCode from '../../components/HighlightedCode/HighlightedCode.vue'
 
@@ -19,15 +18,13 @@ export default {
     if(!inBrowser) {
       await import('fake-indexeddb/auto')
     }
-
-    setCDN('https://cdn.jsdelivr.net/npm/shiki')
     
     const piniaOrm = createORM()
     const piniaFront = createPinia()
     const piniaBack = createPinia()
   
     piniaFront.use(piniaOrm)
-    const piniaLocalStorage = createPiniaLocalStorage({
+    const indexedDb = createIndexedDb({
       frontStore: piniaFront,
       backStore: piniaBack,
     })
@@ -36,7 +33,7 @@ export default {
       default: 'local',
       drivers: {
         local: {
-          implementation: piniaLocalVueModelDriver,
+          driver: indexedDbVueModelDriver,
           config: { pinia: piniaFront }
         }
       },
@@ -44,7 +41,7 @@ export default {
   
     ctx.app.use(piniaFront)
     ctx.app.use(vueModel)
-    ctx.app.use(piniaLocalStorage)
+    ctx.app.use(indexedDb)
     ctx.app.use(piniaOrm)
     ctx.app.component('ExamplePanel', ExamplePanel)
     ctx.app.component('HighlightedCode', HighlightedCode)
@@ -62,6 +59,6 @@ export default {
       }
     }, { req: { headers: {} } })
     
-    piniaLocalStorageState.mockLatencyMs = 1000
+    indexedDbState.mockLatencyMs = 300
   }
 }

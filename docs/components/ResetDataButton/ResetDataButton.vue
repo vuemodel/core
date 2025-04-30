@@ -1,20 +1,24 @@
 <script lang="ts" setup>
 import { mdiDatabaseRefreshOutline } from '@quasar/extras/mdi-v7'
+import { deleteDatabases } from '@vuemodel/indexeddb'
 import { populateRecords } from '@vuemodel/sample-data'
-import { clear } from 'idb-keyval'
 import { ref } from 'vue'
 
 const resetting = ref(false)
 
-async function populateAllRecords () {
+async function resetData () {
   resetting.value = true
-  await populateRecords('albums')
-  await populateRecords('comments', 50)
-  await populateRecords('photos', 20)
-  await populateRecords('posts', 40)
-  await populateRecords('users')
-  await populateRecords('photo_tags')
-  await populateRecords('dataverse_users')
+  await deleteDatabases()
+  await Promise.all([
+    populateRecords('albums'),
+    populateRecords('comments', 50),
+    populateRecords('photos', 20),
+    populateRecords('posts', 40),
+    populateRecords('users'),
+    populateRecords('photo_tags'),
+    populateRecords('dataverse_users'),
+  ])
+
   resetting.value = false
 }
 </script>
@@ -26,8 +30,7 @@ async function populateAllRecords () {
     round
     :loading="resetting"
     @click.stop.prevent="async () => {
-      await clear()
-      await populateAllRecords()
+      await resetData()
     }"
   >
     <q-tooltip>

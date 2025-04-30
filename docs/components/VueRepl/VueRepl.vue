@@ -7,7 +7,7 @@ import { ReplStore, SFCOptions, Repl } from '@vue/repl'
 import { defaultImports } from './defaultImports'
 import { defaultReplContent } from './defaultReplContent'
 import { EditorComponentType } from '@vue/repl/monaco-editor'
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, shallowRef } from 'vue'
 
 const props = withDefaults(defineProps<{
   content: string
@@ -52,7 +52,7 @@ const sfcOptions: SFCOptions = {
   },
 }
 
-const Monaco = ref<EditorComponentType>()
+const Monaco = shallowRef<EditorComponentType>()
 
 onMounted(() => {
   import('@vue/repl/monaco-editor').then((module) => {

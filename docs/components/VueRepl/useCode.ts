@@ -3,7 +3,7 @@ const piniaFront = createPinia()
 const piniaBack = createPinia()
 piniaFront.use(piniaOrm)
 
-const piniaLocalStorage = createPiniaLocalStorage({
+createIndexedDb({
   frontStore: piniaFront,
   backStore: piniaBack,
 })
@@ -11,7 +11,10 @@ const vueModel = createVueModel({
   default: 'local',
   drivers: {
     local: {
-      driver: piniaLocalVueModelDriver,
+      driver: {
+        ...indexedDbVueModelDriver,
+        useModel: useModelDriver,
+      },
       config: { pinia: piniaFront },
     },
   },
@@ -19,7 +22,6 @@ const vueModel = createVueModel({
 
 app.use(piniaFront)
 app.use(vueModel)
-app.use(piniaLocalStorage)
 app.use(piniaOrm)
 app.use(Quasar, {
   config: {
@@ -31,4 +33,4 @@ app.use(Quasar, {
   },
 })
 
-piniaLocalStorageState.mockLatencyMs = 1000
+indexedDbState.mockLatencyMs = 1000

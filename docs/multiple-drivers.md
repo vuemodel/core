@@ -7,7 +7,7 @@ const VueModel = createVueModel({
   default: 'local',
   drivers: {
     local: {
-      driver: piniaLocalVueModelDriver,
+      driver: indexedDbVueModelDriver,
       config: { pinia },
     },
     orion: {

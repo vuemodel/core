@@ -1,12 +1,12 @@
 <script lang="ts" setup>
 import { useCreator } from '@vuemodel/core'
 import { User } from '@vuemodel/sample-data'
-import { piniaLocalStorageState } from '@vuemodel/indexeddb'
+import { indexedDbState } from '@vuemodel/indexeddb'
 
 const userCreator = useCreator(User)
 
 async function createUser () {
-  piniaLocalStorageState.mockValidationErrors = {
+  indexedDbState.mockValidationErrors = {
     name: [
       'Must be more than 4 characters long',
       'Cannot contain any special characters',
@@ -18,7 +18,7 @@ async function createUser () {
 
   await userCreator.create()
 
-  piniaLocalStorageState.mockValidationErrors = undefined
+  indexedDbState.mockValidationErrors = undefined
 }
 </script>
 

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { getHighlighter } from 'shiki'
+import { codeToHtml } from 'shiki'
 import { ref, watch } from 'vue'
 
 const props = withDefaults(defineProps<{
@@ -12,11 +12,13 @@ const props = withDefaults(defineProps<{
 const contentHighlighted = ref('')
 
 async function highlightExample () {
-  getHighlighter({
-    theme: 'material-theme-palenight',
-    langs: ['vue', 'json'],
-  }).then(highlighter => {
-    contentHighlighted.value = highlighter.codeToHtml(props.content, { lang: props.lang })
+  // const highlighter = await createHighlighter({
+  //   themes: ['material-theme-palenight'],
+  //   langs: ['vue', 'json'],
+  // })
+  contentHighlighted.value = await codeToHtml(props.content, {
+    lang: props.lang,
+    theme: 'nord',
   })
 }
 

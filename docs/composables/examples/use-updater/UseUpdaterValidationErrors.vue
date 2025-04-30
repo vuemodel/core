@@ -2,7 +2,7 @@
 import { useUpdater } from '@vuemodel/core'
 import { Post } from '@vuemodel/sample-data'
 import { ref } from 'vue'
-import { piniaLocalStorageState } from '../../../../packages/indexeddb/dist'
+import { indexedDbState } from '../../../../packages/indexeddb/dist'
 
 const postId = ref('1')
 const postUpdater = useUpdater(Post, {
@@ -11,7 +11,7 @@ const postUpdater = useUpdater(Post, {
 })
 
 async function update () {
-  piniaLocalStorageState.mockValidationErrors = {
+  indexedDbState.mockValidationErrors = {
     title: [
       'title must be at least one billion characters long',
       'title must be super enticing',
@@ -21,7 +21,7 @@ async function update () {
     ],
   }
   await postUpdater.update()
-  piniaLocalStorageState.mockValidationErrors = undefined
+  indexedDbState.mockValidationErrors = undefined
 }
 </script>
 

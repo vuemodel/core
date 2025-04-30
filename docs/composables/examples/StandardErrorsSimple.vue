@@ -1,12 +1,12 @@
 <script lang="ts" setup>
 import { useCreator } from '@vuemodel/core'
 import { User } from '@vuemodel/sample-data'
-import { piniaLocalStorageState } from '@vuemodel/indexeddb'
+import { indexedDbState } from '@vuemodel/indexeddb'
 
 const userCreator = useCreator(User)
 
 async function createUser () {
-  piniaLocalStorageState.mockStandardErrors = [
+  indexedDbState.mockStandardErrors = [
     {
       name: 'unauthorized',
       message: 'The IP used to make this request is not authorized',
@@ -14,7 +14,7 @@ async function createUser () {
   ]
   await userCreator.create()
 
-  piniaLocalStorageState.mockValidationErrors = undefined
+  indexedDbState.mockValidationErrors = undefined
 }
 
 createUser()

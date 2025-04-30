@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { Form, create, CreateResponse } from '@vuemodel/core'
-import { piniaLocalStorageState } from '@vuemodel/indexeddb'
+import { indexedDbState } from '@vuemodel/indexeddb'
 import { Post } from '@vuemodel/sample-data'
 import { ref } from 'vue'
 
@@ -13,9 +13,9 @@ const form = ref<Form<Post>>({ title: '' })
 const response = ref<CreateResponse<typeof Post>>()
 
 async function createPost () {
-  piniaLocalStorageState.mockStandardErrors = mockStandardError
+  indexedDbState.mockStandardErrors = mockStandardError
   response.value = await create(Post, form.value)
-  piniaLocalStorageState.mockStandardErrors = undefined
+  indexedDbState.mockStandardErrors = undefined
 }
 </script>
 

@@ -3,7 +3,7 @@ import { useCreator, useDestroyer, useFinder, useIndexer, useUpdater } from '@vu
 import { Post, User } from '@vuemodel/sample-data'
 import { ref } from 'vue'
 import CreatePanel from './CreatePanel.vue'
-import { piniaLocalStorageState } from '@vuemodel/indexeddb'
+import { indexedDbState } from '@vuemodel/indexeddb'
 import IndexPanel from './IndexPanel.vue'
 import FindPanel from './FindPanel.vue'
 import UpdatePanel from './UpdatePanel.vue'
@@ -64,7 +64,7 @@ const mockLatencyMs = ref(0)
         dense
         type="number"
         style="max-width: 150px"
-        @update:model-value="() => piniaLocalStorageState.mockLatencyMs = mockLatencyMs"
+        @update:model-value="() => indexedDbState.mockLatencyMs = mockLatencyMs"
       />
       <q-checkbox
         v-model="optimistic"

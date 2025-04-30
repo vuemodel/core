@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { useCreator, vueModelState } from '@vuemodel/core'
-import { piniaLocalStorageState } from '@vuemodel/indexeddb'
+import { indexedDbState } from '@vuemodel/indexeddb'
 import { Post } from '@vuemodel/sample-data'
 import { Notify } from 'quasar'
 
@@ -22,9 +22,9 @@ if (vueModelState.drivers.local.config) {
 const postCreator = useCreator(Post, { notifyOnError: true })
 
 async function createPost () {
-  piniaLocalStorageState.mockStandardErrors = fakeError
+  indexedDbState.mockStandardErrors = fakeError
   await postCreator.create()
-  piniaLocalStorageState.mockStandardErrors = undefined
+  indexedDbState.mockStandardErrors = undefined
 }
 </script>
 
