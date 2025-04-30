@@ -1,12 +1,12 @@
 <script lang="ts" setup>
 import PhotoFormFields from './PhotoFormFields.vue'
-import { usePhotoStore } from './usePhotoStore'
+import { usePhotoStore } from './UseModel.vue'
 
 const photoStore = usePhotoStore()
 </script>
 
 <template>
-  <q-dialog>
+  <q-dialog v-model="photoStore.creator.showForm">
     <q-card>
       <q-card-section>
         <q-form

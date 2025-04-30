@@ -3,7 +3,7 @@ import { Model } from 'pinia-orm'
 export function getRecordPrimaryKey<T extends typeof Model> (
   ModelClass: T | InstanceType<T>,
   rawRecord: any,
-) {
+): string | undefined {
   const primaryKeyField = ModelClass instanceof Model ? ModelClass.$primaryKey() : ModelClass.primaryKey
 
   if (Array.isArray(primaryKeyField)) {

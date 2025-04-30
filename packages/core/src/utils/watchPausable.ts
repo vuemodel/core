@@ -1,10 +1,15 @@
-import { watch, WatchSource, WatchOptions, WatchCallback } from 'vue'
+import { watch, WatchSource, WatchOptions, WatchCallback, WatchHandle } from 'vue'
 
 export function watchPausable<T> (
   source: WatchSource<T> | WatchSource<T>[],
   cb: WatchCallback,
   options?: WatchOptions,
-) {
+): {
+  pause: () => void;
+  resume: () => void;
+  stop: WatchHandle;
+  isPaused: () => boolean;
+} {
   let isPaused = false
 
   const stop = watch(
@@ -17,11 +22,11 @@ export function watchPausable<T> (
     options,
   )
 
-  const pause = () => {
+  const pause = (): void => {
     isPaused = true
   }
 
-  const resume = () => {
+  const resume = (): void => {
     isPaused = false
   }
 

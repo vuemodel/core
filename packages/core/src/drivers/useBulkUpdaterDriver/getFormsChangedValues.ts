@@ -22,8 +22,9 @@ export function getFormsChangedValues<
     hasManyRelationshipKeys?: string[]
     pivotClasses: Record<string, Model>
     piniaOrmRelationships: ReturnType<typeof getClassRelationships>,
+    formsKeyed?: R['formsKeyed']
   },
-) {
+): BulkUpdateForm<InstanceType<T>> {
   const {
     id,
     newValues,
@@ -35,7 +36,10 @@ export function getFormsChangedValues<
     piniaOrmRelationships,
     skipBelongsToMany,
     skipHasMany,
+    formsKeyed,
   } = options
+
+  const oldForm = formsKeyed?.value[id]
 
   const oldRecordQuery = repo.query()
   if (!skipBelongsToMany) {
@@ -54,10 +58,21 @@ export function getFormsChangedValues<
     driver,
   ) : {}
 
-  const oldHasManyRecordRelateds = Object.fromEntries(hasManyRelationshipKeys?.map(key => {
+  let oldHasManyRecordRelateds = Object.fromEntries(hasManyRelationshipKeys?.map(key => {
     const records = foundOldRecord[key] ?? []
     return [key, records.map(record => getRecordPrimaryKey(piniaOrmRelationships[key].related, record))]
   }) ?? [])
+
+  let oldHasManyRecordRelatedsFromForm: any = {}
+  if (oldForm) {
+    oldHasManyRecordRelatedsFromForm = Object.fromEntries(hasManyRelationshipKeys?.map(key => {
+      return [key, oldForm[key] ?? []]
+    }) ?? [])
+  }
+
+  if (oldForm) {
+    oldHasManyRecordRelateds = oldHasManyRecordRelatedsFromForm
+  }
 
   const oldRecord = { ...repo.find(id), ...oldBelongsToManyRecordRelateds, ...oldHasManyRecordRelateds }
   const newRecord = clone(newValues)

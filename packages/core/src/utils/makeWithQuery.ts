@@ -21,7 +21,9 @@ function createNestedObject (paths: string[]): IndexWithsLoose {
   return result
 }
 
-export function makeWithQuery (withRaw: string | string[] | IndexWithsLoose) {
+export function makeWithQuery (
+  withRaw: string | string[] | IndexWithsLoose,
+): IndexWithsLoose {
   let result: IndexWithsLoose = {}
 
   if (typeof withRaw === 'string') {

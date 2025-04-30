@@ -13,7 +13,6 @@ import { applyWiths } from '../../utils/applyWiths'
 import { BulkUpdater } from './BulkUpdater'
 import { makeChannel } from '../../broadcasting/makeChannel'
 import { OnCreatePersistMessage, OnDestroyPersistMessage } from '../../broadcasting/BroadcastMessages'
-import { getArrayExtraStrings } from '../../utils/arrayHasExtraStrings'
 import remove from 'just-remove'
 
 export function useFormMaker<
@@ -139,11 +138,11 @@ export function useFormMaker<
     bulkUpdater.meta.value[id].form = bulkUpdater.formsKeyed.value[id]
   }
 
-  function addRawForms (forms: Record<string, PiniaOrmForm<InstanceType<T>>>) {
+  function addRawForms (forms: Record<string, PiniaOrmForm<InstanceType<T>>>): void {
     Object.entries(forms).forEach(([id, form]) => addRawForm(id, form))
   }
 
-  function makeFromModels (models: Collection<Model>) {
+  function makeFromModels (models: Collection<Model>): void {
     bulkUpdater.pauseAutoUpdater!()
     for (const model of models) {
       const id = model[bulkUpdater.primaryKeyField as string] as string
@@ -277,6 +276,7 @@ export function useFormMaker<
             hasManyRelationshipKeys: bulkUpdater.hasManyRelationshipKeys,
             pivotClasses: bulkUpdater.pivotClasses,
             driver: bulkUpdater.driverKey,
+            // formsKeyed: bulkUpdater.formsKeyed,
           })
           const hasChanges = !!Object.values(changedValues).length
           if (hasChanges) {

@@ -20,7 +20,7 @@ export function applyWiths<T extends Model> (
     withoutGlobalScopes?: UseIndexerOptions<typeof Model>['withoutGlobalScopes'],
     withoutEntityGlobalScopes?: UseIndexerOptions<typeof Model>['withoutEntityGlobalScopes']
   },
-) {
+): void {
   (Object.entries(withParam)).forEach(([related, relatedOptions]) => {
     query.with(String(related), relatedQuery => {
       const relatedFields = (new ModelClass()).$fields()

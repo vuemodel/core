@@ -1,7 +1,7 @@
 import { Collection, Model, ModelFields, Relation, Repository, useRepo } from 'pinia-orm'
-import { BulkUpdateForm, BulkUpdateMeta, UseBulkUpdaterOptions, UseBulkUpdaterReturn, UseBulkUpdateUpdateOptions } from '../../contracts/bulk-update/UseBulkUpdater'
+import { BulkUpdateForm, BulkUpdateMeta, UseBulkUpdateFormValidationErrors, UseBulkUpdaterOptions, UseBulkUpdaterReturn, UseBulkUpdateUpdateOptions } from '../../contracts/bulk-update/UseBulkUpdater'
 import { DeclassifyPiniaOrmModel, FilterPiniaOrmModelToFieldTypes, FilterPiniaOrmModelToRelationshipTypes, getClassRelationships, RelationshipDefinition } from 'pinia-orm-helpers'
-import { computed, getCurrentScope, onScopeDispose, Ref, ref, toValue, WatchStopHandle } from 'vue'
+import { computed, ComputedRef, getCurrentScope, onScopeDispose, Ref, ref, toValue, WatchStopHandle } from 'vue'
 import { BulkUpdateErrorResponse, BulkUpdateResponse, BulkUpdateSuccessResponse, IndexResponse, SyncResponse } from '../../types/Response'
 import { generateRandomString } from '../../utils/generateRandomString'
 import { getRecordPrimaryKey } from '../../utils/getRecordPrimaryKey'
@@ -22,6 +22,7 @@ import { useIndexer } from '../../composables/useIndexer'
 import omit from 'just-omit'
 import { watchPausable } from '../../utils/watchPausable'
 import { useFormSyncer } from './useFormSyncer'
+import { StandardErrors } from '../../contracts/errors/StandardErrors'
 
 const defaultOptions = {
   persist: true,
@@ -37,7 +38,7 @@ const defaultOptions = {
 }
 
 export class BulkUpdater<T extends typeof Model> {
-  composableId = generateRandomString(8)
+  composableId: string = generateRandomString(8)
 
   driverKey!: string
   entity!: string
@@ -57,7 +58,7 @@ export class BulkUpdater<T extends typeof Model> {
 
   // Form
   formsKeyed!: Ref<Record<string, BulkUpdateForm<InstanceType<T>>>>
-  changes = ref<Record<string, BulkUpdateForm<InstanceType<T>>>>({})
+  changes: Ref<Record<string, BulkUpdateForm<InstanceType<T>>>> = ref({})
   formWatchers: Record<string, WatchStopHandle> = {}
   hasManyIdWatchers: Record<string, WatchStopHandle> = {}
   formMaker!: ReturnType<typeof useFormMaker>
@@ -65,8 +66,8 @@ export class BulkUpdater<T extends typeof Model> {
   // Debouncing
 
   // Meta
-  meta = ref<Record<string, BulkUpdateMeta<InstanceType<T>>>>({})
-  updating = ref<boolean>(false)
+  meta: Ref<Record<string, BulkUpdateMeta<InstanceType<T>>>> = ref({})
+  updating: Ref<boolean> = ref(false)
 
   /**
    * Has many ids, keyed by field, that have changed on the form
@@ -75,9 +76,9 @@ export class BulkUpdater<T extends typeof Model> {
    */
   assignedHasManyIds: Record<string, Record<string, boolean>> = {}
 
-  setAssignedHasManyIdsForField (hasManyField: string) {
+  setAssignedHasManyIdsForField (hasManyField: keyof FilterPiniaOrmModelToRelationshipTypes<InstanceType<T>>): this {
     this.forms.value.forEach(formDetails => {
-      formDetails.form[hasManyField].forEach(hasManyId => {
+      formDetails.form[hasManyField].forEach((hasManyId: string) => {
         this.assignedHasManyIds[hasManyField][hasManyId] = true
       })
     })
@@ -86,15 +87,15 @@ export class BulkUpdater<T extends typeof Model> {
   }
 
   // Requests
-  activeRequests = ref<Record<string | number, {
+  activeRequests: Ref<Record<string | number, {
     request: Promise<BulkUpdateResponse<T>> & { cancel(): void }
     forms: Record<string, BulkUpdateForm<InstanceType<T>>>
-      }>>({})
+  }>> = ref({})
 
-  activeRequest = ref<{
+  activeRequest: Ref<{
     request: Promise<BulkUpdateResponse<T>> & { cancel(): void }
     forms: Record<string, BulkUpdateForm<InstanceType<T>>>
-  } | undefined>()
+  } | undefined> = ref()
 
   excludeFieldsResolved: string[] | undefined
   primaryKeyField!: string | string[]
@@ -105,7 +106,7 @@ export class BulkUpdater<T extends typeof Model> {
   fields!: ModelFields
 
   // Pagination
-  currentPageIds = ref<string[]>([])
+  currentPageIds: Ref<string[]> = ref<string[]>([])
 
   // Hooks
   syncPersistHooks!: ((payload: SyncPersistHookPayload) => Promise<void> | void)[]
@@ -127,18 +128,18 @@ export class BulkUpdater<T extends typeof Model> {
   resumeAutoUpdater!: () => void
 
   // Errors
-  readonly validationErrors = computed(() => {
+  readonly validationErrors: ComputedRef<UseBulkUpdateFormValidationErrors<InstanceType<T>>> = computed(() => {
     return this.response.value?.validationErrors ?? {}
   })
 
-  readonly standardErrors = computed(() => {
+  readonly standardErrors: ComputedRef<StandardErrors> = computed(() => {
     return this.response.value?.standardErrors ?? []
   })
 
-  readonly response = ref<BulkUpdateResponse<T> | undefined>()
+  readonly response: Ref<BulkUpdateResponse<T> | undefined> = ref<BulkUpdateResponse<T> | undefined>()
   withBulkUpdaters!: Record<string, { composable: UseBulkUpdaterReturn, isMany: boolean }>
 
-  belongsToManyResponses = ref<Record<keyof FilterPiniaOrmModelToRelationshipTypes<InstanceType<T>>, SyncResponse<T>> | undefined>()
+  belongsToManyResponses: Ref<Record<keyof FilterPiniaOrmModelToRelationshipTypes<InstanceType<T>>, SyncResponse<T>> | undefined> = ref()
   activeBelongsToManyRequests: Ref<Record<keyof FilterPiniaOrmModelToRelationshipTypes<InstanceType<T>>, (Promise<SyncResponse<T>> & { cancel(): void })>> = ref<Record<keyof FilterPiniaOrmModelToRelationshipTypes<InstanceType<T>>, (Promise<SyncResponse<T>> & { cancel(): void })>>({})
 
   private setWithBulkUpdaters () {
@@ -225,17 +226,17 @@ export class BulkUpdater<T extends typeof Model> {
     return this
   }
 
-  setPrimaryKeyField () {
+  setPrimaryKeyField (): this {
     this.primaryKeyField = this.ModelClass.primaryKey
     return this
   }
 
-  setDriverConfig () {
+  setDriverConfig (): this {
     this.driverConfig = getMergedDriverConfig(this.options.driver)
     return this
   }
 
-  setRepo () {
+  setRepo (): this {
     this.repo = useRepo<InstanceType<T>>(
       this.ModelClass as unknown as Constructor<InstanceType<T>>,
       this.driverConfig.pinia,
@@ -243,17 +244,17 @@ export class BulkUpdater<T extends typeof Model> {
     return this
   }
 
-  setFields () {
+  setFields (): this {
     this.fields = (new this.ModelClass()).$fields()
     return this
   }
 
-  setPiniaOrmRelationships () {
+  setPiniaOrmRelationships (): this {
     this.piniaOrmRelationships = getClassRelationships(this.ModelClass)
     return this
   }
 
-  setBelongsToManyRelationshipKeys () {
+  setBelongsToManyRelationshipKeys (): this {
     const withsResolved = toValue(this.options.indexer?.with ?? {})
     this.belongsToManyRelationshipKeys = Object.entries(this.piniaOrmRelationships)
       .filter(entry => {
@@ -272,14 +273,14 @@ export class BulkUpdater<T extends typeof Model> {
     return this
   }
 
-  setBelongsToManyRelationships () {
+  setBelongsToManyRelationships (): this {
     this.belongsToManyRelationships = this.belongsToManyRelationshipKeys.map((key: string) => {
       return (this.piniaOrmRelationships as any)[key]
     })
     return this
   }
 
-  setHasManyRelationshipKeys () {
+  setHasManyRelationshipKeys (): this {
     const withsResolved = toValue(this.options.indexer?.with ?? {})
     this.hasManyRelationshipKeys = Object.entries(this.piniaOrmRelationships)
       .filter(entry => {
@@ -294,14 +295,14 @@ export class BulkUpdater<T extends typeof Model> {
     return this
   }
 
-  setHasManyRelationships () {
+  setHasManyRelationships (): this {
     this.hasManyRelationships = this.hasManyRelationshipKeys.map((key: string) => {
       return (this.piniaOrmRelationships as any)[key]
     })
     return this
   }
 
-  resetAssignedHasManyIds () {
+  resetAssignedHasManyIds (): this {
     this.hasManyRelationshipKeys.forEach(key => {
       this.assignedHasManyIds[key] = {}
     })
@@ -309,7 +310,7 @@ export class BulkUpdater<T extends typeof Model> {
     return this
   }
 
-  setIndexer () {
+  setIndexer (): this {
     this.indexer = useIndexer(
       this.ModelClass,
       {
@@ -396,7 +397,7 @@ export class BulkUpdater<T extends typeof Model> {
     }
   }
 
-  index (...params: any[]) {
+  index (...params: any[]): Promise<IndexResponse<T>> {
     return this.indexer.index(...params).then(async response => {
       if (response.records) {
         this.currentPageIds.value = this.getRecordPrimaryKeys(response.records)
@@ -405,15 +406,15 @@ export class BulkUpdater<T extends typeof Model> {
     })
   }
 
-  public getRecordPrimaryKeys (records: any[]) {
+  public getRecordPrimaryKeys (records: any[]): string[] {
     return records.map(record => getRecordPrimaryKey(this.ModelClass, record) ?? '')
   }
 
-  updatedRecords = computed<Collection<InstanceType<T>>>(() => {
+  updatedRecords: ComputedRef<Collection<InstanceType<T>>> = computed(() => {
     return this.repo.find(this.response.value?.records?.map(record => getRecordPrimaryKey(this.ModelClass, record) ?? '') ?? [])
   })
 
-  removeForm (recordId: string) {
+  removeForm (recordId: string): void {
     this.hasManyIdWatchers[recordId]?.()
     this.formWatchers[recordId]?.()
     delete this.changes.value[recordId]
@@ -421,7 +422,7 @@ export class BulkUpdater<T extends typeof Model> {
     delete this.formsKeyed.value[recordId]
   }
 
-  public forms = computed(() => {
+  forms: ComputedRef<BulkUpdateMeta<InstanceType<T>>[]> = computed(() => {
     const currentPageForms: Record<string, BulkUpdateForm<InstanceType<T>>> = {}
     this.currentPageIds.value.forEach(recordId => {
       if (this.formsKeyed.value[recordId ?? '']) {
@@ -434,13 +435,17 @@ export class BulkUpdater<T extends typeof Model> {
     })
   })
 
-  debounceMs = computed(() => {
+  debounceMs: ComputedRef<number> = computed(() => {
     return toValue(this.options.autoUpdateDebounce) ?? toValue(this.driverConfig.autoUpdateDebounce) ?? 150
   })
 
-  updateDebounced = computed(() => {
-    return debounce(this.update.bind(this), toValue(this.debounceMs))
-  })
+  updateDebounced: ComputedRef<((_optionsParam?: UseBulkUpdateUpdateOptions<T>) => Promise<BulkUpdateResponse<T>>) & {
+    clear(): void
+  } & {
+    flush(): void
+  }> = computed(() => {
+      return debounce(this.update.bind(this), toValue(this.debounceMs))
+    })
 
   update (_optionsParam?: UseBulkUpdateUpdateOptions<T>): Promise<BulkUpdateResponse<T>> {
     return performUpdate(_optionsParam ?? {}, this)
@@ -464,20 +469,20 @@ export class BulkUpdater<T extends typeof Model> {
     return result as IndexWiths<InstanceType<T>>
   }
 
-  async indexAndMakeForms () {
+  async indexAndMakeForms (): Promise<void> {
     await this.indexer.index()
     await this.formMaker.makeForms()
     this.currentPageIds.value = this.getRecordPrimaryKeys(this.indexer.records.value)
   }
 
-  getPrimaryKeysFromRecords (records: DeclassifyPiniaOrmModel<InstanceType<T>>[] = []) {
+  getPrimaryKeysFromRecords (records: DeclassifyPiniaOrmModel<InstanceType<T>>[] = []): string[] {
     return records.map(record => {
       const recordPrimaryKey = getRecordPrimaryKey(this.ModelClass, record)
       return recordPrimaryKey as string
     }) ?? []
   }
 
-  setCurrentPageIdsWithResponse (response: IndexResponse<T>) {
+  setCurrentPageIdsWithResponse (response: IndexResponse<T>): this {
     if (response.records) {
       this.currentPageIds.value = this.getRecordPrimaryKeys(response.records)
     }
@@ -485,7 +490,7 @@ export class BulkUpdater<T extends typeof Model> {
     return this
   }
 
-  handlePaginated (response: IndexResponse<T>) {
+  handlePaginated (response: IndexResponse<T>): this {
     const primarykeys = this.getPrimaryKeysFromRecords(response.records ?? [])
     this.setCurrentPageIdsWithResponse(response)
     this.formMaker.makeForms(primarykeys)
@@ -493,35 +498,35 @@ export class BulkUpdater<T extends typeof Model> {
     return this
   }
 
-  next () {
+  next (): Promise<IndexResponse<T>> {
     return this.indexer.next().then(async response => {
       this.handlePaginated(response)
       return response
     })
   }
 
-  previous () {
+  previous (): Promise<IndexResponse<T>> {
     return this.indexer.previous().then(response => {
       this.handlePaginated(response)
       return response
     })
   }
 
-  toFirstPage () {
+  toFirstPage (): Promise<IndexResponse<T>> {
     return this.indexer.toFirstPage().then(response => {
       this.handlePaginated(response)
       return response
     })
   }
 
-  toLastPage () {
+  toLastPage (): Promise<IndexResponse<T>> {
     return this.indexer.toLastPage().then(response => {
       this.handlePaginated(response)
       return response
     })
   }
 
-  toPage (pageNumber: number) {
+  toPage (pageNumber: number): Promise<IndexResponse<T>> {
     return this.indexer.toPage(pageNumber).then(response => {
       this.handlePaginated(response)
       return response

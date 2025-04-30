@@ -425,6 +425,9 @@ export interface UseBulkUpdaterReturn<
    * errors exist within the "validationErrors" computed ref.
    */
   onValidationError: (callback: Callback<[BulkUpdateErrorResponse<T>]>) => void
+
+  _pauseAutoUpdater: () => void
+  _resumeAutoUpdater: () => void
 }
 
 export type UseBulkUpdater<T extends typeof Model> = (

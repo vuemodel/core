@@ -1,22 +1,29 @@
 <script lang="ts" setup>
-import { useBulkUpdater, useCreator, useDestroyer, useIndexer } from '@vuemodel/core'
+import { useBulkUpdater, useCreator, useDestroyer, useIndexer, index } from '@vuemodel/core'
 import { populateRecords, Post, User } from '@vuemodel/sample-data'
-import { deleteDatabases } from '@vuemodel/indexeddb'
+import { deleteDatabases, indexedDbState } from '@vuemodel/indexeddb'
 import { mdiDelete } from '@quasar/extras/mdi-v7'
 import { useLocalStorage } from '@vueuse/core'
 
 async function resetData () {
+  indexedDbState.mockLatencyMs = 0
   await deleteDatabases()
   await populateRecords('users', 2)
-  await populateRecords('posts', 3)
+  await postCreator.create({ id: 'A', title: 'A', user_id: '1' })
+  await postCreator.create({ id: 'B', title: 'B', user_id: '1' })
+  await postCreator.create({ id: 'C', title: 'C' })
+  await postCreator.create({ id: 'D', title: 'D' })
   await init()
+  indexedDbState.mockLatencyMs = 1500
 }
 
 async function init () {
+  indexedDbState.mockLatencyMs = 0
   await postsIndexer.index()
   await usersBulkUpdater.index()
   await usersIndexer.index()
   await usersBulkUpdater.makeForms()
+  indexedDbState.mockLatencyMs = 1500
 }
 
 const postsIndexer = useIndexer(Post)
@@ -43,7 +50,44 @@ const usersBulkUpdater = useBulkUpdater(User, {
 
 const postCreator = useCreator(Post)
 
-init()
+const testHasRun = useLocalStorage('testHasRun', false)
+
+function runTest () {
+  setTimeout(() => {
+    usersBulkUpdater.formsKeyed.value['2'].posts = ['A', 'B']
+  }, 500)
+
+  setTimeout(() => {
+    usersBulkUpdater.formsKeyed.value['1'].posts = ['B', 'C']
+  }, 1200)
+
+  setTimeout(async () => {
+    const postsInStore = await index(Post)
+    // A should have user_id of 2
+    const postA = postsInStore.records?.find(post => post.title === 'A')
+    const postB = postsInStore.records?.find(post => post.title === 'B')
+    const postC = postsInStore.records?.find(post => post.title === 'C')
+
+    console.log('Post A user_id is 2', postA?.user_id === '2', postA?.user_id)
+    console.log('Post B user_id is 1', postB?.user_id === '1', postB?.user_id)
+    console.log('Post C user_id is 1', postC?.user_id === '1', postC?.user_id)
+  }, 2000)
+}
+
+async function testInit () {
+  await init()
+  // if (!testHasRun.value) {
+  //   await init()
+  //   runTest()
+  //   testHasRun.value = true
+  // } else {
+  //   await resetData()
+  //   testHasRun.value = false
+  //   window.location.reload()
+  // }
+}
+
+testInit()
 </script>
 
 <template>
@@ -59,12 +103,18 @@ init()
           </q-toolbar>
           <q-card-section>
             <div class="q-gutter-md">
+              <q-btn @click="runTest()">
+                Run Test
+              </q-btn>
+
               <q-btn @click="usersBulkUpdater.update()">
                 Update
               </q-btn>
+
               <q-btn @click="resetData()">
                 Reset Data
               </q-btn>
+
               <q-btn @click="usersBulkUpdater.makeForms()">
                 Make Forms
               </q-btn>
@@ -151,6 +201,12 @@ init()
             <q-toolbar-title>
               User Forms
             </q-toolbar-title>
+
+            <q-spinner
+              v-if="usersBulkUpdater.updating.value"
+              color="primary"
+              size="md"
+            />
 
             <q-toggle
               v-model="usersAutoUpdate"

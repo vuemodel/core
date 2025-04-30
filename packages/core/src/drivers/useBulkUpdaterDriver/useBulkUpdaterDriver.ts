@@ -49,5 +49,8 @@ export function useBulkUpdaterDriver<T extends typeof Model> (
     onStandardError: bound(bulkUpdater.onStandardErrorCallbacks.add),
     onSuccess: bound(bulkUpdater.onSuccessCallbacks.add),
     onValidationError: bound(bulkUpdater.onValidationErrorCallbacks.add),
+
+    _pauseAutoUpdater: bound(bulkUpdater.pauseAutoUpdater),
+    _resumeAutoUpdater: bound(bulkUpdater.resumeAutoUpdater),
   }
 }

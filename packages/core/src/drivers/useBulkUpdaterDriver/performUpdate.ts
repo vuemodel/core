@@ -1,4 +1,4 @@
-import { toValue } from 'vue'
+import { nextTick, toValue } from 'vue'
 import { UseBulkUpdateUpdateOptions } from '../../contracts/bulk-update/UseBulkUpdater'
 import { BulkUpdateResponse, BulkUpdateErrorResponse, SyncResponse } from '../../types/Response'
 import { getDriverKey } from '../../utils/getDriverKey'
@@ -40,7 +40,6 @@ export async function performUpdate<
   >
 
   type Request = Promise<BulkUpdateResponse<T>> & { cancel(): void }
-
   if (!Object.keys(bulkUpdater.changes.value).length && !Object.keys(optionsParam?.forms ?? {}).length) {
     return {
       action: 'bulk-update',
@@ -51,6 +50,9 @@ export async function performUpdate<
       validationErrors: undefined,
     }
   }
+
+  const changesClone = clone(bulkUpdater.changes.value)
+  bulkUpdater.changes.value = {}
 
   const driverKey = getDriverKey(bulkUpdater.options?.driver)
 
@@ -80,13 +82,13 @@ export async function performUpdate<
         pivotClasses: bulkUpdater.pivotClasses,
       })
 
-      if (!bulkUpdater.changes.value[formId]) { bulkUpdater.changes.value[formId] = {} }
-      Object.assign(bulkUpdater.changes.value[formId], changedValues)
+      if (!changesClone[formId]) { changesClone[formId] = {} }
+      Object.assign(changesClone[formId], changedValues)
       Object.assign(bulkUpdater.formsKeyed.value[formId], form)
     })
   }
 
-  const changesWithoutManyRelateds = clone(bulkUpdater.changes.value)
+  const changesWithoutManyRelateds = clone(changesClone)
 
   const hasManyKeys = [
     ...bulkUpdater.belongsToManyRelationshipKeys,
@@ -128,7 +130,7 @@ export async function performUpdate<
 
   const transferedHasManyIdsKeyedByRelationshipType: Record<keyof RelationshipTypes, HasManyTransfer> = {} as Record<keyof RelationshipTypes, HasManyTransfer>
 
-  for (const entry of Object.entries(bulkUpdater.changes.value)) {
+  for (const entry of Object.entries(changesClone)) {
     const parentPrimaryKey = entry[0] as keyof RelationshipTypes
     const recordChanges = entry[1]
 
@@ -155,11 +157,21 @@ export async function performUpdate<
       }
     }
 
+    const assignedHasManyIds: Partial<Record<keyof RelationshipTypes, Record<string, boolean>>> = {}
+
     // Has Many
+    bulkUpdater.pauseAutoUpdater()
     for (const relatedKey of (bulkUpdater.hasManyRelationshipKeys ?? []) as (keyof RelationshipTypes)[]) {
+      assignedHasManyIds[relatedKey] = {}
+      bulkUpdater.forms.value.forEach(formDetails => {
+        formDetails.form[relatedKey].forEach(hasManyId => {
+          assignedHasManyIds[relatedKey][hasManyId] = true
+        })
+      })
+
       const relatedChange = (recordChanges as any)[relatedKey]
       if (relatedChange) {
-        bulkUpdater.setAssignedHasManyIdsForField(relatedKey)
+        // bulkUpdater.setAssignedHasManyIdsForField(relatedKey)
 
         const intendedIds = relatedChange
         const currentIds = bulkUpdater.meta.value[parentPrimaryKey].initialValues[relatedKey]
@@ -172,6 +184,7 @@ export async function performUpdate<
 
         const hasManyForms: Record<string, any> = {}
 
+        relatedBulkUpdater._pauseAutoUpdater()
         uniqueIds.forEach(id => {
           if (intendedIds.includes(id) && !currentIds.includes(id)) {
             hasManyForms[id] = { [foreignKey]: parentPrimaryKey }
@@ -183,13 +196,16 @@ export async function performUpdate<
             }
             transferedHasManyIdsKeyedByRelationshipType[relatedKey].ids.push(id)
           } else if (currentIds.includes(id) && !intendedIds.includes(id)) {
-            if (!bulkUpdater.assignedHasManyIds[relatedKey][id]) {
+            if (!assignedHasManyIds[relatedKey][id]) {
               hasManyForms[id] = { [foreignKey]: null }
             }
           }
         })
 
-        const hasManyRequest = relatedBulkUpdater.update({ forms: hasManyForms })
+        const hasManyRequest = relatedBulkUpdater.update({ forms: hasManyForms }).then(response => {
+          nextTick(() => relatedBulkUpdater._resumeAutoUpdater())
+          return response
+        })
 
         hasManyRequests[relatedKey] = {
           request: hasManyRequest,
@@ -198,17 +214,18 @@ export async function performUpdate<
         }
       }
     }
+    nextTick(() => bulkUpdater.resumeAutoUpdater())
   }
 
   const fieldNewValueMap = new Map()
 
-  const changedRecordMetas = Object.entries(bulkUpdater.changes.value).map(changeEntry => {
+  const changedRecordMetas = Object.entries(changesClone).map(changeEntry => {
     const recordMeta = bulkUpdater.meta.value[changeEntry[0]]
     recordMeta.updating = true
     return recordMeta
   })
 
-  const fields = Object.entries(bulkUpdater.changes.value).flatMap(changeEntry => {
+  const fields = Object.entries(changesClone).flatMap(changeEntry => {
     const id = changeEntry[0]
     const changeForm = changeEntry[1]
     bulkUpdater.meta.value[id].updating = true
@@ -233,6 +250,15 @@ export async function performUpdate<
 
   bulkUpdater.updating.value = true
 
+  fields.forEach(field => {
+    field.initialValue = fieldNewValueMap.get(field)
+    field.changed = false
+  })
+  changedRecordMetas.forEach(recordMeta => {
+    recordMeta.initialValues = clone(recordMeta.form)
+    recordMeta.changed = false
+  })
+
   const [thisResponse, syncResponses, hasManyResponses] = await Promise.all([
     request,
     Promise.all(Object.values(syncRequests).map((context: any) => context.request) as SyncResponse<typeof Model>[]),
@@ -246,13 +272,13 @@ export async function performUpdate<
 
   fields.forEach(field => {
     field.updating = false
-    field.changed = false
-    field.initialValue = fieldNewValueMap.get(field)
+    // field.changed = false
+    // field.initialValue = fieldNewValueMap.get(field)
   })
   changedRecordMetas.forEach(recordMeta => {
     recordMeta.updating = false
-    recordMeta.changed = false
-    recordMeta.initialValues = clone(recordMeta.form)
+    // recordMeta.changed = false
+    // recordMeta.initialValues = clone(recordMeta.form)
   })
 
   const syncRequestEntries = Object.entries(syncRequests)
@@ -328,19 +354,20 @@ export async function performUpdate<
     }
   })
   if (!hasManyError) {
-    bulkUpdater.resetAssignedHasManyIds()
+    // bulkUpdater.resetAssignedHasManyIds()
   }
 
-  if (!hasManyError) {
-    Object.entries(transferedHasManyIdsKeyedByRelationshipType).forEach(([relatedKey, info]) => {
-      const idsOfFormsToRemake: string[] = []
-      bulkUpdater.forms.value.forEach(formDetails => {
-        if (formDetails.id === info.parentPrimaryKey) return
-        idsOfFormsToRemake.push(formDetails.id)
-      })
-      bulkUpdater.formMaker.makeForms(idsOfFormsToRemake)
-    })
-  }
+  // if (!hasManyError) {
+  //   Object.entries(transferedHasManyIdsKeyedByRelationshipType).forEach(([relatedKey, info]) => {
+  //     const idsOfFormsToRemake: string[] = []
+  //     bulkUpdater.forms.value.forEach(formDetails => {
+  //       if (formDetails.id === info.parentPrimaryKey) return
+  //       idsOfFormsToRemake.push(formDetails.id)
+  //     })
+  //     // Why do we have to do this? It shouldn't be required, and is causing rollbacks when two updates are hapenning at the same time.
+  //     bulkUpdater.formMaker.makeForms(idsOfFormsToRemake)
+  //   })
+  // }
 
   // Persisting to the store
   if (persist && thisResponse.success) {
@@ -428,14 +455,13 @@ export async function performUpdate<
   }
 
   // On Success
-  if (thisResponse?.success && !hasManyToManyError) {
+  if (thisResponse?.success && !hasManyToManyError && !hasManyError) {
     changedRecordMetas.forEach(recordMeta => {
       recordMeta.failed = false
       recordMeta.validationErrors = {}
       recordMeta.standardErrors = []
     })
 
-    bulkUpdater.changes.value = {}
     bulkUpdater.onSuccessCallbacks.run(thisResponse)
   }
 
@@ -460,7 +486,7 @@ export async function performUpdate<
       recordMeta.failed = true
     })
 
-    Object.keys(bulkUpdater.changes.value).forEach(id => {
+    Object.keys(changesClone).forEach(id => {
       bulkUpdater.meta.value[id].standardErrors = thisResponse.standardErrors
       bulkUpdater.meta.value[id].validationErrors = thisResponse.validationErrors
 
@@ -474,7 +500,7 @@ export async function performUpdate<
     })
 
     if (rollbacksResolved) {
-      bulkUpdater.formMaker.makeForms(Object.keys(bulkUpdater.changes.value))
+      bulkUpdater.formMaker.makeForms(Object.keys(changesClone))
     }
   }
 

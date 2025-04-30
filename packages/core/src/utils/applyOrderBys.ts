@@ -9,7 +9,7 @@ const orderByDirectionMap: Record<string, OrderDirection> = {
 export function applyOrderBys<T extends Model> (
   query: Query,
   orderBys: Order<T>[],
-) {
+): void {
   orderBys.forEach(orderBy => {
     query.orderBy(orderBy.field as OrderBy, orderByDirectionMap[orderBy.direction])
   })

@@ -20,7 +20,10 @@ function executeFilterBlock (record: Model, filterGroups: Partial<Record<keyof M
   return result
 }
 
-export function applyFilters (query: Query, filters: IndexFilters<Model>) {
+export function applyFilters (
+  query: Query,
+  filters: IndexFilters<Model>,
+): void {
   Object.entries(filters).forEach(entry => {
     const field = entry[0]
     const actions = entry[1]

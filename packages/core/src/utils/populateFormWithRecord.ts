@@ -5,7 +5,7 @@ export function populateFormWithRecord (
   record: Item<Model>,
   form: Ref<Record<string, any>>,
   excludeFields: string[] = [],
-) {
+): void {
   if (!record) { return }
   const fields = record.$fields()
   Object.keys(fields).forEach(field => {
