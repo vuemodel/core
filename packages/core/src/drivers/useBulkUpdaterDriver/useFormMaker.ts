@@ -219,6 +219,7 @@ export function useFormMaker<
           initialValue: initialFieldValue as any,
         }
 
+        // TODO: should be using hooks here, NOT broadcasting channels
         const hasManyCreateChannel = makeChannel('createPersist', RelatedModel)
         const hasManyDestroyChannel = makeChannel('destroyPersist', RelatedModel)
         hasManyCreateChannel.onmessage = (event) => {

@@ -1,3 +1,5 @@
+import { isPojo } from './isPojo'
+
 export type RemoveFunctions<T> = {
   // eslint-disable-next-line @typescript-eslint/ban-types
   [K in keyof T]: T[K] extends Function ? never :
@@ -9,6 +11,9 @@ export function removeFunctions<T extends object> (obj: T): RemoveFunctions<T> {
 
   for (const key in obj) {
     if (typeof obj[key] === 'object' && obj[key] !== null) {
+      if (!isPojo(obj[key])) {
+        continue
+      }
       // Recursively apply removeFunctions to nested objects
       /** @ts-expect-error Hard to type, no benefit */
       result[key] = removeFunctions(obj[key])
