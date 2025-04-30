@@ -70,6 +70,8 @@ module.exports = {
     'import/no-unresolved': 'off',
     'import/no-extraneous-dependencies': 'off',
 
+    '@typescript-eslint/no-floating-promises': 'error',
+
     'no-eval': 'warn',
 
     'no-async-promise-executor': 'off',
