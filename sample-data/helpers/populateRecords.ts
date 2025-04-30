@@ -12,20 +12,27 @@ export async function populateRecords (
     numberOfRecords = exampleData.records.length
   }
 
+  const promises: Promise<void>[] = []
+
   for (let index = 0; index < numberOfRecords; index++) {
     try {
       const ModelClass = exampleData.modelClass
       if (!ModelClass) continue
-      /** @ts-expect-error This error baffles me */
-      const response = await find(ModelClass, getRecordPrimaryKey(ModelClass, exampleData.records[index]))
-      if (response.record) continue
-      await create(
-        exampleData.modelClass,
-        exampleData.records[index],
-        createOptions,
-      )
+      const promise = async () => {
+        /** @ts-expect-error This error baffles me */
+        const response = await find(ModelClass, getRecordPrimaryKey(ModelClass, exampleData.records[index]))
+        if (response.record) return
+        await create(
+          exampleData.modelClass,
+          exampleData.records[index],
+          createOptions,
+        )
+      }
+      promises.push(promise())
     } catch (e) {
       console.warn(e)
     }
   }
+
+  await Promise.all(promises)
 }
