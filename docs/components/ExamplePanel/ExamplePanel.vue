@@ -51,7 +51,9 @@ const showCode = ref(false)
     />
 
     <div class="example-component-wrapper">
-      <component :is="exampleComponent" />
+      <ClientOnly>
+        <component :is="exampleComponent" />
+      </ClientOnly>
     </div>
 
     <ReplDialog
