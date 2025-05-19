@@ -39,11 +39,13 @@ tagsIndexer.index()
           photo.form.tags = photo.form.tags?.filter(val => val !== tag.id)
         }"
       >
-        <q-menu context-menu>
+        <q-menu class="q-pa-sm" context-menu>
+          <pre>{{ photo.form.tags }}</pre>
           <q-select
             v-if="photo.record"
             v-model="photo.form.tags"
             multiple
+            filled
             option-label="name"
             option-value="id"
             emit-value

@@ -5,7 +5,7 @@ import { getDriverKey } from '../utils/getDriverKey'
 import { useBulkUpdater } from '../composables/useBulkUpdater'
 import { useCreator } from '../composables/useCreator'
 import { useDestroyer } from '../composables/useDestroyer'
-import { Ref, ref, watch } from 'vue'
+import { Ref, ref, toValue, watch } from 'vue'
 import { useUpdater } from '../composables/useUpdater'
 import { applyFilters } from '../utils/applyFilters'
 import { useIndexer } from '../composables/useIndexer'
@@ -40,9 +40,13 @@ export function useModelDriver<
     ),
   )
 
+  /** @ts-expect-error typings don't seem to reflect that you can "ref a ref" */
+  const showUpdateFormId = ref<LoosePrimaryKey | false>(options.showFormId !== undefined ? options.showFormId : false)
   const updateForm: Ref<PiniaOrmForm<InstanceType<T>> | null> = ref(null)
   bulkUpdater.onSuccess(() => {
-    showUpdateFormId.value = false
+    if(!toValue(options.update?.autoUpdate)) {
+      showUpdateFormId.value = false
+    }
   })
 
   const creator = useCreator(
@@ -75,7 +79,6 @@ export function useModelDriver<
 
   const showCreateForm = ref(false)
   const showDestroyConfirmId = ref<LoosePrimaryKey | false>(false)
-  const showUpdateFormId = ref<LoosePrimaryKey | false>(false)
 
   watch(showUpdateFormId, async (newId) => {
     if (newId) {
@@ -142,6 +145,7 @@ export function useModelDriver<
       showFormId: showUpdateFormId,
       form: updateForm,
       forms: bulkUpdater.forms,
+      makeForms: bulkUpdater.makeForms,
       formsKeyed: bulkUpdater.forms,
       update: bulkUpdater.update,
       index: bulkUpdater.index,
