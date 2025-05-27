@@ -16,8 +16,8 @@
   "dependencies": {
     "@vueauth/core": "1.1.0-alpha.1",
     "@quasar/extras": "^1.16.4",
-    "@vuemodel/core": "^0.0.x",
-    "@vuemodel/indexeddb": "^0.0.x",
+    "@vuemodel/core": "workspace:^",
+    "@vuemodel/indexeddb": "workspace:^",
     "pinia": "^2.0.0",
     "pinia-orm": "1.10.x",
     "quasar": "^2.16.0",
