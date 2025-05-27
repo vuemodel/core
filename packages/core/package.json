@@ -1,6 +1,6 @@
 {
   "name": "@vuemodel/core",
-  "version": "0.0.75",
+  "version": "0.0.76",
   "scripts": {
     "build": "tsdown",
     "watch": "tsdown --watch --format=esm",
@@ -42,7 +42,6 @@
     "model"
   ],
   "dependencies": {
-    "@vuemodel/core": "^0.0.38",
     "debounce": "^2.2.0",
     "deep-equal": "^2.2.3",
     "deepmerge-ts": "^5.1.0",
