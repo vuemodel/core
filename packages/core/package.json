@@ -1,6 +1,6 @@
 {
   "name": "@vuemodel/core",
-  "version": "0.0.74",
+  "version": "0.0.75",
   "scripts": {
     "build": "tsdown",
     "watch": "tsdown --watch --format=esm",
