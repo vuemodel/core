@@ -1,6 +1,6 @@
 {
   "name": "@vuemodel/indexeddb",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "type": "module",
   "scripts": {
     "build": "tsdown",
@@ -45,7 +45,7 @@
     "just-clone": "^6.2.0"
   },
   "peerDependencies": {
-    "@vuemodel/core": "^0.0.x",
+    "@vuemodel/core": "0.0.76",
     "pinia": "^2.x",
     "pinia-orm": "1.10.x",
     "vue": "^3.x"
