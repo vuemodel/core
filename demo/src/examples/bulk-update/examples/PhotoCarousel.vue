@@ -28,18 +28,7 @@ tagsIndexer.index()
       :name="photo?.id"
       :img-src="photo?.form.thumbnailUrl"
     >
-      <q-chip
-        v-for="tag in photo?.record?.tags"
-        :key="tag.id"
-        :label="tag.name"
-        :color="tag.color"
-        text-color="white"
-        removable
-        @remove="() => {
-          photo.form.tags = photo.form.tags?.filter(val => val !== tag.id)
-        }"
-      >
-        <q-menu class="q-pa-sm" context-menu>
+    <q-menu class="q-pa-sm" context-menu>
           <pre>{{ photo.form.tags }}</pre>
           <q-select
             v-if="photo.record"
@@ -53,6 +42,18 @@ tagsIndexer.index()
             :options="tagsIndexer.records.value"
           />
         </q-menu>
+      <q-chip
+        v-for="tag in photo?.record?.tags"
+        :key="tag.id"
+        :label="tag.name"
+        :color="tag.color"
+        text-color="white"
+        removable
+        @remove="() => {
+          photo.form.tags = photo.form.tags?.filter(val => val !== tag.id)
+        }"
+      >
+
       </q-chip>
     </q-carousel-slide>
   </q-carousel>
