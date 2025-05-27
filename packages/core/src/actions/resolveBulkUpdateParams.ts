@@ -1,10 +1,10 @@
 import { Model } from 'pinia-orm'
-import { PiniaOrmForm } from 'pinia-orm-helpers'
 import { BulkUpdateOptions } from '../contracts/bulk-update/BulkUpdate'
+import { Form } from '../types/Form'
 
 export function resolveBulkUpdateParams<T extends typeof Model> (...params: any[]): {
   ModelClass: T
-  forms: Record<string | number, PiniaOrmForm<InstanceType<T>>>
+  forms: Record<string | number, Form<InstanceType<T>>>
   options: BulkUpdateOptions<T>
 } {
   if (typeof params[0] === 'string') {

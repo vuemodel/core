@@ -1,6 +1,5 @@
-import { IndexOptions, IndexResponse, getMergedDriverConfig } from '@vuemodel/core'
+import { DeclassifyPiniaOrmModel, IndexOptions, IndexResponse, getMergedDriverConfig } from '@vuemodel/core'
 import { Model, useRepo } from 'pinia-orm'
-import { DeclassifyPiniaOrmModel } from 'pinia-orm-helpers'
 import { indexedDbState } from '../../plugin/state'
 import { applyFilters } from './applyFilters'
 import { applyWiths } from './applyWiths'

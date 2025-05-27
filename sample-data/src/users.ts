@@ -2,8 +2,8 @@ import { Model } from 'pinia-orm'
 import { Attr, HasMany, Uid } from 'pinia-orm/dist/decorators'
 import { Album } from './albums'
 import { Post } from './posts'
-import { PiniaOrmForm } from 'pinia-orm-helpers'
 import usersJson from './json/users.json'
+import { Form } from '@vuemodel/core'
 
 export class User extends Model {
   static entity = 'users'
@@ -22,4 +22,4 @@ export class User extends Model {
   @HasMany(() => Post, 'user_id') declare posts: Post[]
 }
 
-export const users: PiniaOrmForm<User>[] = usersJson
+export const users: Form<User>[] = usersJson

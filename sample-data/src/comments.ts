@@ -1,7 +1,7 @@
 import { Model } from 'pinia-orm'
 import { Attr, BelongsTo, Uid } from 'pinia-orm/dist/decorators'
 import { Post } from './posts'
-import { PiniaOrmForm } from 'pinia-orm-helpers'
+import { Form } from '@vuemodel/core'
 import commentsJson from './json/comments.json'
 
 export class Comment extends Model {
@@ -18,4 +18,4 @@ export class Comment extends Model {
   @BelongsTo(() => Post, 'post_id') declare post: Post | null
 }
 
-export const comments: PiniaOrmForm<Comment>[] = commentsJson
+export const comments: Form<Comment>[] = commentsJson

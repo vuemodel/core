@@ -8,10 +8,10 @@ import { generateRandomString } from '../../utils/generateRandomString'
 import { getFormsChangedValues } from './getFormsChangedValues'
 import clone from 'just-clone'
 import { sync } from '../../actions/sync'
-import { FilterPiniaOrmModelToRelationshipTypes } from 'pinia-orm-helpers'
 import { getRecordPrimaryKey } from '../../utils/getRecordPrimaryKey'
 import { OnBulkUpdatePersistMessage, OnSyncPersistMessage } from '../../broadcasting/BroadcastMessages'
 import { BulkUpdater } from './BulkUpdater'
+import { FilterPiniaOrmModelToRelationshipTypes } from '../../types/FilterPiniaOrmModelToRelationshipTypes'
 
 export async function performUpdate<
   T extends typeof Model,

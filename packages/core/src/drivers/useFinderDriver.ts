@@ -1,6 +1,5 @@
 import { Model, useRepo } from 'pinia-orm'
 import { computed, ref, toValue, watch } from 'vue'
-import { DeclassifyPiniaOrmModel } from 'pinia-orm-helpers'
 import { UseFinderOptions, UseFinderReturn } from '../contracts/crud/find/UseFinder'
 import { getDriverKey } from '../utils/getDriverKey'
 import { FindErrorResponse, FindResponse, FindSuccessResponse } from '../types/Response'
@@ -23,6 +22,7 @@ import { generateRandomString } from '../utils/generateRandomString'
 import { OnFindPersistMessage } from '../broadcasting/BroadcastMessages'
 import clone from 'just-clone'
 import { useCallbacks } from '../utils/useCallbacks'
+import { DeclassifyPiniaOrmModel } from '../types/DeclassifyPiniaOrmModel'
 
 const defaultOptions = {
   persist: true,

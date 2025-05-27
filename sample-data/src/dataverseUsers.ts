@@ -2,7 +2,7 @@ import { Model } from 'pinia-orm'
 import { Attr, HasMany, Uid } from 'pinia-orm/dist/decorators'
 import { Album } from './albums'
 import { Post } from './posts'
-import { PiniaOrmForm } from 'pinia-orm-helpers'
+import { Form } from '@vuemodel/core'
 import dataverseUsersJson from './json/dataverseUsers.json'
 
 export class DataverseUser extends Model {
@@ -23,4 +23,4 @@ export class DataverseUser extends Model {
   @HasMany(() => Post, 'user_id') declare posts: Post[]
 }
 
-export const dataverseUsers: PiniaOrmForm<DataverseUser>[] = dataverseUsersJson
+export const dataverseUsers: Form<DataverseUser>[] = dataverseUsersJson

@@ -1,11 +1,10 @@
-import { BulkUpdateOptions, BulkUpdateResponse, UseBulkUpdateFormValidationErrors, getMergedDriverConfig, vueModelState } from '@vuemodel/core'
+import { BulkUpdateOptions, BulkUpdateResponse, DeclassifyPiniaOrmModel, Form, UseBulkUpdateFormValidationErrors, getMergedDriverConfig, vueModelState } from '@vuemodel/core'
 import { Model } from 'pinia-orm'
-import { DeclassifyPiniaOrmModel, PiniaOrmForm } from 'pinia-orm-helpers'
 import { OrionDriverOptions, orionState } from '../../plugin/state'
 
 export async function bulkUpdate<T extends typeof Model> (
   ModelClass: T,
-  forms: Record<string | number, PiniaOrmForm<InstanceType<T>>>,
+  forms: Record<string | number, Form<InstanceType<T>>>,
   options: BulkUpdateOptions<T> = {},
 ): Promise<BulkUpdateResponse<T>> {
   return new Promise(async (resolve, reject) => {
@@ -28,7 +27,7 @@ export async function bulkUpdate<T extends typeof Model> (
         }],
         action: 'bulk-update',
         success: false,
-        validationErrors: {} as UseBulkUpdateFormValidationErrors<T>,
+        validationErrors: {} as UseBulkUpdateFormValidationErrors<InstanceType<T>>,
         records: undefined,
         entity: ModelClass.entity,
       })
@@ -42,7 +41,7 @@ export async function bulkUpdate<T extends typeof Model> (
         }],
         action: 'bulk-update',
         success: false,
-        validationErrors: {} as UseBulkUpdateFormValidationErrors<T>,
+        validationErrors: {} as UseBulkUpdateFormValidationErrors<InstanceType<T>>,
         records: undefined,
         entity: ModelClass.entity,
       })
@@ -70,7 +69,7 @@ export async function bulkUpdate<T extends typeof Model> (
     } catch (err: any) {
       const result: BulkUpdateResponse<T> = {
         standardErrors: [],
-        validationErrors: {} as UseBulkUpdateFormValidationErrors<T>,
+        validationErrors: {} as UseBulkUpdateFormValidationErrors<InstanceType<T>>,
         success: false,
         action: 'bulk-update',
         records: undefined,
@@ -95,7 +94,7 @@ export async function bulkUpdate<T extends typeof Model> (
           model: ModelClass,
           errors: {
             standardErrors: result.standardErrors,
-            validationErrors: result.validationErrors ?? {} as UseBulkUpdateFormValidationErrors<T>,
+            validationErrors: result.validationErrors ?? {} as UseBulkUpdateFormValidationErrors<InstanceType<T>>,
           },
         })
       }

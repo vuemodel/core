@@ -1,7 +1,6 @@
 import { getDriverFunction } from '../getDriverFunction'
 import { Create, CreateOptions } from '../contracts/crud/create/Create'
 import { Model } from 'pinia-orm'
-import { PiniaOrmForm } from 'pinia-orm-helpers'
 import { CreateResponse } from '../types/Response'
 import { resolveCreateParams } from './resolveCreateParams'
 import clone from 'just-clone'
@@ -9,6 +8,7 @@ import { OnCreatedMessage, OnCreatingMessage } from '../broadcasting/BroadcastMe
 import { getDriverKey } from '../utils/getDriverKey'
 import { deepmerge } from 'deepmerge-ts'
 import { getMergedDriverConfig } from '../utils/getMergedDriverConfig'
+import { Form } from '../types/Form'
 
 /**
  * Create a record on the "backend".
@@ -26,8 +26,8 @@ import { getMergedDriverConfig } from '../utils/getMergedDriverConfig'
  */
 export function create<T extends typeof Model> (
   ModelClass: T | string,
-  form: PiniaOrmForm<InstanceType<T>> | T,
-  options?: CreateOptions<T> | PiniaOrmForm<InstanceType<T>>,
+  form: Form<InstanceType<T>> | T,
+  options?: CreateOptions<T> | Form<InstanceType<T>>,
   hasDriverOptions?: CreateOptions<T>,
 ): Promise<CreateResponse<T>> {
   const params = resolveCreateParams<T>(ModelClass, form, options, hasDriverOptions)

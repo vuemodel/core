@@ -1,6 +1,5 @@
 import { Model } from 'pinia-orm'
-import { IndexFilters, FilterTypeToValueBase } from '@vuemodel/core'
-import { getClassAttributes, getClassRelationships } from 'pinia-orm-helpers'
+import { IndexFilters, FilterTypeToValueBase, getClassAttributes, getClassRelationships } from '@vuemodel/core'
 import { pick } from '../../utils/pick'
 import { operatorMap } from './operatorMap'
 import { Constructor } from '../../types/Constructor'

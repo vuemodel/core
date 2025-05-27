@@ -1,11 +1,10 @@
 {
   "name": "@vuemodel/orion",
   "version": "0.0.12",
+  "type": "module",
   "scripts": {
-    "jiti-fix": "find ./dist -type f -exec sed -i 's|file://||g' {} \\;",
-    "build": "unbuild",
-    "dev": "unbuild --stub && pnpm jiti-fix",
-    "watch": "nodemon --ext ts,js --exec unbuild",
+    "build": "tsdown",
+    "watch": "tsdown --watch --format=esm",
     "release": "pnpm build && bumpp --tag '@vuemodel/orion@v%s' && pnpm publish"
   },
   "repository": {
@@ -19,13 +18,13 @@
         "default": "./dist/index.cjs"
       },
       "import": {
-        "types": "./dist/index.d.mts",
-        "default": "./dist/index.mjs"
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
       }
     }
   },
   "main": "./dist/index.cjs",
-  "module": "./dist/index.mjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
     "dist"
@@ -43,14 +42,13 @@
     "model"
   ],
   "dependencies": {
-    "pinia-orm-helpers": "^0.0.16",
     "qs": "^6.11.2",
     "wretch": "^2.8.0"
   },
   "peerDependencies": {
     "@vuemodel/core": "^0.0.x",
     "pinia": "^2.x",
-    "pinia-orm": "1.7.x",
+    "pinia-orm": "1.10.x",
     "vue": "^3.x"
   },
   "devDependencies": {
@@ -58,11 +56,10 @@
     "@typescript-eslint/eslint-plugin": "^6.7.5",
     "@typescript-eslint/parser": "^6.7.5",
     "bumpp": "^9.2.0",
+    "tsdown": "^0.12.3",
     "eslint": "^8.51.0",
-    "nodemon": "^3.0.1",
     "tslib": "^2.6.2",
-    "typescript": "~5.8.3",
-    "unbuild": "^3.0.0-rc.7"
+    "typescript": "~5.8.3"
   },
   "publishConfig": {
     "access": "public"

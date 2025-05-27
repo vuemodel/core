@@ -11,7 +11,6 @@ export const defaultImports = {
   pinia: 'https://cdn.jsdelivr.net/npm/pinia@2.1.7/dist/pinia.esm-browser.js',
   'pinia-orm': 'https://cdn.jsdelivr.net/npm/pinia-orm@1.7.2/dist/index.mjs',
   'pinia-orm/dist/decorators': 'https://cdn.jsdelivr.net/npm/pinia-orm@1.7.2/dist/decorators.mjs',
-  'pinia-orm-helpers': 'https://cdn.jsdelivr.net/npm/pinia-orm-helpers@0.0.8/dist/index.mjs',
   'deepmerge-ts': 'https://cdn.jsdelivr.net/npm/deepmerge-ts@5.1.0/dist/node/index.mjs',
   uuid: 'https://jspm.dev/uuid',
   '@pinia-orm/normalizr': 'https://cdn.jsdelivr.net/npm/@pinia-orm/normalizr@1.7.0/dist/index.mjs',

@@ -1,11 +1,10 @@
-import { CreateOptions, CreateResponse, FormValidationErrors, getMergedDriverConfig, vueModelState } from '@vuemodel/core'
+import { CreateOptions, CreateResponse, DeclassifyPiniaOrmModel, Form, FormValidationErrors, getMergedDriverConfig, vueModelState } from '@vuemodel/core'
 import { Model } from 'pinia-orm'
-import { DeclassifyPiniaOrmModel, PiniaOrmForm } from 'pinia-orm-helpers'
 import { OrionDriverOptions, orionState } from '../../plugin/state'
 
 export async function create<T extends typeof Model> (
   ModelClass: T,
-  form: PiniaOrmForm<InstanceType<T>>,
+  form: Form<InstanceType<T>>,
   options: CreateOptions<T> = {},
 ): Promise<CreateResponse<T>> {
   return new Promise(async (resolve, reject) => {
@@ -28,7 +27,7 @@ export async function create<T extends typeof Model> (
         }],
         action: 'create',
         success: false,
-        validationErrors: {} as FormValidationErrors<T>,
+        validationErrors: {} as FormValidationErrors<InstanceType<T>>,
         record: undefined,
         entity: ModelClass.entity,
       })
@@ -42,7 +41,7 @@ export async function create<T extends typeof Model> (
         }],
         action: 'create',
         success: false,
-        validationErrors: {} as FormValidationErrors<T>,
+        validationErrors: {} as FormValidationErrors<InstanceType<T>>,
         record: undefined,
         entity: ModelClass.entity,
       })
@@ -58,7 +57,7 @@ export async function create<T extends typeof Model> (
         record: undefined,
         standardErrors: [{ name: 'primary key unknown', message: 'could not discover the records primary key' }],
         success: false,
-        validationErrors: {} as FormValidationErrors<T>,
+        validationErrors: {} as FormValidationErrors<InstanceType<T>>,
         entity: ModelClass.entity,
       })
     }
@@ -83,7 +82,7 @@ export async function create<T extends typeof Model> (
     } catch (err: any) {
       const result: CreateResponse<T> = {
         standardErrors: [],
-        validationErrors: {} as FormValidationErrors<T>,
+        validationErrors: {} as FormValidationErrors<InstanceType<T>>,
         success: false,
         action: 'create',
         record: undefined,

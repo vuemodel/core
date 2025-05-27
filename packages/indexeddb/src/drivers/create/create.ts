@@ -1,6 +1,5 @@
-import { CreateOptions, CreateResponse, FormValidationErrors, getMergedDriverConfig, getRecordPrimaryKey, getDriverKey, CreateFormValidationErrorResponse } from '@vuemodel/core'
+import { CreateOptions, CreateResponse, FormValidationErrors, getMergedDriverConfig, getRecordPrimaryKey, getDriverKey, CreateFormValidationErrorResponse, Form, getClassAttributes } from '@vuemodel/core'
 import { Model } from 'pinia-orm'
-import { PiniaOrmForm, getClassAttributes } from 'pinia-orm-helpers'
 import { pick } from '../../utils/pick'
 import { indexedDbState } from '../../plugin/state'
 import { makeMockErrorResponse } from '../../utils/makeMockErrorResponse'
@@ -9,7 +8,7 @@ import { createIndexedDbRepo } from '../../utils/createIndexedDbRepo'
 
 export async function create<T extends typeof Model> (
   ModelClass: T,
-  form: PiniaOrmForm<InstanceType<T>>,
+  form: Form<InstanceType<T>>,
   options: CreateOptions<T> = {},
 ): Promise<CreateResponse<T>> {
   const dbPrefix = getDriverKey(options.driver) + ':'

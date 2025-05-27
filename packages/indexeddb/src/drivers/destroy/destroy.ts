@@ -1,10 +1,8 @@
-import { DestroyOptions, DestroyResponse, getDriverKey, getMergedDriverConfig } from '@vuemodel/core'
+import { DeclassifyPiniaOrmModel, DestroyOptions, DestroyResponse, getDriverKey, getMergedDriverConfig, LoosePrimaryKey } from '@vuemodel/core'
 import { Model } from 'pinia-orm'
-import { DeclassifyPiniaOrmModel } from 'pinia-orm-helpers'
 import { indexedDbState } from '../../plugin/state'
 import { wait } from '../../utils/wait'
 import { makeMockErrorResponse } from '../../utils/makeMockErrorResponse'
-import { LoosePrimaryKey } from '@vuemodel/core/src/types/LoosePrimaryKey'
 import { createIndexedDbRepo } from '../../utils/createIndexedDbRepo'
 
 // TODO: do we also need to ensure it's deleted from the "backend store"?

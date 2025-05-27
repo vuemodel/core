@@ -1,6 +1,5 @@
 import { Item, Model, useRepo } from 'pinia-orm'
 import { Ref, computed, nextTick, ref, toValue, watch } from 'vue'
-import { DeclassifyPiniaOrmModel, PiniaOrmForm } from 'pinia-orm-helpers'
 import { UseUpdaterOptions, UseUpdaterReturn } from '../contracts/crud/update/UseUpdater'
 import { UpdateErrorResponse, UpdateResponse, UpdateSuccessResponse } from '../types/Response'
 import { FormValidationErrors } from '../contracts/errors/FormValidationErrors'
@@ -21,6 +20,8 @@ import { OnUpdateOptimisticPersistMessage, OnUpdatePersistMessage } from '../bro
 import { deepmerge } from 'deepmerge-ts'
 import { useCallbacks } from '../utils/useCallbacks'
 import { watchPausable } from '../utils/watchPausable'
+import { Form } from '../types/Form'
+import { DeclassifyPiniaOrmModel } from '../types/DeclassifyPiniaOrmModel'
 
 const defaultOptions = {
   persist: true,
@@ -59,7 +60,7 @@ export function useUpdaterDriver<T extends typeof Model> (
   const updatePersistHooks = deepmerge(driverConfig.hooks?.updatePersist ?? [])
   const updateOptimisticPersistHooks = deepmerge(driverConfig.hooks?.updateOptimisticPersist ?? [])
 
-  const form = ref(options.form ?? {}) as Ref<PiniaOrmForm<InstanceType<T>>>
+  const form = ref(options.form ?? {}) as Ref<Form<InstanceType<T>>>
 
   const activeRequests = ref<UseUpdaterReturn<T>['activeRequests']>({} as UseUpdaterReturn<T>['activeRequests'])
   const activeRequest = ref<Promise<UpdateResponse<T>> & { cancel(): void }>()
@@ -83,7 +84,7 @@ export function useUpdaterDriver<T extends typeof Model> (
 
   const optimisticRecord = ref<InstanceType<T>>()
 
-  function getRecordId (rawRecord: PiniaOrmForm<InstanceType<T>> | DeclassifyPiniaOrmModel<InstanceType<T>> | InstanceType<T>) {
+  function getRecordId (rawRecord: Form<InstanceType<T>> | DeclassifyPiniaOrmModel<InstanceType<T>> | InstanceType<T>) {
     const primaryKeyField = ModelClass.primaryKey
     if (Array.isArray(primaryKeyField)) {
       return getRecordPrimaryKey(ModelClass, rawRecord)
@@ -113,8 +114,8 @@ export function useUpdaterDriver<T extends typeof Model> (
   })
 
   function discoverIdAndFormFromParams (
-    idOrFormParam?: PiniaOrmForm<InstanceType<T>> | string | number | (string | number)[],
-    formParam?: PiniaOrmForm<InstanceType<T>>,
+    idOrFormParam?: Form<InstanceType<T>> | string | number | (string | number)[],
+    formParam?: Form<InstanceType<T>>,
   ) {
     if (typeof idOrFormParam === 'string' || typeof idOrFormParam === 'number' || Array.isArray(idOrFormParam)) {
       // First api signature (only id)
@@ -196,12 +197,12 @@ export function useUpdaterDriver<T extends typeof Model> (
         }
       }
     })
-    return resourceChangedValuesOnly as PiniaOrmForm<InstanceType<T>>
+    return resourceChangedValuesOnly as Form<InstanceType<T>>
   }
 
   async function update (
-    idOrFormParam?: PiniaOrmForm<InstanceType<T>> | string | number | (string | number)[],
-    formParam?: PiniaOrmForm<InstanceType<T>>,
+    idOrFormParam?: Form<InstanceType<T>> | string | number | (string | number)[],
+    formParam?: Form<InstanceType<T>>,
   ) {
     response.value = undefined
     optimisticRecord.value = undefined
@@ -217,7 +218,7 @@ export function useUpdaterDriver<T extends typeof Model> (
       form.value,
       toValue(options?.form) ?? {},
       resolvedFormParam ?? {},
-    ) as PiniaOrmForm<InstanceType<T>>
+    ) as Form<InstanceType<T>>
 
     const optionsId = toValue(options?.id)
     if (resolvedIdParam || optionsId) {

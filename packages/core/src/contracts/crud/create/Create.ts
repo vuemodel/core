@@ -1,6 +1,6 @@
 import { Model } from 'pinia-orm'
-import { PiniaOrmForm } from 'pinia-orm-helpers'
 import { CreateResponse } from '../../../types/Response'
+import { Form } from '../../../types/Form'
 
 export interface CreateOptions<T extends typeof Model> {
   driver?: string
@@ -11,6 +11,6 @@ export interface CreateOptions<T extends typeof Model> {
 
 export type Create<T extends typeof Model> = (
   ModelClass: T,
-  form: PiniaOrmForm<InstanceType<T>>,
+  form: Form<InstanceType<T>>,
   options?: CreateOptions<T>
 ) => Promise<CreateResponse<T>>

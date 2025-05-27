@@ -2,7 +2,7 @@ import { Model } from 'pinia-orm'
 import { Attr, BelongsTo, HasMany, Uid } from 'pinia-orm/dist/decorators'
 import { User } from './users'
 import { Comment } from './comments'
-import { PiniaOrmForm } from 'pinia-orm-helpers'
+import { Form } from '@vuemodel/core'
 import postsJson from './json/posts.json'
 
 export class Post extends Model {
@@ -20,4 +20,4 @@ export class Post extends Model {
   @HasMany(() => Comment, 'post_id') declare comments: Comment[]
 }
 
-export const posts: PiniaOrmForm<Post>[] = postsJson
+export const posts: Form<Post>[] = postsJson

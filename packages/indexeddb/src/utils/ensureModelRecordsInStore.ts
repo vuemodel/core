@@ -1,7 +1,6 @@
 import { Model, Relation, useRepo } from 'pinia-orm'
 import { indexedDbState } from '../plugin/state'
-import { getDriverKey, IndexWiths } from '@vuemodel/core'
-import { getClassRelationships } from 'pinia-orm-helpers'
+import { getClassRelationships, getDriverKey, IndexWiths } from '@vuemodel/core'
 import { pick } from './pick'
 import { Constructor } from '../types/Constructor'
 import { createIndexedDbRepo } from './createIndexedDbRepo'

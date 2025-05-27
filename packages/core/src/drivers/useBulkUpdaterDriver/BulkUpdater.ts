@@ -1,6 +1,5 @@
 import { Collection, Model, ModelFields, Relation, Repository, useRepo } from 'pinia-orm'
 import { BulkUpdateForm, BulkUpdateMeta, UseBulkUpdateFormValidationErrors, UseBulkUpdaterOptions, UseBulkUpdaterReturn, UseBulkUpdateUpdateOptions } from '../../contracts/bulk-update/UseBulkUpdater'
-import { DeclassifyPiniaOrmModel, FilterPiniaOrmModelToFieldTypes, FilterPiniaOrmModelToRelationshipTypes, getClassRelationships, RelationshipDefinition } from 'pinia-orm-helpers'
 import { computed, ComputedRef, getCurrentScope, onScopeDispose, Ref, ref, toValue, WatchStopHandle } from 'vue'
 import { BulkUpdateErrorResponse, BulkUpdateResponse, BulkUpdateSuccessResponse, IndexResponse, SyncResponse } from '../../types/Response'
 import { generateRandomString } from '../../utils/generateRandomString'
@@ -23,6 +22,10 @@ import omit from 'just-omit'
 import { watchPausable } from '../../utils/watchPausable'
 import { useFormSyncer } from './useFormSyncer'
 import { StandardErrors } from '../../contracts/errors/StandardErrors'
+import { FilterPiniaOrmModelToRelationshipTypes } from '../../types/FilterPiniaOrmModelToRelationshipTypes'
+import { getClassRelationships, RelationshipDefinition } from '../../utils/getClassRelationships'
+import { FilterPiniaOrmModelToFieldTypes } from '../../types/FilterPiniaOrmModelToFieldTypes'
+import { DeclassifyPiniaOrmModel } from '../../types/DeclassifyPiniaOrmModel'
 
 const defaultOptions = {
   persist: true,

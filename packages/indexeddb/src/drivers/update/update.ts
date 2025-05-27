@@ -1,6 +1,5 @@
-import { FormValidationErrors, UpdateOptions, UpdateResponse, getMergedDriverConfig, LoosePrimaryKey, getDriverKey } from '@vuemodel/core'
+import { FormValidationErrors, UpdateOptions, UpdateResponse, getMergedDriverConfig, LoosePrimaryKey, getDriverKey, Form, getClassAttributes } from '@vuemodel/core'
 import { Model } from 'pinia-orm'
-import { getClassAttributes, PiniaOrmForm } from 'pinia-orm-helpers'
 import { indexedDbState } from '../../plugin/state'
 import { wait } from '../../utils/wait'
 import { makeMockErrorResponse } from '../../utils/makeMockErrorResponse'
@@ -11,7 +10,7 @@ import clone from 'just-clone'
 export async function update<T extends typeof Model> (
   ModelClass: T,
   id: LoosePrimaryKey,
-  form: PiniaOrmForm<InstanceType<T>>,
+  form: Form<InstanceType<T>>,
   options: UpdateOptions<T> = {},
 ): Promise<UpdateResponse<T>> {
   const dbPrefix = getDriverKey(options.driver) + ':'
@@ -35,7 +34,7 @@ export async function update<T extends typeof Model> (
         }],
         action: 'update',
         success: false,
-        validationErrors: {} as FormValidationErrors<T>,
+        validationErrors: {} as FormValidationErrors<InstanceType<T>>,
         record: undefined,
         entity: ModelClass.entity,
       })
@@ -49,7 +48,7 @@ export async function update<T extends typeof Model> (
         }],
         action: 'update',
         success: false,
-        validationErrors: {} as FormValidationErrors<T>,
+        validationErrors: {} as FormValidationErrors<InstanceType<T>>,
         record: undefined,
         entity: ModelClass.entity,
       })
@@ -74,7 +73,7 @@ export async function update<T extends typeof Model> (
         standardErrors: [{ message: `record with id ${idResolved} not found`, name: 'Not Found' }],
         success: false,
         action: 'update',
-        validationErrors: {} as FormValidationErrors<T>,
+        validationErrors: {} as FormValidationErrors<InstanceType<T>>,
         entity: ModelClass.entity,
       })
     }

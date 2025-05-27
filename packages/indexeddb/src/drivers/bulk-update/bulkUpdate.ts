@@ -1,6 +1,5 @@
-import { FormValidationErrors, getMergedDriverConfig, BulkUpdateOptions, BulkUpdateResponse, getDriverKey } from '@vuemodel/core'
+import { FormValidationErrors, getMergedDriverConfig, BulkUpdateOptions, BulkUpdateResponse, getDriverKey, Form, DeclassifyPiniaOrmModel, getClassAttributes } from '@vuemodel/core'
 import { Model } from 'pinia-orm'
-import { DeclassifyPiniaOrmModel, PiniaOrmForm, getClassAttributes } from 'pinia-orm-helpers'
 import { pick } from '../../utils/pick'
 import { indexedDbState } from '../../plugin/state'
 import { wait } from '../../utils/wait'
@@ -10,7 +9,7 @@ import { createIndexedDbRepo } from '../../utils/createIndexedDbRepo'
 
 export async function bulkUpdate<T extends typeof Model> (
   ModelClass: T,
-  forms: Record<string | number, PiniaOrmForm<InstanceType<T>>>,
+  forms: Record<string | number, Form<InstanceType<T>>>,
   options: BulkUpdateOptions<T> = {},
 ): Promise<BulkUpdateResponse<T>> {
   const dbPrefix = getDriverKey(options.driver) + ':'
@@ -34,7 +33,7 @@ export async function bulkUpdate<T extends typeof Model> (
         }],
         action: 'bulk-update',
         success: false,
-        validationErrors: {} as Record<string, FormValidationErrors<T>>,
+        validationErrors: {} as Record<string, FormValidationErrors<InstanceType<T>>>,
         records: undefined,
         entity: ModelClass.entity,
       })
@@ -48,7 +47,7 @@ export async function bulkUpdate<T extends typeof Model> (
         }],
         action: 'bulk-update',
         success: false,
-        validationErrors: {} as Record<string, FormValidationErrors<T>>,
+        validationErrors: {} as Record<string, FormValidationErrors<InstanceType<T>>>,
         records: undefined,
         entity: ModelClass.entity,
       })
@@ -77,7 +76,7 @@ export async function bulkUpdate<T extends typeof Model> (
           standardErrors: [{ message: `record with id ${id} not found`, name: 'Not Found' }],
           success: false,
           action: 'bulk-update',
-          validationErrors: {} as Record<string, FormValidationErrors<T>>,
+          validationErrors: {} as Record<string, FormValidationErrors<InstanceType<T>>>,
           entity: ModelClass.entity,
         })
       }

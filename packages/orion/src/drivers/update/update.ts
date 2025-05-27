@@ -1,13 +1,12 @@
-import { FormValidationErrors, UpdateOptions, UpdateResponse, getMergedDriverConfig, vueModelState } from '@vuemodel/core'
+import { DeclassifyPiniaOrmModel, Form, FormValidationErrors, UpdateOptions, UpdateResponse, getMergedDriverConfig, vueModelState } from '@vuemodel/core'
 import { Model } from 'pinia-orm'
-import { DeclassifyPiniaOrmModel, PiniaOrmForm } from 'pinia-orm-helpers'
 import { LoosePrimaryKey } from '@vuemodel/core/src/types/LoosePrimaryKey'
 import { OrionDriverOptions, orionState } from '../../plugin/state'
 
 export async function update<T extends typeof Model> (
   ModelClass: T,
   id: LoosePrimaryKey,
-  form: PiniaOrmForm<InstanceType<T>>,
+  form: Form<InstanceType<T>>,
   options: UpdateOptions<T> = {},
 ): Promise<UpdateResponse<T>> {
   return new Promise(async (resolve, reject) => {

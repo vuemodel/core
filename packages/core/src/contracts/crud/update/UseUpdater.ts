@@ -1,12 +1,12 @@
 import { Item, Model, Repository } from 'pinia-orm'
 import { FormValidationErrors } from '../../errors/FormValidationErrors'
 import { ComputedRef, MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
-import { PiniaOrmForm } from 'pinia-orm-helpers'
 import { StandardErrors } from '../../errors/StandardErrors'
 import { UpdateErrorResponse, UpdateResponse, UpdateSuccessResponse } from '../../../types/Response'
 import { UseFinderReturn } from '../find/UseFinder'
 import { LoosePrimaryKey } from '../../../types/LoosePrimaryKey'
 import { Callback } from '../../../utils/useCallbacks'
+import { Form } from '../../../types/Form'
 
 export interface UseUpdaterOptions<T extends typeof Model> {
   /**
@@ -18,7 +18,7 @@ export interface UseUpdaterOptions<T extends typeof Model> {
    * Form used to update the resource. If not provided,
    * one will be updated for us.
    */
-  form?: MaybeRef<PiniaOrmForm<InstanceType<T>>>,
+  form?: MaybeRef<Form<InstanceType<T>>>,
 
   /**
    * Attempt to fill in `updater.form.value` when `updater.id.value` changes.
@@ -140,8 +140,8 @@ export interface UseUpdaterReturn<T extends typeof Model> {
    * await update(3, { post_id: 8 })
    */
   update(id?: LoosePrimaryKey): Promise<UpdateResponse<T>>
-  update(id?: LoosePrimaryKey, form?: PiniaOrmForm<InstanceType<T>>): Promise<UpdateResponse<T>>
-  update(form?: PiniaOrmForm<InstanceType<T>>): Promise<UpdateResponse<T>>
+  update(id?: LoosePrimaryKey, form?: Form<InstanceType<T>>): Promise<UpdateResponse<T>>
+  update(form?: Form<InstanceType<T>>): Promise<UpdateResponse<T>>
   /**
    * A ref of the form used to update the resource. We'll
    * likely want to model fields of this form in the UI.
@@ -154,7 +154,7 @@ export interface UseUpdaterReturn<T extends typeof Model> {
    * <input v-model="updater.form.value.name" />
    * ```
    */
-  form: Ref<PiniaOrmForm<InstanceType<T>>>
+  form: Ref<Form<InstanceType<T>>>
 
   /**
    * Validation errors recieved from the latest request
@@ -223,7 +223,7 @@ export interface UseUpdaterReturn<T extends typeof Model> {
    *
    * updater.makeForm('1')
    */
-  makeForm: (targetId?: LoosePrimaryKey) => Promise<PiniaOrmForm<InstanceType<T>>>
+  makeForm: (targetId?: LoosePrimaryKey) => Promise<Form<InstanceType<T>>>
 
   /**
    * Record retrieved from the latest request
@@ -252,7 +252,7 @@ export interface UseUpdaterReturn<T extends typeof Model> {
    */
   activeRequests: Ref<Record<string | number, {
     request: Promise<UpdateResponse<T>> & { cancel(): void }
-    form: PiniaOrmForm<InstanceType<T>>
+    form: Form<InstanceType<T>>
   }>>
 
   /**

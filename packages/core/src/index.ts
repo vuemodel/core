@@ -1,5 +1,5 @@
 export * from './contracts/VueModelDriver'
-export { type PiniaOrmForm as Form } from 'pinia-orm-helpers'
+export { type Form } from './types/Form'
 
 // Plugin
 export * from './plugin/createVueModel'
@@ -85,6 +85,8 @@ export * from './utils/getMergedDriverConfig'
 export * from './utils/getBaseConfig'
 export * from './utils/populateFormWithRecord'
 export * from './utils/getRecordPrimaryKey'
+export * from './utils/getClassAttributes'
+export * from './utils/getClassRelationships'
 
 // Types
 export * from './types/LoosePrimaryKey'
@@ -92,3 +94,4 @@ export * from './types/Forms'
 export * from './broadcasting/BroadcastMessages'
 export * from './types/FilterPiniaOrmModelToManyRelationshipTypes'
 export * from './hooks/Hooks'
+export * from './types/DeclassifyPiniaOrmModel'

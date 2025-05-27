@@ -1,8 +1,8 @@
 import { Model } from 'pinia-orm'
 import { FilterPiniaOrmModelToManyRelationshipTypes } from '../types/FilterPiniaOrmModelToManyRelationshipTypes'
-import { DeclassifyPiniaOrmModel } from 'pinia-orm-helpers'
 import { SyncOptions } from '../contracts/sync/Sync'
 import { LoosePrimaryKey } from '../types/LoosePrimaryKey'
+import { DeclassifyPiniaOrmModel } from '../types/DeclassifyPiniaOrmModel'
 
 export function resolveSyncParams<T extends typeof Model> (...params: any[]): {
   ModelClass: T,

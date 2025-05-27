@@ -1,6 +1,5 @@
-import { DestroyOptions, DestroyResponse, getMergedDriverConfig, vueModelState } from '@vuemodel/core'
+import { DeclassifyPiniaOrmModel, DestroyOptions, DestroyResponse, getMergedDriverConfig, vueModelState } from '@vuemodel/core'
 import { Model } from 'pinia-orm'
-import { DeclassifyPiniaOrmModel } from 'pinia-orm-helpers'
 import { OrionDriverOptions, orionState } from '../../plugin/state'
 import { LoosePrimaryKey } from '@vuemodel/core/src/types/LoosePrimaryKey'
 

@@ -1,7 +1,7 @@
 import { Model } from 'pinia-orm'
 import { Attr, BelongsTo, BelongsToMany, HasMany, Uid } from 'pinia-orm/dist/decorators'
 import { Album } from './albums'
-import { PiniaOrmForm } from 'pinia-orm-helpers'
+import { Form } from '@vuemodel/core'
 import { PhotoTag } from './photoTags'
 import photosJson from './json/photos.json'
 import { Tag } from './tags'
@@ -21,4 +21,4 @@ export class Photo extends Model {
   @BelongsToMany(() => Tag, () => PhotoTag, 'photo_id', 'tag_id') declare tags: Tag[]
 }
 
-export const photos: PiniaOrmForm<Photo>[] = photosJson
+export const photos: Form<Photo>[] = photosJson

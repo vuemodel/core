@@ -1,14 +1,14 @@
 import { Item, Model, Repository } from 'pinia-orm'
 import { FormValidationErrors } from '../../errors/FormValidationErrors'
 import { ComputedRef, MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
-import { PiniaOrmForm } from 'pinia-orm-helpers'
 import { StandardErrors } from '../../errors/StandardErrors'
 import { CreateErrorResponse, CreateResponse, CreateSuccessResponse, CreateValidationErrorResponse } from '../../../types/Response'
 import { Callback } from '../../../utils/useCallbacks'
 import { CreateFormValidationErrorResponse } from '../../..'
 import { PiniaOrmManyRelationsForm } from '../../../types/PiniaOrmManyRelationsForm'
+import { Form } from '../../../types/Form'
 
-export type CreateForm<T extends Model> = PiniaOrmForm<T> & PiniaOrmManyRelationsForm<T>
+export type CreateForm<T extends Model> = Form<T> & PiniaOrmManyRelationsForm<T>
 
 export interface UseCreatorOptions<T extends typeof Model> {
   /**

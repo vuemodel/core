@@ -1,15 +1,16 @@
 import { Collection, Item, Model, Repository } from 'pinia-orm'
 import { ComputedRef, MaybeRefOrGetter, Ref } from 'vue'
-import { FilterPiniaOrmModelToFieldTypes, FilterPiniaOrmModelToRelationshipTypes, PiniaOrmForm } from 'pinia-orm-helpers'
 import { BulkUpdateErrorResponse, BulkUpdateResponse, BulkUpdateSuccessResponse, SyncResponse } from '../../types/Response'
 import { FormValidationErrors } from '../errors/FormValidationErrors'
 import { StandardErrors } from '../errors/StandardErrors'
 import { UseIndexerOptions, UseIndexerReturn } from '../crud/index/UseIndexer'
 import { PiniaOrmManyRelationsForm } from '../../types/PiniaOrmManyRelationsForm'
-import { Form } from '../..'
 import { Callback } from '../../utils/useCallbacks'
 import { FilterPiniaOrmModelToManyRelationshipTypes } from '../../types/FilterPiniaOrmModelToManyRelationshipTypes'
 import { FilterPiniaOrmModelToHasOneRelationshipTypes } from '../../types/FilterPiniaOrmModelToHasOneRelationshipTypes'
+import { Form } from '../../types/Form'
+import { FilterPiniaOrmModelToRelationshipTypes } from '../../types/FilterPiniaOrmModelToRelationshipTypes'
+import { FilterPiniaOrmModelToFieldTypes } from '../../types/FilterPiniaOrmModelToFieldTypes'
 
 type UnwrapType<T> =
   T extends Array<infer U> ? U :
@@ -19,7 +20,7 @@ type UnwrapType<T> =
 export type AppendFormsSuffix<T extends string> = `${T}_forms`
 export type AppendFormSuffix<T extends string> = `${T}_form`
 
-export type BulkUpdateForm<T extends Model> = PiniaOrmForm<T> & PiniaOrmManyRelationsForm<T>
+export type BulkUpdateForm<T extends Model> = Form<T> & PiniaOrmManyRelationsForm<T>
 
 export type UseBulkUpdateFormValidationErrors<T extends Model> = Record<
   string,

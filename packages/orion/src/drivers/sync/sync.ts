@@ -1,8 +1,7 @@
-import { FilterPiniaOrmModelToManyRelationshipTypes, SyncOptions, SyncResponse, getMergedDriverConfig, vueModelState, UseBulkUpdateFormValidationErrors } from '@vuemodel/core'
+import { FilterPiniaOrmModelToManyRelationshipTypes, SyncOptions, SyncResponse, getMergedDriverConfig, vueModelState, UseBulkUpdateFormValidationErrors, getClassRelationships, RelationshipDefinition } from '@vuemodel/core'
 import { Model } from 'pinia-orm'
 import { LoosePrimaryKey } from '@vuemodel/core/src/types/LoosePrimaryKey'
 import { OrionDriverOptions, orionState } from '../../plugin/state'
-import { getClassRelationships, RelationshipDefinition } from 'pinia-orm-helpers'
 
 export async function sync<T extends typeof Model> (
   ModelClass: T, // When a Model class is passed, use this signature
@@ -37,7 +36,7 @@ export async function sync<T extends typeof Model> (
         }],
         action: 'sync',
         success: false,
-        validationErrors: {} as UseBulkUpdateFormValidationErrors<T>,
+        validationErrors: {} as UseBulkUpdateFormValidationErrors<InstanceType<T>>,
         entity: ModelClass.entity,
         attached: undefined,
         detached: undefined,
@@ -53,7 +52,7 @@ export async function sync<T extends typeof Model> (
         }],
         action: 'sync',
         success: false,
-        validationErrors: {} as UseBulkUpdateFormValidationErrors<T>,
+        validationErrors: {} as UseBulkUpdateFormValidationErrors<InstanceType<T>>,
         entity: ModelClass.entity,
         attached: undefined,
         detached: undefined,
@@ -120,7 +119,7 @@ export async function sync<T extends typeof Model> (
     } catch (err: any) {
       const result: SyncResponse<T> = {
         standardErrors: [],
-        validationErrors: {} as UseBulkUpdateFormValidationErrors<T>,
+        validationErrors: {} as UseBulkUpdateFormValidationErrors<InstanceType<T>>,
         success: false,
         action: 'sync',
         attached: undefined,

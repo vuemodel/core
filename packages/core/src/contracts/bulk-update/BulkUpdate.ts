@@ -1,6 +1,6 @@
 import { Model } from 'pinia-orm'
-import { PiniaOrmForm } from 'pinia-orm-helpers'
 import { BulkUpdateErrorResponse, BulkUpdateResponse } from '../../types/Response'
+import { Form } from '../../types/Form'
 
 export interface BulkUpdateOptions<T extends typeof Model> {
   driver?: string
@@ -11,6 +11,6 @@ export interface BulkUpdateOptions<T extends typeof Model> {
 
 export type BulkUpdate<T extends typeof Model> = (
   ModelClass: T,
-  forms: Record<string | number, PiniaOrmForm<InstanceType<T>>>,
+  forms: Record<string | number, Form<InstanceType<T>>>,
   options?: BulkUpdateOptions<T>
 ) => Promise<BulkUpdateResponse<T>>

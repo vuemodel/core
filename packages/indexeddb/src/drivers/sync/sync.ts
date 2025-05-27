@@ -1,6 +1,5 @@
-import { FormValidationErrors, getMergedDriverConfig, SyncOptions, SyncResponse, LoosePrimaryKey, FilterPiniaOrmModelToManyRelationshipTypes, getDriverKey, getRecordPrimaryKey } from '@vuemodel/core'
+import { FormValidationErrors, getMergedDriverConfig, SyncOptions, SyncResponse, LoosePrimaryKey, FilterPiniaOrmModelToManyRelationshipTypes, getDriverKey, getRecordPrimaryKey, DeclassifyPiniaOrmModel } from '@vuemodel/core'
 import { Model } from 'pinia-orm'
-import { DeclassifyPiniaOrmModel } from 'pinia-orm-helpers'
 import { indexedDbState } from '../../plugin/state'
 import { wait } from '../../utils/wait'
 import { makeMockErrorResponse } from '../../utils/makeMockErrorResponse'
@@ -38,7 +37,7 @@ export async function sync<T extends typeof Model> (
         }],
         action: 'sync',
         success: false,
-        validationErrors: {} as Record<string, FormValidationErrors<T>>,
+        validationErrors: {} as Record<string, FormValidationErrors<InstanceType<T>>>,
         attached: undefined,
         detached: undefined,
         updated: undefined,
@@ -54,7 +53,7 @@ export async function sync<T extends typeof Model> (
         }],
         action: 'sync',
         success: false,
-        validationErrors: {} as Record<string, FormValidationErrors<T>>,
+        validationErrors: {} as Record<string, FormValidationErrors<InstanceType<T>>>,
         attached: undefined,
         detached: undefined,
         updated: undefined,

@@ -1,6 +1,5 @@
 import { getDriverFunction } from '../getDriverFunction'
 import { Model } from 'pinia-orm'
-import { PiniaOrmForm } from 'pinia-orm-helpers'
 import { BulkUpdateResponse } from '../types/Response'
 import { resolveBulkUpdateParams } from './resolveBulkUpdateParams'
 import { BulkUpdate, BulkUpdateOptions } from '../contracts/bulk-update/BulkUpdate'
@@ -9,6 +8,7 @@ import { OnBulkUpdatedMessage, OnBulkUpdatingMessage } from '../broadcasting/Bro
 import { getDriverKey } from '../utils/getDriverKey'
 import { getMergedDriverConfig } from '../utils/getMergedDriverConfig'
 import { deepmerge } from 'deepmerge-ts'
+import { Form } from '../types/Form'
 
 /**
  * Bulk update records on the "backend".
@@ -31,8 +31,8 @@ import { deepmerge } from 'deepmerge-ts'
  */
 export function bulkUpdate<T extends typeof Model> (
   ModelClass: T | string,
-  forms: Record<string | number, PiniaOrmForm<InstanceType<T>>> | T,
-  options?: BulkUpdateOptions<T> | Record<string | number, PiniaOrmForm<InstanceType<T>>>,
+  forms: Record<string | number, Form<InstanceType<T>>> | T,
+  options?: BulkUpdateOptions<T> | Record<string | number, Form<InstanceType<T>>>,
   hasDriverOptions?: BulkUpdateOptions<T>,
 ): Promise<BulkUpdateResponse<T>> {
   const params = resolveBulkUpdateParams<T>(ModelClass, forms, options, hasDriverOptions)

@@ -1,6 +1,5 @@
 import { Model, Repository } from 'pinia-orm'
 import { MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
-import { PiniaOrmForm } from 'pinia-orm-helpers'
 import { CreateResponse, UpdateResponse } from '../../../types/Response'
 import { UseBulkUpdaterOptions, UseBulkUpdaterReturn } from '../../bulk-update/UseBulkUpdater'
 import { UseCreatorOptions, UseCreatorReturn } from '../create/UseCreator'
@@ -8,6 +7,7 @@ import { UseDestroyerOptions, UseDestroyerReturn } from '../destroy/UseDestroyer
 import { UseIndexerOptions, UseIndexerReturn } from '../index/UseIndexer'
 import { IndexFilters } from '../index/IndexFilters'
 import { LoosePrimaryKey } from '../../../types/LoosePrimaryKey'
+import { Form } from '../../../types/Form'
 
 export interface UseModelOptions<T extends typeof Model> {
   /**
@@ -125,7 +125,7 @@ export interface UseModelReturn<T extends typeof Model> {
 
     formsKeyed: UseBulkUpdaterReturn<T>['forms']
 
-    form: Ref<PiniaOrmForm<InstanceType<T>> | null>
+    form: Ref<Form<InstanceType<T>> | null>
 
     forms: UseBulkUpdaterReturn<T>['forms']
 
@@ -204,7 +204,7 @@ export interface UseModelReturn<T extends typeof Model> {
     isLastPage: UseIndexerReturn<T>['isLastPage'],
   },
 
-  updateOrCreate: (filter: IndexFilters<InstanceType<T>>, data: PiniaOrmForm<InstanceType<T>>) => Promise<UpdateResponse<T> | CreateResponse<T>>
+  updateOrCreate: (filter: IndexFilters<InstanceType<T>>, data: Form<InstanceType<T>>) => Promise<UpdateResponse<T> | CreateResponse<T>>
 
   /**
    * The PiniaORM model used to create this composable

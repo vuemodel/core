@@ -1,7 +1,6 @@
-import { Form } from '@vuemodel/core'
+import { DeclassifyPiniaOrmModel, Form } from '@vuemodel/core'
 import clone from 'just-clone'
 import { Model } from 'pinia-orm'
-import { DeclassifyPiniaOrmModel } from 'pinia-orm-helpers'
 
 // const createdDatabases: { [key: string]: boolean } = {}
 

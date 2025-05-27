@@ -1,7 +1,7 @@
 import { Model } from 'pinia-orm'
-import { PiniaOrmForm } from 'pinia-orm-helpers'
 import { UpdateResponse } from '../../../types/Response'
 import { LoosePrimaryKey } from '../../../types/LoosePrimaryKey'
+import { Form } from '../../../types/Form'
 
 export interface UpdateOptions<T extends typeof Model> {
   driver?: string
@@ -13,6 +13,6 @@ export interface UpdateOptions<T extends typeof Model> {
 export type Update<T extends typeof Model> = (
   ModelClass: T,
   id: LoosePrimaryKey,
-  form: PiniaOrmForm<InstanceType<T>>,
+  form: Form<InstanceType<T>>,
   options?: UpdateOptions<T>
 ) => Promise<UpdateResponse<T>>

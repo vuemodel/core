@@ -1,6 +1,5 @@
 import clone from 'just-clone'
 import { Collection, Item, Model } from 'pinia-orm'
-import { PiniaOrmForm } from 'pinia-orm-helpers'
 import { computed, nextTick, toValue, watch } from 'vue'
 import { BulkUpdateForm, BulkUpdateMeta } from '../../contracts/bulk-update/UseBulkUpdater'
 import { getFormsChangedValues } from './getFormsChangedValues'
@@ -14,6 +13,7 @@ import { BulkUpdater } from './BulkUpdater'
 import { makeChannel } from '../../broadcasting/makeChannel'
 import { OnCreatePersistMessage, OnDestroyPersistMessage } from '../../broadcasting/BroadcastMessages'
 import remove from 'just-remove'
+import { Form } from '../../types/Form'
 
 export function useFormMaker<
   T extends typeof Model,
@@ -131,14 +131,14 @@ export function useFormMaker<
     return defaultMeta
   }
 
-  function addRawForm (id: string, form: PiniaOrmForm<InstanceType<T>>) {
+  function addRawForm (id: string, form: Form<InstanceType<T>>) {
     bulkUpdater.meta.value[id] = makeDefaultMeta(id)
     bulkUpdater.meta.value[id].initialValues = clone(form)
     bulkUpdater.meta.value[id].id = id
     bulkUpdater.meta.value[id].form = bulkUpdater.formsKeyed.value[id]
   }
 
-  function addRawForms (forms: Record<string, PiniaOrmForm<InstanceType<T>>>): void {
+  function addRawForms (forms: Record<string, Form<InstanceType<T>>>): void {
     Object.entries(forms).forEach(([id, form]) => addRawForm(id, form))
   }
 
@@ -339,7 +339,7 @@ export function useFormMaker<
 
   async function makeForms (
     targetIds?: string[],
-  ): Promise<Record<string, PiniaOrmForm<InstanceType<T>>>> {
+  ): Promise<Record<string, Form<InstanceType<T>>>> {
     const missingModelIds: string[] = []
 
     if (!targetIds) {

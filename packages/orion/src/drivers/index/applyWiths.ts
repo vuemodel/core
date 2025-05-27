@@ -1,6 +1,5 @@
 import { Model, Relation } from 'pinia-orm'
-import { IndexWiths } from '@vuemodel/core'
-import { getClassAttributes, getClassRelationships } from 'pinia-orm-helpers'
+import { getClassAttributes, getClassRelationships, IndexWiths } from '@vuemodel/core'
 import { pick } from '../../utils/pick'
 import { applyFilters } from './applyFilters'
 import { Constructor } from '../../types/Constructor'

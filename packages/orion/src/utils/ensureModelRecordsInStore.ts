@@ -1,8 +1,7 @@
 import { Model, Relation, useRepo } from 'pinia-orm'
 import { orionState } from '../plugin/state'
 import { get as getItem } from 'idb-keyval'
-import { IndexWiths } from '@vuemodel/core'
-import { getClassRelationships } from 'pinia-orm-helpers'
+import { getClassRelationships, IndexWiths } from '@vuemodel/core'
 import { pick } from './pick'
 import { Constructor } from '../types/Constructor'
 

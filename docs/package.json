@@ -30,7 +30,7 @@
     "change-case": "^5.1.2",
     "fake-indexeddb": "^5.0.1",
     "pinia": "^2.1.6",
-    "pinia-orm": "1.7.x",
+    "pinia-orm": "1.10.x",
     "quasar": "^2.18.1",
     "shiki": "^3.3.0",
     "vue": "^3.5.13"

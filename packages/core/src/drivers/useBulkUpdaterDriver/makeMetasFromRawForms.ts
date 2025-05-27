@@ -1,13 +1,13 @@
-import { PiniaOrmForm } from 'pinia-orm-helpers'
 import { BulkUpdateMeta, UseBulkUpdaterReturn } from '../../contracts/bulk-update/UseBulkUpdater'
 import { Model } from 'pinia-orm'
+import { Form } from '../../types/Form'
 
 export function makeMetasFromRawForms<
   T extends typeof Model,
   R extends UseBulkUpdaterReturn<T>
 > (
   options: {
-    rawForms: Record<string, PiniaOrmForm<InstanceType<T>>>,
+    rawForms: Record<string, Form<InstanceType<T>>>,
     defaultMeta: BulkUpdateMeta<T>
     meta: R['meta']
   },

@@ -1,5 +1,4 @@
 import { Model, Query, Relation } from 'pinia-orm'
-import { getClassAttributes, getClassRelationships } from 'pinia-orm-helpers'
 import { applyFilters } from './applyFilters'
 import { applyOrderBys } from './applyOrderBys'
 import { pick } from './pick'
@@ -10,6 +9,8 @@ import { IndexWiths } from '../contracts/crud/index/IndexWiths'
 import { vueModelState } from '../plugin/state'
 import { UseIndexerOptions } from '../contracts/crud/index/UseIndexer'
 import { toValue } from 'vue'
+import { getClassAttributes } from './getClassAttributes'
+import { getClassRelationships } from './getClassRelationships'
 
 export function applyWiths<T extends Model> (
   ModelClass: Constructor<T>,

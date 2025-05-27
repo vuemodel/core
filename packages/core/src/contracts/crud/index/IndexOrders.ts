@@ -1,5 +1,5 @@
-import { DeclassifyPiniaOrmModel } from 'pinia-orm-helpers'
 import { Model } from 'pinia-orm'
+import { DeclassifyPiniaOrmModel } from '../../../types/DeclassifyPiniaOrmModel'
 
 export type OrderDirection = 'ascending' | 'descending'
 

@@ -1,11 +1,11 @@
 import deepEqual from 'deep-equal'
 import { Model, useRepo } from 'pinia-orm'
-import { getClassRelationships } from 'pinia-orm-helpers'
 import { BulkUpdateForm, UseBulkUpdaterReturn } from '../../contracts/bulk-update/UseBulkUpdater'
 import { conformManyRelationIdArraysToObjectSyntax } from './conformManyRelationIdArraysToObjectSyntax'
 import { conformBelongsToManyRelationsToObjectSyntax } from './conformBelongsToManyRelationsToObjectSyntax'
 import { getRecordPrimaryKey } from '../../utils/getRecordPrimaryKey'
 import clone from 'just-clone'
+import { getClassRelationships } from '../../utils/getClassRelationships'
 
 export function getFormsChangedValues<
   T extends typeof Model,

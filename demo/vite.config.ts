@@ -19,6 +19,10 @@ export default defineConfig({
     }),
   ],
   optimizeDeps: {
-    exclude: ['@vuemodel/core'],
+    exclude: [
+      '@vuemodel/core',
+      '@vuemodel/sample-data',
+      '@vuemodel/indexeddb'
+    ],
   },
 })

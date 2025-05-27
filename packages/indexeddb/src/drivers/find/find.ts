@@ -1,17 +1,17 @@
 import {
+  DeclassifyPiniaOrmModel,
   FindOptions,
   FindResponse,
   getDriverKey,
   getMergedDriverConfig,
+  LoosePrimaryKey,
 } from '@vuemodel/core'
 import { Model, useRepo } from 'pinia-orm'
-import { DeclassifyPiniaOrmModel } from 'pinia-orm-helpers'
 import { indexedDbState } from '../../plugin/state'
 import { wait } from '../../utils/wait'
 import { applyWiths } from '../index/applyWiths'
 import { makeMockErrorResponse } from '../../utils/makeMockErrorResponse'
 import { ensureModelRecordsInStore } from '../../utils/ensureModelRecordsInStore'
-import { LoosePrimaryKey } from '@vuemodel/core/src/types/LoosePrimaryKey'
 import { createIndexedDbRepo } from '../../utils/createIndexedDbRepo'
 
 export async function find<T extends typeof Model> (

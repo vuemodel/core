@@ -6,11 +6,11 @@ import clone from 'just-clone'
 import { OnSyncingMessage, OnSyncedMessage } from '../broadcasting/BroadcastMessages'
 import { Sync, SyncOptions } from '../contracts/sync/Sync'
 import { FilterPiniaOrmModelToManyRelationshipTypes } from '../types/FilterPiniaOrmModelToManyRelationshipTypes'
-import { DeclassifyPiniaOrmModel } from 'pinia-orm-helpers'
 import { LoosePrimaryKey } from '../types/LoosePrimaryKey'
 import { getDriverKey } from '../utils/getDriverKey'
 import { getMergedDriverConfig } from '../utils/getMergedDriverConfig'
 import { deepmerge } from 'deepmerge-ts'
+import { DeclassifyPiniaOrmModel } from '../types/DeclassifyPiniaOrmModel'
 
 export function sync<T extends typeof Model>(
   ModelClass: T, // When a Model class is passed, use this signature

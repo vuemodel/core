@@ -1,11 +1,11 @@
 import { Model } from 'pinia-orm'
 import { IndexWiths } from '../contracts/crud/index/IndexWiths'
 import { BulkUpdateSuccessResponse, CreateSuccessResponse, DestroySuccessResponse, FindSuccessResponse, IndexSuccessResponse, SyncSuccessResponse, UpdateSuccessResponse } from '../types/Response'
-import { PiniaOrmForm } from 'pinia-orm-helpers'
 import { LoosePrimaryKey } from '../types/LoosePrimaryKey'
 import { UseIndexerOptions } from '../contracts/crud/index/UseIndexer'
 import { IndexOptions } from '../contracts/crud/index/Index'
 import { RemoveFunctions } from '../utils/removeFunctions'
+import { Form } from '../types/Form'
 
 type IfAny<T, Y, N> = 0 extends (1 & T) ? Y : N;
 type IsAny<T> = IfAny<T, true, false>;
@@ -36,7 +36,7 @@ export interface FindPersistHookPayload<T extends typeof Model = typeof Model> {
 export interface UpdatingHookPayload<T extends typeof Model = typeof Model> {
   ModelClass: T
   entity: string
-  form: [T] extends [typeof Model] ? Record<string, any> : PiniaOrmForm<InstanceType<T>>
+  form: [T] extends [typeof Model] ? Record<string, any> : Form<InstanceType<T>>
   id: LoosePrimaryKey
 }
 
@@ -55,13 +55,13 @@ export type UpdatePersistHookPayload<T extends typeof Model = typeof Model> = {
 export type UpdateOptimisticPersistHookPayload<T extends typeof Model = typeof Model> = {
   ModelClass: T
   entity: string
-  form: [T] extends [typeof Model] ? Record<string, any> : PiniaOrmForm<InstanceType<T>>
+  form: [T] extends [typeof Model] ? Record<string, any> : Form<InstanceType<T>>
 }
 
 export interface BulkUpdatingHookPayload<T extends typeof Model = typeof Model> {
   ModelClass: T
   entity: string
-  forms: Record<string | number, [T] extends [typeof Model] ? Record<string, any> : PiniaOrmForm<InstanceType<T>>>
+  forms: Record<string | number, [T] extends [typeof Model] ? Record<string, any> : Form<InstanceType<T>>>
 }
 
 export interface BulkUpdatedHookPayload<T extends typeof Model = typeof Model> {
@@ -79,7 +79,7 @@ export interface BulkUpdatePersistHookPayload<T extends typeof Model = typeof Mo
 export interface CreatingHookPayload<T extends typeof Model = typeof Model> {
   ModelClass: T
   entity: string
-  form: [T] extends [typeof Model] ? Record<string, any> : PiniaOrmForm<InstanceType<T>>
+  form: [T] extends [typeof Model] ? Record<string, any> : Form<InstanceType<T>>
 }
 
 export interface CreatedHookPayload<T extends typeof Model = typeof Model> {
@@ -91,7 +91,7 @@ export interface CreatedHookPayload<T extends typeof Model = typeof Model> {
 export interface CreateOptimisticPersistHookPayload<T extends typeof Model = typeof Model> {
   ModelClass: T
   entity: string
-  form: [T] extends [typeof Model] ? Record<string, any> : PiniaOrmForm<InstanceType<T>>
+  form: [T] extends [typeof Model] ? Record<string, any> : Form<InstanceType<T>>
 }
 
 export interface CreatePersistHookPayload<T extends typeof Model = typeof Model> {

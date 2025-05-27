@@ -1,11 +1,11 @@
 import { Model } from 'pinia-orm'
 import { IndexWiths } from '../contracts/crud/index/IndexWiths'
 import { BulkUpdateSuccessResponse, CreateSuccessResponse, DestroySuccessResponse, FindSuccessResponse, IndexSuccessResponse, SyncSuccessResponse, UpdateSuccessResponse } from '../types/Response'
-import { PiniaOrmForm } from 'pinia-orm-helpers'
 import { LoosePrimaryKey } from '../types/LoosePrimaryKey'
 import { UseIndexerOptions } from '../contracts/crud/index/UseIndexer'
 import { IndexOptions } from '../contracts/crud/index/Index'
 import { RemoveFunctions } from '../utils/removeFunctions'
+import { Form } from '../types/Form'
 
 export interface OnFindingMessage<T extends typeof Model = typeof Model> {
   entity: string
@@ -27,7 +27,7 @@ export interface OnFindPersistMessage<T extends typeof Model = typeof Model> {
 
 export interface OnUpdatingMessage<T extends typeof Model = typeof Model> {
   entity: string
-  form: PiniaOrmForm<InstanceType<T>>
+  form: Form<InstanceType<T>>
   id: LoosePrimaryKey
 }
 
@@ -43,12 +43,12 @@ export type OnUpdatePersistMessage<T extends typeof Model = typeof Model> = {
 
 export type OnUpdateOptimisticPersistMessage<T extends typeof Model = typeof Model> = {
   entity: string
-  form: PiniaOrmForm<InstanceType<T>>
+  form: Form<InstanceType<T>>
 }
 
 export interface OnBulkUpdatingMessage<T extends typeof Model = typeof Model> {
   entity: string
-  forms: Record<string | number, PiniaOrmForm<InstanceType<T>>>
+  forms: Record<string | number, Form<InstanceType<T>>>
 }
 
 export interface OnBulkUpdatedMessage<T extends typeof Model = typeof Model> {
@@ -63,7 +63,7 @@ export interface OnBulkUpdatePersistMessage<T extends typeof Model = typeof Mode
 
 export interface OnCreatingMessage<T extends typeof Model = typeof Model> {
   entity: string
-  form: PiniaOrmForm<InstanceType<T>>
+  form: Form<InstanceType<T>>
 }
 
 export interface OnCreatedMessage<T extends typeof Model = typeof Model> {
@@ -73,7 +73,7 @@ export interface OnCreatedMessage<T extends typeof Model = typeof Model> {
 
 export interface OnCreateOptimisticPersistMessage<T extends typeof Model = typeof Model> {
   entity: string
-  form: PiniaOrmForm<InstanceType<T>>
+  form: Form<InstanceType<T>>
 }
 
 export interface OnCreatePersistMessage<T extends typeof Model = typeof Model> {

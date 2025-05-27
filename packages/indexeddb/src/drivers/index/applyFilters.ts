@@ -1,7 +1,6 @@
 import { Model, Query } from 'pinia-orm'
-import { IndexFilters, FilterTypeToValueBase } from '@vuemodel/core'
+import { IndexFilters, FilterTypeToValueBase, getClassAttributes, getClassRelationships } from '@vuemodel/core'
 import { whereFunctions } from './whereFunctions'
-import { getClassAttributes, getClassRelationships } from 'pinia-orm-helpers'
 import { pick } from '../../utils/pick'
 
 type FilterGroup = Partial<Record<keyof Model, FilterTypeToValueBase | FilterTypeToValueBase[]>>[]

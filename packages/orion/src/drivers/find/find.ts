@@ -1,4 +1,5 @@
 import {
+  DeclassifyPiniaOrmModel,
   FindOptions,
   FindResponse,
   getMergedDriverConfig,
@@ -7,7 +8,6 @@ import {
 import { Model } from 'pinia-orm'
 import { OrionDriverOptions, orionState } from '../../plugin/state'
 import { LoosePrimaryKey } from '@vuemodel/core/src/types/LoosePrimaryKey'
-import { DeclassifyPiniaOrmModel } from 'pinia-orm-helpers'
 import { applyWiths } from '../index/applyWiths'
 import qs from 'qs'
 

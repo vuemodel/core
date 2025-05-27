@@ -1,5 +1,5 @@
-import { FilterPiniaOrmModelToRelationshipTypes } from 'pinia-orm-helpers'
 import { Model } from 'pinia-orm'
+import { FilterPiniaOrmModelToRelationshipTypes } from '../../../types/FilterPiniaOrmModelToRelationshipTypes';
 
 type UnwrapModelType<T> = 
   T extends Array<infer U> ? (U extends Model ? U : never) :

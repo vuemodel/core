@@ -1,7 +1,6 @@
 import { getDriverFunction } from '../getDriverFunction'
 import { Update, UpdateOptions } from '../contracts/crud/update/Update'
 import { Model } from 'pinia-orm'
-import { PiniaOrmForm } from 'pinia-orm-helpers'
 import { UpdateResponse } from '../types/Response'
 import { LoosePrimaryKey } from '../types/LoosePrimaryKey'
 import { resolveUpdateParams } from './resolveUpdateParams'
@@ -10,6 +9,7 @@ import { OnUpdatedMessage, OnUpdatingMessage } from '../broadcasting/BroadcastMe
 import { getDriverKey } from '../utils/getDriverKey'
 import { getMergedDriverConfig } from '../utils/getMergedDriverConfig'
 import { deepmerge } from 'deepmerge-ts'
+import { Form } from '../types/Form'
 
 /**
  * Update a record on the "backend".
@@ -31,8 +31,8 @@ import { deepmerge } from 'deepmerge-ts'
 export function update<T extends typeof Model> (
   ModelClass: T | string,
   id: LoosePrimaryKey | T,
-  form: PiniaOrmForm<InstanceType<T>> | LoosePrimaryKey,
-  options?: UpdateOptions<T> | PiniaOrmForm<InstanceType<T>>,
+  form: Form<InstanceType<T>> | LoosePrimaryKey,
+  options?: UpdateOptions<T> | Form<InstanceType<T>>,
   hasDriverOptions?: UpdateOptions<T>,
 ): Promise<UpdateResponse<T>> {
   const params = resolveUpdateParams<T>(ModelClass, id, form, options, hasDriverOptions)

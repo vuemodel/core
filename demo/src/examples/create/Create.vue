@@ -1,10 +1,9 @@
 <script lang="ts" setup>
-import { create } from '@vuemodel/core'
+import { create, type Form } from '@vuemodel/core'
 import { Post } from '@vuemodel/sample-data'
 import { ref } from 'vue'
-import { type PiniaOrmForm } from 'pinia-orm-helpers'
 
-const form = ref<PiniaOrmForm<Post>>({})
+const form = ref<Form<Post>>({})
 </script>
 
 <template>

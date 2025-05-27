@@ -9,10 +9,11 @@ import { Ref, ref, toValue, watch } from 'vue'
 import { useUpdater } from '../composables/useUpdater'
 import { applyFilters } from '../utils/applyFilters'
 import { useIndexer } from '../composables/useIndexer'
-import { DeclassifyPiniaOrmModel, PiniaOrmForm } from 'pinia-orm-helpers'
 import { getRecordPrimaryKey } from '../utils/getRecordPrimaryKey'
 import { LoosePrimaryKey } from '../types/LoosePrimaryKey'
 import { deepmerge } from 'deepmerge-ts'
+import { Form } from '../types/Form'
+import { DeclassifyPiniaOrmModel } from '../types/DeclassifyPiniaOrmModel'
 
 const defaultOptions = {
 
@@ -42,7 +43,7 @@ export function useModelDriver<
 
   /** @ts-expect-error typings don't seem to reflect that you can "ref a ref" */
   const showUpdateFormId = ref<LoosePrimaryKey | false>(options.showFormId !== undefined ? options.showFormId : false)
-  const updateForm: Ref<PiniaOrmForm<InstanceType<T>> | null> = ref(null)
+  const updateForm: Ref<Form<InstanceType<T>> | null> = ref(null)
   bulkUpdater.onSuccess(() => {
     if(!toValue(options.update?.autoUpdate)) {
       showUpdateFormId.value = false

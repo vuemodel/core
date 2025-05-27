@@ -1,6 +1,5 @@
 <script lang="ts" setup>
-import { index, type IndexFilters } from '@vuemodel/core'
-import type { DeclassifyPiniaOrmModel } from 'pinia-orm-helpers'
+import { index, type IndexFilters, type DeclassifyPiniaOrmModel } from '@vuemodel/core'
 import { Post, populateRecords } from '@vuemodel/sample-data'
 import { ref } from 'vue'
 

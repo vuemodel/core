@@ -1,10 +1,10 @@
 import { Model } from 'pinia-orm'
-import { PiniaOrmForm } from 'pinia-orm-helpers'
 import { CreateOptions } from '../contracts/crud/create/Create'
+import { Form } from '../types/Form'
 
 export function resolveCreateParams<T extends typeof Model> (...params: any[]): {
   ModelClass: T
-  form: PiniaOrmForm<InstanceType<T>>
+  form: Form<InstanceType<T>>
   options: CreateOptions<T>
 } {
   if (typeof params[0] === 'string') {

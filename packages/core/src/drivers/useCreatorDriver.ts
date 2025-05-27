@@ -1,6 +1,5 @@
 import { Model, PrimaryKey, useRepo } from 'pinia-orm'
 import { Ref, computed, ref, toValue } from 'vue'
-import { DeclassifyPiniaOrmModel, FilterPiniaOrmModelToRelationshipTypes, getClassRelationships, PiniaOrmForm, RelationshipDefinition } from 'pinia-orm-helpers'
 import { UseCreatorOptions, UseCreatorReturn } from '../contracts/crud/create/UseCreator'
 import { CreateErrorResponse, CreateResponse, CreateSuccessResponse, CreateValidationErrorResponse, SyncResponse } from '../types/Response'
 import { FormValidationErrors } from '../contracts/errors/FormValidationErrors'
@@ -19,7 +18,10 @@ import { OnCreateOptimisticPersistMessage, OnCreatePersistMessage, OnSyncPersist
 import { deepmerge } from 'deepmerge-ts'
 import { useCallbacks } from '../utils/useCallbacks'
 import { sync } from '../actions/sync'
-import { Form } from '..'
+import { FilterPiniaOrmModelToRelationshipTypes } from '../types/FilterPiniaOrmModelToRelationshipTypes'
+import { getClassRelationships, RelationshipDefinition } from '../utils/getClassRelationships'
+import { DeclassifyPiniaOrmModel } from '../types/DeclassifyPiniaOrmModel'
+import { Form } from '../types/Form'
 
 const defaultOptions = {
   persist: true,
@@ -84,7 +86,7 @@ export function useCreatorDriver<T extends typeof Model> (
   const createOptimisticPersistHooks = deepmerge(driverConfig.hooks?.createOptimisticPersist ?? [])
   const syncPersistHooks = deepmerge(driverConfig.hooks?.syncPersist ?? [])
 
-  const form = ref(options.form ?? {}) as Ref<PiniaOrmForm<InstanceType<T>>>
+  const form = ref(options.form ?? {}) as Ref<Form<InstanceType<T>>>
 
   const activeRequests = ref<UseCreatorReturn<T>['activeRequests']>({} as UseCreatorReturn<T>['activeRequests'])
   const activeRequest = ref<Promise<CreateResponse<T>> & { cancel(): void }>()
@@ -105,7 +107,7 @@ export function useCreatorDriver<T extends typeof Model> (
 
   const optimisticRecord = ref<InstanceType<T>>()
 
-  function getRecordId (rawRecord: PiniaOrmForm<InstanceType<T>> | DeclassifyPiniaOrmModel<InstanceType<T>> | InstanceType<T>) {
+  function getRecordId (rawRecord: Form<InstanceType<T>> | DeclassifyPiniaOrmModel<InstanceType<T>> | InstanceType<T>) {
     const primaryKeyField = ModelClass.primaryKey
     if (Array.isArray(primaryKeyField)) {
       const key = pick(rawRecord, primaryKeyField as unknown as (keyof typeof rawRecord)[])
@@ -132,7 +134,7 @@ export function useCreatorDriver<T extends typeof Model> (
     return getRecordFromRepo(responseRecord)
   })
 
-  async function create (paramForm?: PiniaOrmForm<InstanceType<T>>) {
+  async function create (paramForm?: Form<InstanceType<T>>) {
     response.value = undefined
     optimisticRecord.value = undefined
     belongsToManyResponses.value = {}
@@ -143,7 +145,7 @@ export function useCreatorDriver<T extends typeof Model> (
       form.value,
       toValue(options?.form) ?? {},
       paramForm ?? {},
-    ) as PiniaOrmForm<InstanceType<T>> & { id: PrimaryKey }
+    ) as Form<InstanceType<T>> & { id: PrimaryKey }
 
     const persist = !!toValue(options?.persist)
     const optimistic = getFirstDefined<boolean>([toValue(options?.optimistic), driverConfig.optimistic]) &&

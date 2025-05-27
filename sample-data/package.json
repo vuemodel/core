@@ -5,37 +5,23 @@
   "license": "ISC",
   "type": "module",
   "scripts": {
-    "build": "tsup src/index.ts --clean --format esm,cjs --dts && rm -rf ./dist/json/ && cp -r ./src/json/ ./dist",
+    "build": "tsdown && rm -rf ./dist/json/ && cp -r ./src/json/ ./dist",
+    "watch": "tsdown --watch --format=esm",
     "release": "pnpm build && bumpp --tag '@vuemodel/sample-data@v%s' && pnpm publish"
   },
-  "exports": {
-    ".": {
-      "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
-      },
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      }
-    }
-  },
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
   "files": [
-    "dist"
+    "src"
   ],
-  "dependencies": {
-    "pinia-orm-helpers": "^0.0.16"
-  },
+  "dependencies": {},
   "devDependencies": {
     "bumpp": "^9.2.0",
-    "tsup": "^8.0.0"
+    "tsdown": "^0.12.3"
   },
   "peerDependencies": {
     "pinia": "^2.x",
-    "pinia-orm": "1.7.x",
+    "pinia-orm": "1.10.x",
     "@vuemodel/core": "0.0.x"
   }
 }

@@ -1,6 +1,5 @@
-import { IndexOptions, IndexResponse, getMergedDriverConfig, vueModelState } from '@vuemodel/core'
+import { DeclassifyPiniaOrmModel, IndexOptions, IndexResponse, getMergedDriverConfig, vueModelState } from '@vuemodel/core'
 import { Model } from 'pinia-orm'
-import { DeclassifyPiniaOrmModel } from 'pinia-orm-helpers'
 import { OrionDriverOptions, orionState } from '../../plugin/state'
 import { applyWiths } from './applyWiths'
 import { applyPagination } from './applyPagination'

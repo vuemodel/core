@@ -1,11 +1,12 @@
 import { Model } from 'pinia-orm'
-import { DeclassifyPiniaOrmModel, FilterPiniaOrmModelToRelationshipTypes } from 'pinia-orm-helpers'
 import { StandardErrors } from '../contracts/errors/StandardErrors'
 import { QueryValidationErrors } from '../contracts/errors/QueryValidationErrors'
 import { FormValidationErrors } from '../contracts/errors/FormValidationErrors'
 import { PaginationDetails } from '../contracts/crud/index/PaginationDetails'
 import { UseBulkUpdateFormValidationErrors } from '../contracts/bulk-update/UseBulkUpdater'
 import { Form } from '..'
+import { FilterPiniaOrmModelToRelationshipTypes } from './FilterPiniaOrmModelToRelationshipTypes'
+import { DeclassifyPiniaOrmModel } from './DeclassifyPiniaOrmModel'
 
 export type BaseSuccessResponse = {
   standardErrors: undefined

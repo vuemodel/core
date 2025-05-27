@@ -1,10 +1,9 @@
 <script lang="ts" setup>
-import { update } from '@vuemodel/core'
+import { update, type Form } from '@vuemodel/core'
 import { Post } from '@vuemodel/sample-data'
 import { ref } from 'vue'
-import { type PiniaOrmForm } from 'pinia-orm-helpers'
 
-const form = ref<PiniaOrmForm<Post>>({})
+const form = ref<Form<Post>>({})
 const id = ref('')
 </script>
 
